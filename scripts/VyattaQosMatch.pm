@@ -27,14 +27,14 @@ sub new {
     return $self;
 }
 
-sub _tos {
-    my $tos = shift;
+sub _dsfield {
+    my $dsfield = shift;
     my $ret = undef;
 
-    if ( defined $tos ) {
-        $ret = VyattaQosUtil::getDsfield($tos);
+    if ( defined $dsfield ) {
+        $ret = VyattaQosUtil::getDsfield($dsfield);
         if ( !defined $ret ) {
-            $tos = hex($tos);
+            $dsfield = hex($dsfield);
         }
     }
     return $ret;
@@ -48,12 +48,13 @@ sub _define {
     $self->{_vlan} = $config->returnValue("vif");
     $self->{_dev} = $config->returnValue("interface");
 
-    $self->{_ip}->{_tos} = _tos( $config->returnValue("ip tos") );
+    $self->{_ip}->{_dsfield} = _dsfield( $config->returnValue("ip dsfield") );
     $self->{_ip}->{_protocol} = $config->returnValue("ip protocol");
     $self->{_ip}->{_src} = $config->returnValue("ip source address");
     $self->{_ip}->{_dst} = $config->returnValue("ip destination address");
+
     $self->{_ip}->{_sport} = $config->returnValue("ip source port");
-    $self->{_ip}->{_dport} = $config->returnValue("ip source dport");
+    $self->{_ip}->{_dport} = $config->returnValue("ip destination port");
 }
 
 sub filter {
@@ -64,9 +65,9 @@ sub filter {
     # TODO match on vlan, device, ...
     if (defined $self->{_ip}) {
 	print {$out} " u32";
-	print {$out} " match ip tos $self->{_ip}->{_tos} 0xff"
-	    if defined $self->{_ip}->{_tos};
-	print {$out} " match ip protocol $self->{_ip}->{_protcol} 0xff"
+	print {$out} " match ip dsfield $self->{_ip}->{_dsfield} 0xff"
+	    if defined $self->{_ip}->{_dsfield};
+	print {$out} " match ip protocol $self->{_ip}->{_protocol} 0xff"
 	    if defined $self->{_ip}->{_protocol};
 	print {$out} " match ip src $self->{_ip}->{_src}"
 	    if defined $self->{_ip}->{_src};
