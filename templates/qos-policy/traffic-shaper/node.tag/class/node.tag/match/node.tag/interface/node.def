@@ -1,0 +1,11 @@
+tag:
+type: txt
+help: "Ethernet interface name"
+syntax: exec " \
+        if [ -z \"`ip link | egrep -v 'eth[0-9]+[.]' | grep $(@)`\" ]; then \
+          echo Invalid ethernet interface [$(@)]; \
+          exit 1 ; \
+        fi ; "
+#allowed: local -a array ;
+# array=( /sys/class/net/{eth,vmnet}[0-9]+[^.] ) ;
+# echo -n ${array[@]##*/}

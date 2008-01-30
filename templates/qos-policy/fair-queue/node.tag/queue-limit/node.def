@@ -1,0 +1,2 @@
+type: u32
+help: "Maximum queue size (packets)"

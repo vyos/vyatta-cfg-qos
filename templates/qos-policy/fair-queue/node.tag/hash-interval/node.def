@@ -1,0 +1,3 @@
+type: u32
+default: 0
+help: "Rehash interval (seconds)"

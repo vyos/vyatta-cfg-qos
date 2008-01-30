@@ -1,0 +1,4 @@
+tag:
+type: txt
+syntax: pattern $(@) "^[^-]" ; "Qos queue name cannot start with \"-\""
+help: "Configure fair queueing based policy"

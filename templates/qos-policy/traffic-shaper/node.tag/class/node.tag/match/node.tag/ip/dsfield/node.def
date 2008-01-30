@@ -1,0 +1,3 @@
+type: txt
+help: "Match dsfield/TOS: either hexadecimal number (0x10) or identifier"
+syntax: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --dsfield \"$(@)\""
