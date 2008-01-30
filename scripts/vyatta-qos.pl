@@ -3,18 +3,17 @@
 use lib "/opt/vyatta/share/perl5/";
 use VyattaConfig;
 use VyattaQosPolicy;
+use strict;
 
 use Getopt::Long;
 
 my $qosNode = 'qos-policy';
-
+my $debug = $ENV{'QOS_DEBUG'};
 my @update = ();
 my @delete = ();
-my $debug = $ENV{"DEBUG"};
 my $list = undef;
 
 GetOptions(
-    "debug"       => \$debug,
     "list"        => \$list,
     "update=s{3}" => \@update,
     "delete=s{2}" => \@delete,
@@ -67,10 +66,12 @@ sub update_interface {
             defined $policy or die "undefined policy";
 
 	    # When doing debugging just echo the commands
+	    my $out;
 	    if (defined $debug) {
-		open (my $out, ">&STDOUT");
+		open $out, '>-'
+		    or die "can't open stdout: $!";
 	    } else {
-		open( my $out, "|sudo tc -batch -" )
+		open $out, "|-" or exec qw/sudo tc -batch -/
 		    or die "Tc setup failed: $!\n";
 	    }
 
@@ -94,7 +95,7 @@ if ( $#delete == 1 ) {
 }
 
 if ( $#update == 2 ) {
-    update_interface(@update);
+    update_interface(@update, $debug);
     exit 0;
 }
 
