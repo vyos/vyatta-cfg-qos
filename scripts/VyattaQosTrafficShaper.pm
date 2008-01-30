@@ -171,7 +171,8 @@ sub commands {
     my $classes = $self->{_classes};
     my @tc  = ( );
 
-    print {$out} "qdisc add dev $dev root handle 1: htb default $defaultId\n";
+    print {$out} "qdisc add dev $dev root handle 1: htb default "
+    	. sprintf("%04x",$defaultId) . "\n";
     print {$out} "class add dev $dev parent 1: classid 1:1 htb rate $rate\n";
 
     foreach my $class (@$classes) {
