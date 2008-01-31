@@ -1,3 +1,3 @@
 type: txt
-help: "Set the burst size for this class"
-syntax: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --burst \"$(@)\""
+help: Set the burst size for this class
+syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --burst \"$VAR(@)\""

@@ -1,4 +1,4 @@
 type: txt
-help: "Set outbound QOS policy"
-update: "sudo /opt/vyatta/sbin/vyatta-qos.pl --update $(../../@) out $(@)"
-delete: "sudo /opt/vyatta/sbin/vyatta-qos.pl --delete $(../../@) out"
+help: Set outbound QOS policy
+update:expression: "sudo /opt/vyatta/sbin/vyatta-qos.pl --update $VAR(../../@) out $VAR(@)"
+delete:expression: "sudo /opt/vyatta/sbin/vyatta-qos.pl --delete $VAR(../../@) out"

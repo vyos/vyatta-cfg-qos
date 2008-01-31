@@ -1,4 +1,4 @@
 tag:
 type: u32
-help: "Configure class handle"
-syntax: ($(@) > 1 && $(@) < 65536) ; "$(@) handle must be between 2 and 65535"
+help: Configure class handle
+syntax:expression: ($VAR(@) > 1 && $VAR(@) < 65536) ; "$VAR(@) handle must be between 2 and 65535"

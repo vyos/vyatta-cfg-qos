@@ -1,4 +1,4 @@
 tag:
 type: txt
-syntax: pattern $(@) "^[^-]" ; "Qos queue name cannot start with \"-\""
-help: "Configure fair queueing based policy"
+syntax:expression: pattern $VAR(@) "^[^-]" ; "Qos queue name cannot start with \"-\""
+help: Configure fair queueing based policy

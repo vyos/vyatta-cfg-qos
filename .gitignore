@@ -11,6 +11,8 @@
 /config.sub
 /configure
 /debian/files
+/debian/vyatta-cfg-qos.postinst
+/debian/vyatta-cfg-qos
 /INSTALL
 /Makefile.in
 /Makefile

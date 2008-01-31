@@ -1,4 +1,4 @@
 tag:
 type: txt
-syntax: pattern $(@) "^[^-]" ; "Match queue name cannot start with \"-\""
-help: "Configure class matching rule name"
+syntax:expression: pattern $VAR(@) "^[^-]" ; "Match queue name cannot start with \"-\""
+help: Configure class matching rule name

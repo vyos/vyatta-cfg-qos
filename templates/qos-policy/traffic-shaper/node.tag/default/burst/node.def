@@ -1,4 +1,4 @@
 type: txt
-help: "Set the burst size for default traffic"
+help: Set the burst size for default traffic
 default: "15k"
-syntax: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --burst \"$(@)\""
+syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --burst \"$VAR(@)\""

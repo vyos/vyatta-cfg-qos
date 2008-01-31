@@ -1,11 +1,11 @@
 type: txt
 default: "100%"
-help: "Set the base rate for this class"
-syntax: exec "[[ \"$(@)\" =~  \"[0-9]+(\.[0-9]*)?%\" ]] || \
-	      /opt/vyatta/sbin/vyatta-qos-util.pl --rate \"$(@)\""
-#comp_help: Allowed values:
-# <number>%         Percentage of overall rate (default 100%)
-# <number><suffix>  Bitrate with scaling suffix
-#                   bits per sec (kbit, mbit, gbit)
-#                   bytes per sec (kbps, mbps, gbps)
+help: Set the base rate for this class
+syntax:expression: exec "[[ \"$VAR(@)\" =~  \"[0-9]+(\.[0-9]*)?%\" ]] || \
+	      /opt/vyatta/sbin/vyatta-qos-util.pl --rate \"$VAR(@)\""
+comp_help: Allowed values:
+ <number>%         Percentage of overall rate (default 100%)
+ <number><suffix>  Bitrate with scaling suffix
+                   bits per sec (kbit, mbit, gbit)
+                   bytes per sec (kbps, mbps, gbps)
 

@@ -1,10 +1,10 @@
 type: txt
-help: "Set the base rate for this policy"
+help: Set the base rate for this policy
 default: "auto"
-syntax: exec "[[ \"$(@)\" == \"auto\" ]] || \
-	      /opt/vyatta/sbin/vyatta-qos-util.pl --rate \"$(@)\""
-#comp_help: Allowed values:
-# auto              Set rate based on interface speed (default)
-# <number><suffix>  Bitrate with scaling suffix
-#                   bits per sec (kbit, mbit, gbit)
-#                   bytes per sec (kbps, mbps, gbps)
+syntax:expression: exec "[[ \"$VAR(@)\" == \"auto\" ]] || \
+	      /opt/vyatta/sbin/vyatta-qos-util.pl --rate \"$VAR(@)\""
+comp_help: Allowed values:
+ auto              Set rate based on interface speed (default)
+ <number><suffix>  Bitrate with scaling suffix
+                   bits per sec (kbit, mbit, gbit)
+                   bytes per sec (kbps, mbps, gbps)

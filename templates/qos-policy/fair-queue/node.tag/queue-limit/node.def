@@ -1,2 +1,2 @@
 type: u32
-help: "Maximum queue size (packets)"
+help: Maximum queue size (packets)

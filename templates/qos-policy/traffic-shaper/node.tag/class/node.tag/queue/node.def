@@ -1,8 +1,8 @@
 type: txt
 default: "SFQ"
-syntax: $(@) in "SFQ", "FIFO", "RED"; "Queue must be SFQ, FIFO, or RED"
-help: "Set the queue type for this class"
-#comp_help:Possible completions:
-#    FIFO	Use FIFO queue
-#    RED	Random Exponential Drop - TCP friendly behaviour
-#    SFQ	Use Stochastic Fair Queue - fairness by flow (default)
+syntax:expression: $VAR(@) in "SFQ", "FIFO", "RED"; "Queue must be SFQ, FIFO, or RED"
+help: Set the queue type for this class
+comp_help:Possible completions:
+    FIFO	Use FIFO queue
+    RED	Random Exponential Drop - TCP friendly behaviour
+    SFQ	Use Stochastic Fair Queue - fairness by flow (default)
