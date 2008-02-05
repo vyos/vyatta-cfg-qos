@@ -7,12 +7,12 @@ my %fields = (
 	_dev      => undef,
 	_vlan     => undef,
 	_ip	  => {
-	    _src      => undef,
-	    _dst      => undef,
-	    _dsfield  => undef,
-	    _protocol => undef,
-	    _sport    => undef,
-	    _dport    => undef,
+	    src      => undef,
+	    dst      => undef,
+	    dsfield  => undef,
+	    protocol => undef,
+	    sport    => undef,
+	    dport    => undef,
 	}
 );
 
@@ -27,57 +27,42 @@ sub new {
     return $self;
 }
 
-sub _dsfield {
-    my $dsfield = shift;
-    my $ret = undef;
-
-    if ( defined $dsfield ) {
-        $ret = VyattaQosUtil::getDsfield($dsfield);
-        if ( !defined $ret ) {
-            $dsfield = hex($dsfield);
-        }
-    }
-    return $ret;
-}
-
 sub _define {
     my ( $self, $config ) = @_;
-
-    my $level=$config->setLevel();
+    my $level = $config->setLevel();
 
     $self->{_vlan} = $config->returnValue("vif");
     $self->{_dev} = $config->returnValue("interface");
+    if ($config->exists("ip")) {
+	my %ip;
 
-    $self->{_ip}->{_dsfield} = _dsfield( $config->returnValue("ip dsfield") );
-    $self->{_ip}->{_protocol} = $config->returnValue("ip protocol");
-    $self->{_ip}->{_src} = $config->returnValue("ip source address");
-    $self->{_ip}->{_dst} = $config->returnValue("ip destination address");
-
-    $self->{_ip}->{_sport} = $config->returnValue("ip source port");
-    $self->{_ip}->{_dport} = $config->returnValue("ip destination port");
+	$ip{dsfield} = VyattaQosUtil::getDsfield( $config->returnValue("ip dsfield"));
+	$ip{protocol} = VyattaQosUtil::getProtocol($config->returnValue("ip protocol"));
+	$ip{src} = $config->returnValue("ip source address");
+	$ip{dst} = $config->returnValue("ip destination address");
+	$ip{sport} = $config->returnValue("ip source port");
+	$ip{dport} = $config->returnValue("ip destination port");
+	$self->{_ip} = \%ip;
+    }
 }
 
 sub filter {
     my ( $self, $out, $dev, $id ) = @_;
 
-    print {$out} "filter add dev $dev parent 1:0 prio 10";
+    print {$out} "filter add dev $dev parent 1:0 prio 1";
 
     # TODO match on vlan, device, ...
+
     if (defined $self->{_ip}) {
-	print {$out} " u32";
-	print {$out} " match ip dsfield $self->{_ip}->{_dsfield} 0xff"
-	    if defined $self->{_ip}->{_dsfield};
-	print {$out} " match ip protocol $self->{_ip}->{_protocol} 0xff"
-	    if defined $self->{_ip}->{_protocol};
-	print {$out} " match ip src $self->{_ip}->{_src}"
-	    if defined $self->{_ip}->{_src};
-	print {$out} " match ip sport $self->{_ip}->{_sport}"
-	    if defined $self->{_ip}->{_sport};
-	print {$out} " match ip dst $self->{_ip}->{_dst}"
-	    if defined $self->{_ip}->{_dst};
-	print {$out} " match ip dport $self->{_ip}->{_dport}"
-	    if defined $self->{_ip}->{_dport};
+	my $ip = $self->{_ip};
+	print {$out} " protocol ip u32";
+	print {$out} " match ip dsfield $$ip{dsfield} 0xff"	if defined $$ip{dsfield};
+	print {$out} " match ip protocol $$ip{protocol} 0xff"   if defined $$ip{protocol};
+	print {$out} " match ip src $$ip{src}"			if defined $$ip{src};
+	print {$out} " match ip sport $$ip{sport} 0xffff"	if defined $$ip{sport};
+	print {$out} " match ip dst $$ip{dst}"			if defined $$ip{dst};
+	print {$out} " match ip dport $$ip{dport} 0xffff"	if defined $$ip{dport};
     }
 
-    print {$out} " classid $id\n";
+    print {$out} " classid 1:$id\n";
 }
