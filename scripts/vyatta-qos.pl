@@ -95,7 +95,7 @@ if ( $#delete == 1 ) {
 }
 
 if ( $#update == 2 ) {
-    update_interface(@update, $debug);
+    update_interface(@update);
     exit 0;
 }
 
