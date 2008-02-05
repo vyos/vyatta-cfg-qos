@@ -169,7 +169,6 @@ sub commands {
     my ( $self, $out, $dev ) = @_;
     my $rate = _getAutoRate($self->{_rate}, $dev);
     my $classes = $self->{_classes};
-    my @tc  = ( );
 
     print {$out} "qdisc add dev $dev root handle 1: htb default "
     	. sprintf("%04x",$defaultId) . "\n";
