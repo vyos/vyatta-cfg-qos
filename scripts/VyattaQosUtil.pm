@@ -2,6 +2,7 @@ package VyattaQosUtil;
 use POSIX;
 require Exporter;
 @EXPORT	= qw/getRate getSize getProtocol getDsfield interfaceRate/;
+use strict;
 
 sub get_num  {
     my ($str) = @_;
@@ -77,17 +78,18 @@ sub getSize {
 }
 
 sub getProtocol {
-    my ($p) = @_;
+    my ($str) = @_;
 
-    if ($p =~ /^([0-9]+)|(0x[0-9a-fA-F]+)$/) {
-	if ($p < 0 || $p > 255) {
-	    die "$p is not a valid protocol number\n";
+    defined $str or return;
+    if ($str =~ /^([0-9]+)|(0x[0-9a-fA-F]+)$/) {
+	if ($str < 0 || $str > 255) {
+	    die "$str is not a valid protocol number\n";
 	}
-	return $p;
+	return $str;
     }
 
-    my ($name, $aliases, $proto) =  getprotobyname($p);
-    (defined $proto)  or die "\"$p\" unknown protocol\n";
+    my ($name, $aliases, $proto) =  getprotobyname($str);
+    (defined $proto)  or die "\"$str\" unknown protocol\n";
     return $proto;
 }
 
@@ -98,6 +100,8 @@ sub getDsfield {
     my $match = undef;
     my $dsFileName = '/etc/iproute2/rt_dsfield';
     
+    defined $str or return;
+
     if ($str =~ /^([0-9]+)|(0x[0-9a-fA-F]+)$/) {
 	if ($str < 0 || $str > 255) {
 	    die "$str is not a valid dsfield value\n";
@@ -109,9 +113,9 @@ sub getDsfield {
     while (<$ds>) {
 	next if /^#/;
 	chomp;
-	my @fields = split;
-	if ($str eq $fields[1]) {
-	    $match = $fields[0];
+	my ($value, $name) = split;
+	if ($str eq $name) {
+	    $match = $value;
 	    last;
 	}
     }
