@@ -1,4 +1,4 @@
 type: txt
 help: Set outbound QOS policy
-update:expression: "sudo /opt/vyatta/sbin/vyatta-qos.pl --update $VAR(../../@) out $VAR(@)"
-delete:expression: "sudo /opt/vyatta/sbin/vyatta-qos.pl --delete $VAR(../../@) out"
+update:expression: "/opt/vyatta/sbin/vyatta-qos.pl --update $VAR(../../@) out $VAR(@)"
+delete:expression: "/opt/vyatta/sbin/vyatta-qos.pl --delete $VAR(../../@) out"
