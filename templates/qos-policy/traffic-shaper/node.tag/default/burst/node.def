@@ -2,3 +2,6 @@ type: txt
 help: Set the burst size for default traffic
 default: "15k"
 syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --burst \"$VAR(@)\""
+comp_help: Allowed values:
+   <number>		Burst size in bytes
+   <number><suffix>	Size with scaling suffix (kb, mb, gb)
