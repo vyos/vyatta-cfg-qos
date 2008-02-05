@@ -59,7 +59,7 @@
         if ( $rate =~ /%$/ ) {
             my $percent = substr( $rate, 0, length($rate) - 1 );
             if ( $percent < 0 || $percent > 100 ) {
-                die "Invalid percentage bandwidth\n";
+                die "Invalid percentage bandwidth: $percent\n";
             }
 
             $rate = ( $percent * $speed ) / 100.;
@@ -77,15 +77,15 @@
         my $id   = $self->{_id};
 	my $matches = $self->{_match};
 
-	die "Rate is not defined\n"	                  if (! defined $rate );
-	die "Class $id rate $rate > shaper rate $speed\n" if ($rate > $speed);
+	$rate <= $speed or 
+	    die "Rate for class $id ($rate) must be less than overall rate ($speed)\n";
 
 	# create the class
         my $cmd ="class add dev $dev parent 1:1 classid 1:$id htb rate $rate";
         if ( defined $ceil) {
-	    if ($ceil < $rate ) {
-		die "Rate limit (ceiling) $ceil < base rate $rate\n";
-	    }
+	    
+	    $ceil >= $rate or
+		die "Rate ceiling ($ceil) must be greater than base rate ($rate)\n";
 	    $cmd .= " ceil $ceil";
 	}
 
@@ -136,7 +136,7 @@ sub _getAutoRate {
     if ( $rate eq "auto" ) {
         $rate = VyattaQosUtil::interfaceRate($dev);
         if ( ! defined $rate ) {
-	    die "Auto speed setting but can't get rate from $dev\n";
+	    die "Interface speed defined as auto but can't get rate from $dev\n";
 	}
     } else {
 	$rate = VyattaQosUtil::getRate($rate);
@@ -154,6 +154,8 @@ sub _define {
 
     $self->{_rate} = $config->returnValue("rate");
 
+    $config->exists("default")
+	or die "Configuration not complete: missing default class\n";
     $config->setLevel("$level default");
     push @classes, new ShaperClass( $config, $defaultId); 
     $config->setLevel($level);
