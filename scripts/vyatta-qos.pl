@@ -76,7 +76,10 @@ sub update_interface {
 	    }
 
             $policy->commands($out, $interface);
-	    close $out or die "Tc command failed: $!\n";
+	    if (! close $out && ! defined $debug) {
+		delete_interface($interface, $direction);
+		die "Tc commands failed\n";
+	    }
             exit 0;
         }
     }
