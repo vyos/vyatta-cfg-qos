@@ -134,7 +134,7 @@ sub _getAutoRate {
     my ($rate, $dev) = @_;
 
     if ( $rate eq "auto" ) {
-        my $rate = VyattaQosUtil::interfaceRate($dev);
+        $rate = VyattaQosUtil::interfaceRate($dev);
         if ( ! defined $rate ) {
 	    die "Auto speed setting but can't get rate from $dev\n";
 	}

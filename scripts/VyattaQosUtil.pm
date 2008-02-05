@@ -8,7 +8,7 @@ sub get_num  {
     
     # clear errno
     $! = 0;
-    ($num, $unparsed) = POSIX::strtod($str);
+    my ($num, $unparsed) = POSIX::strtod($str);
     if (($str eq '') || $!) {
 	die "Non-numeric input \"$str\"" . ($! ? ": $!\n" : "\n");
     }
@@ -86,7 +86,7 @@ sub getProtocol {
 	return $p;
     }
 
-    ($name, $aliases, $proto) =  getprotobyname($p);
+    my ($name, $aliases, $proto) =  getprotobyname($p);
     (defined $proto)  or die "\"$p\" unknown protocol\n";
     return $proto;
 }
@@ -105,17 +105,17 @@ sub getDsfield {
 	return $str;
     }
 
-    open(DSFIELD,"<$dsFileName") || die "Can't open $dsFileName, $!\n";
-    while (<DSFIELD>) {
+    open my $ds, '<', $dsFileName || die "Can't open $dsFileName, $!\n";
+    while (<$ds>) {
 	next if /^#/;
 	chomp;
-	@fields = split;
+	my @fields = split;
 	if ($str eq $fields[1]) {
 	    $match = $fields[0];
 	    last;
 	}
     }
-    close(DSFIELD);
+    close($ds);
 
     return $match;
 }
@@ -126,7 +126,6 @@ sub getDsfield {
 # return result in bits per second
 sub interfaceRate {
     my ($interface) = @_;
-    my $rate = undef;
     my $config = new VyattaConfig;
 
     $config->setLevel("interfaces ethernet");
@@ -137,13 +136,7 @@ sub interfaceRate {
 	}
     } 
 
-    $rate = ethtoolRate($interface);
-
-    if (! defined $rate) {
-	die "Interace speed for $interface unknown\n";
-    }
-
-    return $rate * 1000000;
+    return ethtoolRate($interface);
 }
 
 ## ethtoolRate("eth0")
@@ -152,7 +145,7 @@ sub ethtoolRate {
     my ($dev) = @_;
     my $rate = undef;
 
-    open(ETHTOOL, "sudo ethtool $dev |") or return $rate;
+    open my $ethtool, "ethtool $dev |" or die "ethtool failed: $!\n";
 
     # ethtool produces:
     #
@@ -160,14 +153,14 @@ sub ethtoolRate {
     # Supported ports: [ TP ]
     # ...
     # Speed: 1000Mb/s
-    while (<ETHTOOL>) {
+    while (<$ethtool>) {
 	my @line = split;
-	if ($line[0] =~ /^Speed/) {
+	if ($line[0] =~ /^Speed:/) {
 	    $rate = $line[1];
-	    $rate =~ s/Mb\/s/000000/;
+	    $rate =~ s#Mb/s#000000#;
 	    last;
 	}
     }
-    close(ETHTOOL);
+    close $ethtool;
     return $rate;
 }
