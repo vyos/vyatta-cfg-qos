@@ -132,7 +132,7 @@ sub interfaceRate {
     $config->setLevel("interfaces ethernet");
     if ($config->exists("$interface")) {
 	my $speed  = $config->returnValue("$interface speed");
-	if (defined($speed) && $speed != "auto") {
+	if (defined($speed) && $speed ne "auto") {
 	    return $speed * 1000000;
 	}
     } 
