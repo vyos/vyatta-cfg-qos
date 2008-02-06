@@ -12,7 +12,8 @@ GetOptions(
     "rate=s"     => \$rate,
     "burst=s"    => \$burst,
     "protocol=s" => \$protocol,
-    "dsfield=s"  => \$dsfield,
+    "dscp=s"	 => \$dsfield,
+    "tos=s"	 => \$dsfield,
 );
 
 if ( defined $rate ) {
@@ -39,6 +40,6 @@ print <<EOF;
 usage: vyatta-qos-util.pl --rate rate
        vyatta-qos-util.pl --burst size
        vyatta-qos-util.pl --protocol protocol
-       vyatta-qos-util.pl --dsfield tos|dsfield
+       vyatta-qos-util.pl --dscp tos|dsfield
 EOF
 exit 1;

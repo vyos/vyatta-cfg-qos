@@ -36,7 +36,7 @@ sub _define {
     if ($config->exists("ip")) {
 	my %ip;
 
-	$ip{dsfield} = VyattaQosUtil::getDsfield( $config->returnValue("ip dsfield"));
+	$ip{dsfield} = VyattaQosUtil::getDsfield( $config->returnValue("ip dscp"));
 	$ip{protocol} = VyattaQosUtil::getProtocol($config->returnValue("ip protocol"));
 	$ip{src} = $config->returnValue("ip source address");
 	$ip{dst} = $config->returnValue("ip destination address");
