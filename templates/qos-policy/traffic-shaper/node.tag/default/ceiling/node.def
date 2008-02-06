@@ -1,6 +1,6 @@
 type: txt
 help: Set the limit for default traffic
 default: "100%"
-syntax:expression: exec "[[ \"$VAR(@)\" =~  \"[0-9]+(\.[0-9]*)?%\" ]] || \
+syntax:expression: exec "[[ \"$VAR(@)\" =~  '^[0-9]+(\.[0-9]*)?%$' ]] || \
 	      /opt/vyatta/sbin/vyatta-qos-util.pl --rate \"$VAR(@)\""
 
