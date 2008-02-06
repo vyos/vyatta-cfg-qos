@@ -14,11 +14,11 @@ my @deleteInterface = ();
 my @updatePolicy = ();
 my $deletePolicy = undef;
 my $listName = undef;
-my $validateName = undef;
+my @validateName = ();
 
 GetOptions(
     "list-policy"           => \$listName,
-    "validate-name=s"       => \$validateName,
+    "validate-name=s{2}"    => \@validateName,
     "update-interface=s{3}" => \@updateInterface,
     "delete-interface=s{2}" => \@deleteInterface,
     "update-policy=s{2}"    => \@updatePolicy,
@@ -41,15 +41,17 @@ sub list_inuse {
 
 ## check if name is okay
 sub validate_name {
-    my $name = shift;
+    my ($policy, $name) = @_;
     my $config = new VyattaConfig;
 
     ($name =~ '^\w[\w_-]*$') or die "Invalid policy name $name\n";
 
-    foreach my $policy ($config->listNodes($qosNode) ) {
-        foreach my $node ($config->listNodes("$qosNode $policy") ) {
-	    if ($name eq $node) {
-		die "Name $name is already in use by $policy\n";
+    foreach my $p ($config->listNodes($qosNode) ) {
+	if ($p ne $policy) {
+	    foreach my $n ($config->listNodes("$qosNode $policy") ) {
+		if ($n eq $name) {
+		    die "Name $name is already in use by $p\n";
+		}
 	    }
 	}
     }
@@ -62,13 +64,9 @@ sub delete_interface {
     my ($interface, $direction ) = @_;
 
     if ($direction eq "out" ) {
-
         # delete old qdisc - will give error if no policy in place
         system("tc qdisc del dev $interface root 2>/dev/null");
         system("tc filter del dev $interface 2>/dev/null");
-    }
-    else {
-        return -1;
     }
 }
 
@@ -78,8 +76,6 @@ sub update_interface {
     my ($interface, $direction, $name ) = @_;
     my $config = new VyattaConfig;
 
-    print "update_interface $interface $direction $name\n";
-    # TODO: add support for ingress
     ( $direction eq "out" ) or die "Only out direction supported";
 
     foreach my $policy ( $config->listNodes($qosNode) ) {
@@ -146,8 +142,8 @@ if ( defined $listName ) {
     exit 0;
 }
 
-if ( defined $validateName ) {
-    validate_name($validateName);
+if ( $#validateName == 1) {
+    validate_name(@validateName);
     exit 0;
 }
 

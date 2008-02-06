@@ -153,7 +153,7 @@ sub _define {
     my $level = $config->setLevel();
     my @classes = ( );
 
-    $self->{_rate} = $config->returnValue("rate");
+    $self->{_rate} = $config->returnValue("bandwidth");
 
     $config->exists("default")
 	or die "Configuration not complete: missing default class\n";
