@@ -1,4 +1,6 @@
 tag:
 type: txt
-syntax:expression: pattern $VAR(@) "^[^-]" ; "Qos queue name cannot start with \"-\""
-help: Configure fair queueing based policy
+help: Configure fair queueing policy
+syntax:expression: exec " /opt/vyatta/sbin/vyatta-qos.pl --validate-name $VAR(@)"
+update:expression: "/opt/vyatta/sbin/vyatta-qos.pl --update-policy $VAR(../@) $VAR(@)"
+delete:expression: "/opt/vyatta/sbin/vyatta-qos.pl --delete-policy $VAR(@)"
