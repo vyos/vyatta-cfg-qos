@@ -11,7 +11,7 @@ sub get_num  {
     $! = 0;
     my ($num, $unparsed) = POSIX::strtod($str);
     if (($str eq '') || $!) {
-	die "Non-numeric input \"$str\"" . ($! ? ": $!\n" : "\n");
+	return;	# undefined (bad input)
     }
 
     if ($unparsed > 0) { return $num, substr($str, -$unparsed); }
@@ -22,7 +22,10 @@ sub get_num  {
 # convert rate specification to number
 # from tc/tc_util.c
 sub getRate {
-    my ($num, $suffix) = get_num(@_);
+    my $rate = shift;
+    my ($num, $suffix) = get_num($rate);
+
+    defined $num or die "Invald bandwith string: $rate\n";
 
     if (defined $suffix) {
       SWITCH: {
@@ -45,19 +48,22 @@ sub getRate {
 	  ($suffix eq 'tibps')	&& do { $num *= 8796093022208.,; last SWITCH; };
 	  ($suffix eq 'tbps')	&& do { $num *= 8000000000000.,; last SWITCH; };
 
-	  die "Rate must be a number followed by a optional suffix (kbit, mbps, ...)\n";
+	  die "Unknown bandwidth suffix \"$suffix\"\n";
 	}
     } else {
 	# No suffix implies Kbps just as IOS
 	$num *= 8000;
     }
     
-    ($num >= 0) or die "Negative rate not allowed\n";
+    ($num >= 0) or die "Negative bandwidth not allowed\n";
     return $num;
 }
 
 sub getSize {
-    my ($num, $suffix) = get_num(@_);
+    my $size = shift;
+    my ($num, $suffix) = get_num($size);
+
+    defined $num or die "Invald size string: $size\n";
 
     if (defined $suffix) {
       SWITCH: {
@@ -72,11 +78,11 @@ sub getSize {
 	  ($suffix eq 'gb')		&& do { $num *= 1073741824.,; last SWITCH; };
 	  ($suffix eq 'gbit')	&& do { $num *= 134217728.,; last SWITCH; };
 	  
-	  die "Unknown suffix \"$suffix\"\n";
+	  die "Unknown suffix suffix \"$suffix\"\n";
 	}
     }
     
-    die "Negative size not allowed\n"  if ($num < 0);
+    $num >= 0 or  die "Negative size not allowed\n";
     return $num;
 }
 
