@@ -1,7 +1,7 @@
 package VyattaQosUtil;
 use POSIX;
 require Exporter;
-@EXPORT	= qw/getRate getSize getProtocol getDsfield interfaceRate/;
+@EXPORT	= qw/getRate getSize getProtocol getDsfield getIfIndex interfaceRate/;
 use strict;
 
 sub get_num  {
@@ -119,12 +119,21 @@ sub getDsfield {
 	    last;
 	}
     }
-    close($ds);
+    close($ds) or die "read $dsFileName error\n";
 
     return $match;
 }
 
-# Utility routines
+sub getIfIndex {
+    my ($str) = @_;
+
+    defined $str or return;
+    open my $sysfs, "<", "/sys/class/net/$str/ifindex" || die "Unknown interface $str\n";
+    my $ifindex = <$sysfs>;
+    close($sysfs) or die "read sysfs error\n";
+    return $ifindex;
+}
+
 
 ## interfaceRate("eth0")
 # return result in bits per second

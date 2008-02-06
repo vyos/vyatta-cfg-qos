@@ -34,10 +34,11 @@
 	my $level = $config->setLevel();
 	my @matches = ();
 
+        $self->{_rate}     = $config->returnValue("rate");
+	defined $self->{_rate}  or die "Rate not defined for class $id\n";
 
 	$self->{_id}	   = sprintf "%04x", $id;
         $self->{_priority} = $config->returnValue("priority");
-        $self->{_rate}     = $config->returnValue("rate");
         $self->{_ceiling}  = $config->returnValue("ceiling");
         $self->{_burst}    = $config->returnValue("burst");
 
