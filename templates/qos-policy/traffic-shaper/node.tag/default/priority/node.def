@@ -1,4 +1,3 @@
 type: u32
-default: 8
 help: Priority for usage of extra bandwidth
-syntax:expression: ($VAR(@) > 0 && $VAR(@) < 10) ; "priority must be between 1 and 10"
+syntax:expression: ($VAR(@) > 0 && $VAR(@) < 1000) ; "priority must be between 1 and 1000"
