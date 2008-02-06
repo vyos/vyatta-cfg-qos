@@ -1,11 +1,11 @@
 type: txt
 default: "100%"
-help: Set the base rate for this class
+help: Set the bandwidth used for this class
 syntax:expression: exec "[[ \"$VAR(@)\" =~  '^[0-9]+(\.[0-9]*)?%$' ]] || \
 	      /opt/vyatta/sbin/vyatta-qos-util.pl --rate \"$VAR(@)\""
 comp_help: Allowed values:
+ <number>          Bandwidth in Kbps
  <number>%         Percentage of overall rate (default 100%)
- <number><suffix>  Bitrate with scaling suffix
+ <number><suffix>  Value with scaling suffix
                    bits per sec (kbit, mbit, gbit)
                    bytes per sec (kbps, mbps, gbps)
-

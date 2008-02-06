@@ -47,9 +47,12 @@ sub getRate {
 
 	  die "Rate must be a number followed by a optional suffix (kbit, mbps, ...)\n";
 	}
+    } else {
+	# No suffix implies Kbps just as IOS
+	$num *= 8000;
     }
     
-    die "Negative rate not allowed\n"  if ($num < 0);
+    ($num >= 0) or die "Negative rate not allowed\n";
     return $num;
 }
 

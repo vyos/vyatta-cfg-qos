@@ -34,8 +34,8 @@
 	my $level = $config->setLevel();
 	my @matches = ();
 
-        $self->{_rate}     = $config->returnValue("rate");
-	defined $self->{_rate}  or die "Rate not defined for class $id\n";
+        $self->{_rate}     = $config->returnValue("bandwidth");
+	defined $self->{_rate}  or die "Bandwidth not defined for class $id\n";
 
 	$self->{_id}	   = sprintf "%04x", $id;
         $self->{_priority} = $config->returnValue("priority");
@@ -79,14 +79,14 @@
 	my $matches = $self->{_match};
 
 	$rate <= $speed or 
-	    die "Rate for class $id ($rate) must be less than overall rate ($speed)\n";
+	    die "Bandwidth for class $id ($rate) must be less than overall bandwidth ($speed)\n";
 
 	# create the class
         my $cmd ="class add dev $dev parent 1:1 classid 1:$id htb rate $rate";
         if ( defined $ceil) {
 	    
 	    $ceil >= $rate or
-		die "Rate ceiling ($ceil) must be greater than base rate ($rate)\n";
+		die "Ceiling ($ceil) must be greater than bandwith ($rate)\n";
 	    $cmd .= " ceil $ceil";
 	}
 

@@ -1,11 +1,11 @@
 type: txt
-default: "50%"
-help: Set the rate for default traffic
+help: Set the bandwidth used for default traffic
 syntax:expression: exec "[[ \"$VAR(@)\" =~ '^[0-9]+(\.[0-9]*)?%$' ]] || \
 	      /opt/vyatta/sbin/vyatta-qos-util.pl --rate \"$VAR(@)\""
 comp_help: Allowed values:
- <number>%         Percentage of overall rate (default 50%)
- <number><suffix>  Bitrate with scaling suffix
+ <number>	   Bandwidth in Kbps per second
+ <number>%         Percentage of overall rate
+ <number><suffix>  Value with scaling suffix
                    bits per sec (kbit, mbit, gbit)
                    bytes per sec (kbps, mbps, gbps)
 
