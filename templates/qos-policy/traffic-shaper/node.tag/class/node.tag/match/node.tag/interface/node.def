@@ -1,11 +1,7 @@
-tag:
 type: txt
-help: Ethernet interface name
-syntax:expression: exec " \
-        if [ -z \"`ip link | egrep -v 'eth[0-9]+[.]' | grep $VAR(@)`\" ]; then \
-          echo Invalid ethernet interface [$VAR(@)]; \
-          exit 1 ; \
-        fi ; "
-allowed: local -a array ;
- array=( /sys/class/net/{eth,vmnet}[0-9]+[^.] ) ;
- echo -n ${array[@]##*/}
+help: Interface name
+syntax:expression: exec "[ -f /sys/class/net/$VAR(@)/ifindex ]" ; "Interface must already exist"
+allowed: local -a array
+	 array=( /sys/class/net/* )
+         echo -n ${array[@]##*/}
+
