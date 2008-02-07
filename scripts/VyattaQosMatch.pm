@@ -6,14 +6,7 @@ use strict;
 my %fields = (
 	_dev      => undef,
 	_vif      => undef,
-	_ip	  => {
-	    src      => undef,
-	    dst      => undef,
-	    dsfield  => undef,
-	    protocol => undef,
-	    sport    => undef,
-	    dport    => undef,
-	}
+	_ip	  => undef,
 );
 
 sub new {
@@ -31,8 +24,9 @@ sub _define {
     my ( $self, $config ) = @_;
     my $level = $config->setLevel();
 
-    $self->{_vif} = VyattaQosUtil::getIfIndex($config->returnValue("vif"));
-    $self->{_dev} = $config->returnValue("interface");
+    $self->{_vif} = $config->returnValue("vif");
+    $self->{_dev} = VyattaQosUtil::getIfIndex($config->returnValue("interface"));
+
     if ($config->exists("ip")) {
 	my %ip;
 
@@ -63,11 +57,11 @@ sub filter {
     }
 
     if (defined $self->{_dev}) {
-	print {$out} " basic meta match meta \(rt_iif eq $self->{_dev}\)";
+	print {$out} " basic match meta \(rt_iif eq $self->{_dev}\)";
     }
 
     if (defined $self->{_vif}) {
-	print {$out} " basic meta match meta \(vlan mask 0xfff eq $self->{_vif}\)";
+	print {$out} " basic match meta \(vlan mask 0xfff eq $self->{_vif}\)";
     }
 
     print {$out} " classid 1:$id\n";
