@@ -1,4 +1,6 @@
 tag:
 type: u32
 help: Configure class handle
-syntax:expression: ($VAR(@) > 1 && $VAR(@) < 65536) ; "$VAR(@) handle must be between 2 and 65535"
+syntax:expression: ($VAR(@) > 2 && $VAR(@) < 4096) ; "$VAR(@) handle must be between 3 and 4095"
+comp_help: possible completions
+ <3-4095>	Class ID
