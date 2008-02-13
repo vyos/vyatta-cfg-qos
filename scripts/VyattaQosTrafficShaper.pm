@@ -11,6 +11,7 @@
 
     my %fields = (
 	id	  => undef,
+	dsmark	  => undef,
         _priority => undef,
         _rate     => undef,
         _ceiling  => undef,
@@ -37,10 +38,11 @@
         $self->{_rate}     = $config->returnValue("bandwidth");
 	defined $self->{_rate}  or die "Bandwidth not defined for class $id\n";
 
-	$self->{_id}	   = sprintf "%04x", $id;
+	$self->{id}	   = $id;
         $self->{_priority} = $config->returnValue("priority");
         $self->{_ceiling}  = $config->returnValue("ceiling");
         $self->{_burst}    = $config->returnValue("burst");
+        $self->{dsmark} = VyattaQosUtil::getDsfield($config->returnValue("set-dscp"));
 
 	foreach my $match ($config->listNodes("match")) {
             $config->setLevel("$level match $match");
@@ -71,37 +73,53 @@
 	return $rate;
     }
 
-    sub commands {
-        my ( $self, $out, $dev, $speed ) = @_;
+    sub rateCheck {
+	my ($self, $speed) = @_;
         my $rate = _getPercentRate($self->{_rate}, $speed);
 	my $ceil = _getPercentRate($self->{_ceiling}, $speed);
-        my $id   = $self->{_id};
-	my $matches = $self->{_match};
 
-	$rate <= $speed or 
-	    die "Bandwidth for class $id ($rate) must be less than overall bandwidth ($speed)\n";
-
-	# create the class
-        my $cmd ="class add dev $dev parent 1:1 classid 1:$id htb rate $rate";
-        if ( defined $ceil) {
-	    
-	    $ceil >= $rate or
-		die "Ceiling ($ceil) must be greater than bandwith ($rate)\n";
-	    $cmd .= " ceil $ceil";
+	if ($rate > $speed) {
+	    die "Bandwidth for class $self->{id} ($rate) > overall limit ($speed)\n";
 	}
 
-        $cmd .= " burst $self->{_burst}"   if ( defined $self->{_burst} );
-        $cmd .= " prio $self->{_priority}" if ( defined $self->{_priority} );
+	# create the class
+        if (defined $ceil && $ceil < $rate) {
+	    die "Ceiling ($ceil) must be greater than bandwith ($rate)\n";
+	}
+    }
 
-	print {$out} $cmd . "\n";
+    sub htbClass {
+        my ( $self, $out, $parent, $dev, $speed ) = @_;
+        my $rate = _getPercentRate($self->{_rate}, $speed);
+	my $ceil = _getPercentRate($self->{_ceiling}, $speed);
+	my $id = sprintf "%04x", $self->{id};
+	print ${out} "class add dev $dev parent $parent:1 classid 1:$id htb rate $rate";
+
+	print ${out} " burst $self->{_burst}"   if ( defined $self->{_burst} );
+	print ${out} " prio $self->{_priority}" if ( defined $self->{_priority} );
+	print {$out} "\n";
 
 	# create leaf qdisc
-	print {$out} "qdisc add dev $dev parent 1:$id sfq\n";
+	print {$out} "qdisc add dev $dev parent $parent:$id sfq\n";
 
+	my $matches = $self->{_match};
 	foreach my $match (@$matches) {
 	    $match->filter( $out, $dev, $id );
         }
     }
+
+    sub dsmarkClass {
+	my ( $self, $out, $parent, $dev ) = @_;
+	my $id = sprintf "%x", $self->{id};
+
+	print ${out} "class change dev $dev classid $parent:$id dsmark";
+	if ($self->{dsmark}) {
+	    print ${out} " mask 0 value $self->{dsmark}\n";
+	} else {
+	    print ${out} " mask 0xff value 0\n";
+	}
+    }
+
 }
 
 package VyattaQosTrafficShaper;
@@ -109,8 +127,6 @@ package VyattaQosTrafficShaper;
 use strict;
 require VyattaConfig;
 use VyattaQosUtil;
-
-my $defaultId = 0x4000;
 
 my %fields = (
     _rate       => undef,
@@ -158,7 +174,7 @@ sub _define {
     $config->exists("default")
 	or die "Configuration not complete: missing default class\n";
     $config->setLevel("$level default");
-    push @classes, new ShaperClass( $config, $defaultId); 
+    push @classes, new ShaperClass($config, -1);
     $config->setLevel($level);
 
     foreach my $id ( $config->listNodes("class") ) {
@@ -172,13 +188,52 @@ sub commands {
     my ( $self, $out, $dev ) = @_;
     my $rate = _getAutoRate($self->{_rate}, $dev);
     my $classes = $self->{_classes};
+    my %dsmark = ();
 
-    print {$out} "qdisc add dev $dev root handle 1: htb default "
-    	. sprintf("%04x",$defaultId) . "\n";
-    print {$out} "class add dev $dev parent 1: classid 1:1 htb rate $rate\n";
+    my $maxid = 1;
+    foreach my $class (@$classes) {
+	# rate constraints
+	$class->rateCheck($rate);
+
+	# find largest class id
+	if (defined $class->{id} && $class->{id} > $maxid) {
+	    $maxid = $class->{id};
+	}
+    }
+
+    # fill in id of default
+    my $default = shift @$classes;
+    $default->{id} = ++$maxid;
+    unshift @$classes, $default;
+
+    # if any dscp marking, then set up hash
+    my $usedsmark;
+    foreach my $class (@$classes) {
+	if (defined $class->{dsmark}) {
+	    print "Class $class->{id} uses dsmark\n";
+	    $usedsmark = 1;
+	    last;
+	}
+    }
+
+    my $parent = "1";
+    my $root = "root";
+    if ($usedsmark) {
+	print {$out} "qdisc add dev $dev root handle 1: dsmark "
+	    . " indicies $maxid+1 default_index $default->{id}\n";
+	foreach my $class (@$classes) {
+	    $class->dsmarkClass($out, "1", $dev);
+	}
+	$parent = "4000";
+	$root = "parent 1:1"
+    }
+
+    print {$out} "qdisc add dev $dev $root handle $parent: htb";
+    printf {$out} " default %x\n", $default->{id};
+    print {$out} "class add dev $dev parent 1: classid $parent:1 htb rate $rate\n";
 
     foreach my $class (@$classes) {
-        $class->commands( $out, $dev, $rate );
+        $class->htbClass($out, $parent, $dev, $rate);
     }
 }
 
