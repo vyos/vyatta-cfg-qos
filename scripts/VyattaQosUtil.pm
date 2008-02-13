@@ -129,7 +129,8 @@ sub getDsfield {
 	}
     }
     close($ds) or die "read $dsFileName error\n";
-
+    
+    (defined $match) or die "\"$str\" unknown dsfield value\n";
     return $match;
 }
 
@@ -140,6 +141,7 @@ sub getIfIndex {
     open my $sysfs, "<", "/sys/class/net/$str/ifindex" || die "Unknown interface $str\n";
     my $ifindex = <$sysfs>;
     close($sysfs) or die "read sysfs error\n";
+    chomp $ifindex;
     return $ifindex;
 }
 
