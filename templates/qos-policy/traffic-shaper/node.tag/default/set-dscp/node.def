@@ -1,6 +1,6 @@
 type: txt
-help: Match DSCP (formerly known as TOS) value
+help: Change the Differentiated Services (DiffServ) field in the IP header
 syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --dscp \"$VAR(@)\""
-comp_help: Differentiated Services Condepoint (DSCP) value
+comp_help: New Differentiated Services Condepoint (DSCP) value
     <number>   decimal number (or 0x for hex)
 or  <name>     name from /etc/iproute2/rt_dsfield 
