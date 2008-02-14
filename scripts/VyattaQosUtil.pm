@@ -169,7 +169,9 @@ sub ethtoolRate {
     my ($dev) = @_;
     my $rate = undef;
 
-    open my $ethtool, "ethtool $dev |" or die "ethtool failed: $!\n";
+    open my $ethtool, "-|" 
+	or exec 'sudo', 'ethtool', $dev
+ 	or die "ethtool failed: $!\n";
 
     # ethtool produces:
     #
