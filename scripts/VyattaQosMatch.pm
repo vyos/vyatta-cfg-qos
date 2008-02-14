@@ -30,10 +30,6 @@ sub _define {
     if ($config->exists("ip")) {
 	my %ip;
 
-	if (defined $self->{_dev} || defined $self->{_vif}) {
-	    die "Match on both ip field and device not supported\n";
-	}
-
 	$ip{dsfield} = VyattaQosUtil::getDsfield( $config->returnValue("ip dscp"));
 	$ip{protocol} = VyattaQosUtil::getProtocol($config->returnValue("ip protocol"));
 	$ip{src} = $config->returnValue("ip source address");

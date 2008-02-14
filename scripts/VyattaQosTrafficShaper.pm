@@ -173,6 +173,26 @@ sub _define {
 
     $config->exists("default")
 	or die "Configuration not complete: missing default class\n";
+
+    # make sure no clash of different types of tc filters
+    my %matchTypes = ();
+    foreach my $class ( $config->listNodes("class")) {
+	foreach my $match ( $config->listNodes("class $class match") ) {
+	    foreach my $type ( $config->listNodes("class $class match $match") ) {
+		$matchTypes{$type} = "$class match $match";
+	    }
+	}
+    }
+
+    if (scalar keys %matchTypes > 1 && $matchTypes{ip}) {
+	print "Match type conflict:\n";
+	while (my ($type, $usage) = each(%matchTypes)) {
+	    print "   class $usage $type\n";
+	}
+	die "Can't match on both ip and other types\n";
+    }
+
+
     $config->setLevel("$level default");
     push @classes, new ShaperClass($config, -1);
     $config->setLevel($level);
