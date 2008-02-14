@@ -41,7 +41,7 @@ sub _define {
 }
 
 sub filter {
-    my ( $self, $out, $dev, $id ) = @_;
+    my ( $self, $out, $dev, $parent, $id ) = @_;
     my $ip = $self->{_ip};
     my $indev = $self->{_dev};
     my $vif = $self->{_vif};
@@ -51,7 +51,7 @@ sub filter {
 	return;
     }
 
-    print {$out} "filter add dev $dev parent 1:0 prio 1";
+    print {$out} "filter add dev $dev parent $parent:0 prio 1";
     if (defined $ip) {
 	print {$out} " protocol ip u32";
 	print {$out} " match ip dsfield $$ip{dsfield} 0xff"
@@ -73,5 +73,5 @@ sub filter {
 	print {$out} " match meta\(vlan mask 0xfff eq $vif\)"
 	    if (defined $vif);
     }
-    print {$out} " classid 1:$id\n";
+    print {$out} " classid $parent:$id\n";
 }

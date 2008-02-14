@@ -93,7 +93,8 @@
         my $rate = _getPercentRate($self->{_rate}, $speed);
 	my $ceil = _getPercentRate($self->{_ceiling}, $speed);
 	my $id = sprintf "%04x", $self->{id};
-	print ${out} "class add dev $dev parent $parent:1 classid 1:$id htb rate $rate";
+	print ${out} "class add dev $dev parent $parent:1 classid $parent:$id"
+	    . " htb rate $rate";
 
 	print ${out} " burst $self->{_burst}"   if ( defined $self->{_burst} );
 	print ${out} " prio $self->{_priority}" if ( defined $self->{_priority} );
@@ -104,7 +105,7 @@
 
 	my $matches = $self->{_match};
 	foreach my $match (@$matches) {
-	    $match->filter( $out, $dev, $id );
+	    $match->filter( $out, $dev, $parent, $id );
         }
     }
 
@@ -226,11 +227,10 @@ sub commands {
     $default->{id} = ++$maxid;
     unshift @$classes, $default;
 
-    # if any dscp marking, then set up hash
+    # Check if we need dsmrk
     my $usedsmark;
     foreach my $class (@$classes) {
 	if (defined $class->{dsmark}) {
-	    print "Class $class->{id} uses dsmark\n";
 	    $usedsmark = 1;
 	    last;
 	}
@@ -238,9 +238,17 @@ sub commands {
 
     my $parent = "1";
     my $root = "root";
+
     if ($usedsmark) {
-	print {$out} "qdisc add dev $dev root handle 1: dsmark "
-	    . " indicies $maxid+1 default_index $default->{id}\n";
+	# dsmark max index must be power of 2
+	my $indices = $maxid + 1;
+	while (($indices & ($indices - 1)) != 0) {
+	    ++$indices;
+	}
+
+	print {$out} "qdisc add dev $dev handle 1:0 root dsmark"
+	    . " indices $indices default_index $default->{id}\n";
+
 	foreach my $class (@$classes) {
 	    $class->dsmarkClass($out, "1", $dev);
 	}
@@ -250,7 +258,7 @@ sub commands {
 
     print {$out} "qdisc add dev $dev $root handle $parent: htb";
     printf {$out} " default %x\n", $default->{id};
-    print {$out} "class add dev $dev parent 1: classid $parent:1 htb rate $rate\n";
+    print {$out} "class add dev $dev parent $parent: classid $parent:1 htb rate $rate\n";
 
     foreach my $class (@$classes) {
         $class->htbClass($out, $parent, $dev, $rate);
