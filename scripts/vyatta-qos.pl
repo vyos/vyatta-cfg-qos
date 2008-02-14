@@ -65,8 +65,7 @@ sub delete_interface {
 
     if ($direction eq "out" ) {
         # delete old qdisc - will give error if no policy in place
-        system("tc qdisc del dev $interface root 2>/dev/null");
-        system("tc filter del dev $interface 2>/dev/null");
+	qx(sudo tc qdisc del dev "$interface" root 2>/dev/null);
     }
 }
 
@@ -98,7 +97,12 @@ sub update_interface {
             $policy->commands($out, $interface);
 	    if (! close $out && ! defined $debug) {
 		delete_interface($interface, $direction);
-		die "Tc commands failed\n";
+
+		# replay commands to stdout
+		open $out, '>-';
+		$policy->commands($out, $interface);
+		close $out;
+		die "Conversion of configuration to tc command error\n";
 	    }
             exit 0;
         }
