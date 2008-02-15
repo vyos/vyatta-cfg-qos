@@ -17,6 +17,8 @@
         _ceiling  => undef,
         _burst    => undef,
         _match    => undef,
+	_limit	  => undef,
+	_qdisc    => undef,
     );
 
     sub new {
@@ -24,8 +26,10 @@
         my $class = ref($that) || $that;
         my $self = {%fields};
 
+	$self->{id}	   = $id;
+
         bless $self, $class;
-        $self->_define($config, $id);
+        $self->_define($config);
 
         return $self;
     }
@@ -38,10 +42,12 @@
         $self->{_rate}     = $config->returnValue("bandwidth");
 	defined $self->{_rate}  or die "Bandwidth not defined for class $id\n";
 
-	$self->{id}	   = $id;
         $self->{_priority} = $config->returnValue("priority");
         $self->{_ceiling}  = $config->returnValue("ceiling");
         $self->{_burst}    = $config->returnValue("burst");
+	$self->{_limit}	   = $config->returnValue("queue-limit");
+	$self->{_qdisc}    = $config->returnValue("queue-type");
+
         $self->{dsmark} = VyattaQosUtil::getDsfield($config->returnValue("set-dscp"));
 
 	foreach my $match ($config->listNodes("match")) {
@@ -79,7 +85,7 @@
 	my $ceil = _getPercentRate($self->{_ceiling}, $speed);
 
 	if ($rate > $speed) {
-	    die "Bandwidth for class $self->{id} ($rate) > overall limit ($speed)\n";
+	    die "Bandwidth for class $self->{id} ($rate) > total ($speed)\n";
 	}
 
 	# create the class
@@ -88,32 +94,105 @@
 	}
     }
 
+    sub prioQdisc {
+	my ($self, $out, $dev, $rate) = @_;
+	my $prio_id = 0x4000 + $self->{id};
+	my $limit = $self->{_limit};
+
+	print {$out} "handle $prio_id: prio\n";
+
+	if ($limit) {
+	    foreach my $i (qw/1 2 3/) {
+		printf {$out} "qdisc add dev %s parent %x:%d pfifo limit %d\n",
+		    $dev, $prio_id, $i, $limit;
+	    }
+	}
+    }
+    
+    sub sfqQdisc {
+	my ($self, $out, $dev, $rate ) = @_;
+
+	print ${out} "sfq";
+	print ${out} " limit $self->{_limit}" if ($self->{_limit});
+	print ${out} "\n";
+    }
+
+    sub fifoQdisc {
+	my ($self, $out, $dev, $rate) = @_;
+
+	print ${out} "pfifo";
+	print ${out} " limit $self->{_limit}" if ($self->{_limit});
+	print ${out} "\n";
+    }
+
+    # Red is has way to many configuration options 
+    # make some assumptions to make this sane (based on LARTC)
+    #   average size := 1000 bytes
+    #   limit        := queue-limit * average
+    #   max          := limit / 8
+    #   min          := max / 3
+    #   burst        := (2 * min + max) / (3 * average)
+    sub redQdisc {
+	my ($self, $out, $dev, $rate) = @_;
+	my $limit = $self->{_limit};
+	my $avg = 1000;
+	my $qlimit;
+
+	if (defined $limit) {
+	    $qlimit = $limit * $avg;	# red limit in bytes
+	} else {
+	    # rate is in bits/sec so queue-limit = 8 * 500ms * rate
+	    $qlimit = $rate / 2;
+	} 
+	my $qmax = $qlimit / 8;
+	my $qmin = $qmax / 3;
+
+ 	printf  ${out} "red limit %d min %d max %d avpkt %d",
+		$qlimit, $qmin, $qmax, $avg;
+	printf ${out} " burst %d probability 0.02 bandwidth %d ecn\n",
+		(2 * $qmin + $qmax) / (3 * $avg), $rate / 1000;
+    }
+
+    my %qdiscOptions = (
+	'priority'	=> \&prioQdisc,
+	'fair-queue'	=> \&sfqQdisc,
+	'random-detect'	=> \&redQdisc,
+	'drop-tail'	=> \&fifoQdisc,
+	);
+
     sub htbClass {
-        my ( $self, $out, $parent, $dev, $speed ) = @_;
+        my ( $self, $out, $dev, $parent, $speed ) = @_;
         my $rate = _getPercentRate($self->{_rate}, $speed);
 	my $ceil = _getPercentRate($self->{_ceiling}, $speed);
-	my $id = sprintf "%04x", $self->{id};
-	print ${out} "class add dev $dev parent $parent:1 classid $parent:$id"
-	    . " htb rate $rate";
+
+	printf ${out} "class add dev %s parent %x:1 classid %x:%x htb rate %s",
+	    $dev, $parent, $parent, $self->{id}, $rate;
 
 	print ${out} " burst $self->{_burst}"   if ( defined $self->{_burst} );
 	print ${out} " prio $self->{_priority}" if ( defined $self->{_priority} );
 	print {$out} "\n";
 
 	# create leaf qdisc
-	print {$out} "qdisc add dev $dev parent $parent:$id sfq\n";
+	my $q = $qdiscOptions{$self->{_qdisc}};
+	if (defined $q) {
+	    printf {$out} "qdisc add dev %s parent %x:%x ", 
+	    	$dev, $parent, $self->{id};
+	    $q->($self, $out, $dev, $rate);
+	} else {
+	    die "Unknown queue type $self->{_qdisc}\n";
+        }
 
 	my $matches = $self->{_match};
 	foreach my $match (@$matches) {
-	    $match->filter( $out, $dev, $parent, $id );
+	    $match->filter( $out, $dev, $parent, $self->{id} );
         }
     }
 
     sub dsmarkClass {
 	my ( $self, $out, $parent, $dev ) = @_;
-	my $id = sprintf "%x", $self->{id};
 
-	print ${out} "class change dev $dev classid $parent:$id dsmark";
+	printf ${out} "class change dev %s classid %x:%x dsmark", 
+		$dev, $parent, $self->{id};
 	if ($self->{dsmark}) {
 	    print ${out} " mask 0 value $self->{dsmark}\n";
 	} else {
@@ -236,7 +315,7 @@ sub commands {
 	}
     }
 
-    my $parent = "1";
+    my $parent = 1;
     my $root = "root";
 
     if ($usedsmark) {
@@ -252,16 +331,17 @@ sub commands {
 	foreach my $class (@$classes) {
 	    $class->dsmarkClass($out, "1", $dev);
 	}
-	$parent = "4000";
+	$parent = $indices + 1;
 	$root = "parent 1:1"
     }
 
-    print {$out} "qdisc add dev $dev $root handle $parent: htb";
-    printf {$out} " default %x\n", $default->{id};
-    print {$out} "class add dev $dev parent $parent: classid $parent:1 htb rate $rate\n";
+    printf {$out} "qdisc add dev %s %s handle %x: htb default %x\n",
+    	$dev, $root, $parent, $default->{id};
+    printf {$out} "class add dev %s parent %x: classid %x:1 htb rate %s\n",
+    	$dev, $parent, $parent, $rate;
 
     foreach my $class (@$classes) {
-        $class->htbClass($out, $parent, $dev, $rate);
+        $class->htbClass($out, $dev, $parent, $rate);
     }
 }
 
