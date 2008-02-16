@@ -52,7 +52,7 @@ sub getRate {
 	}
     } else {
 	# No suffix implies Kbps just as IOS
-	$num *= 8000;
+	$num *= 1000;
     }
     
     ($num >= 0) or die "Negative bandwidth not allowed\n";
