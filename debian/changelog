@@ -1,3 +1,56 @@
+vyatta-cfg-qos (0.2) unstable; urgency=low
+
+  vc4.0.0
+  [ Mark O'Brien ]
+
+
+  [ An-Cheng Huang ]
+  * convert templates to new syntax
+
+  [ Stephen Hemminger ]
+  * fix typos in management of match rules
+  * format id for default class correctly
+  * change to how open is used to run tc
+  * don't pass debug to update_interfaces
+  * get rid of unused variable
+  * get auto speed correctly
+  * don't use sudo when updating interface
+  * fix parsing of ethtool output for auto rate processing
+  * better error messages on errors
+  * cleanup on failed commit
+  * handle undefined values better
+  * get match rules to work.
+  * Add help for burst values
+  * don't indent help as much
+  * make sure regex for matching percentage are anchored
+  * add validation for policy names, and policy update/delete
+  * add support for match based on incoming device and vlan
+  * rename rate to bandwidth
+  * fix update/delete tags to properly find parent
+  * better error handling and propogation from get_num
+  * fix update problems
+  * rename dsfield to dscp
+  * fix problems with percent sign in comp_help
+  * allow greater range of priorty
+  * vlan tag is not a tag node
+  * use ifindex to check for valid interface config
+  * fixes for match on vlan or interface
+  * fix vlan and device matching
+  * restrict class to 3...4095
+  * add templates for dscp setting
+  * catch errors where dscp name is not defined
+  * update to qos functionality
+  * detect match conflicts during commit
+  * use sudo to run ethtool
+  * if error occurs in qos processing display commands
+  * get dsmark working
+  * Add new options to set queue type and queue limit
+  * default scaling for bandwidth fix
+
+  [ Mark O'Brien ]
+
+ -- Mark O'Brien <mobrien@vyatta.com>  Mon, 25 Feb 2008 17:38:22 -0800
+
 vyatta-cfg-qos (0.1) unstable; urgency=low
 
   * Initial Release.
