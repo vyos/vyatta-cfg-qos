@@ -13,25 +13,26 @@ my @updateInterface = ();
 my @deleteInterface = ();
 my @updatePolicy = ();
 my $deletePolicy = undef;
-my $listName = undef;
+my $listPolicy = undef;
 my @validateName = ();
 
 GetOptions(
-    "list-policy"           => \$listName,
     "validate-name=s{2}"    => \@validateName,
     "update-interface=s{3}" => \@updateInterface,
     "delete-interface=s{2}" => \@deleteInterface,
+
+    "list-policy"           => \$listPolicy,
     "update-policy=s{2}"    => \@updatePolicy,
     "delete-policy=s"       => \$deletePolicy,
 );
 
 ## list defined qos policy names
-sub list_inuse {
+sub list_policy {
     my $config = new VyattaConfig;
     my @nodes  = ();
 
-    foreach my $policy ($config->listNodes($qosNode) ) {
-        foreach my $name ($config->listNodes("$qosNode $policy") ) {
+    foreach my $type ($config->listNodes($qosNode) ) {
+        foreach my $name ($config->listNodes("$qosNode $type") ) {
             push @nodes, $name;
         }
     }
@@ -141,8 +142,8 @@ sub update_policy {
     }
 }
 
-if ( defined $listName ) {
-    list_inuse();
+if ( defined $listPolicy ) {
+    list_policy();
     exit 0;
 }
 
