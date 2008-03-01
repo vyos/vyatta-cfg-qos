@@ -4,3 +4,6 @@ syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --dscp \"$VAR(@)\""
 comp_help: Differentiated Services Condepoint (DSCP) value
     <number>   decimal number (or 0x for hex)
 or  <name>     name from /etc/iproute2/rt_dsfield 
+allowed: awk '
+	/^#/ { next }
+	     { printf "%s ", $2 }' </etc/iproute2/rt_dsfield
