@@ -111,11 +111,13 @@ sub getDsfield {
     
     defined $str or return;
 
+    # match number (or hex)
     if ($str =~ /^([0-9]+)|(0x[0-9a-fA-F]+)$/) {
-	if ($str < 0 || $str > 255) {
-	    die "$str is not a valid dsfield value\n";
+	if ($str < 0 || $str > 63) {
+	    die "$str is not a valid dscp value\n";
 	}
-	return $str;
+	# convert DSCP value to header value used by iproute
+	return $str << 2;
     }
 
     open my $ds, '<', $dsFileName || die "Can't open $dsFileName, $!\n";
