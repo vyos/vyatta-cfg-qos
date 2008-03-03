@@ -1,2 +1,3 @@
 type: u32
+syntax:expression: ($VAR(@) > 1) : "Queue limit must greater than 1"
 help: Maximum queue size (packets)
