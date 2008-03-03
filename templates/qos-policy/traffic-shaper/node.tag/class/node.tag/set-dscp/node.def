@@ -1,10 +1,18 @@
 type: txt
 help: Change the Differentiated Services (DiffServ) field in the IP header
 syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --dscp \"$VAR(@)\""
-comp_help: New Differentiated Services Condepoint (DSCP) value
-    <number>   decimal number (or 0x for hex)
-or  <name>     name from /etc/iproute2/rt_dsfield 
 allowed: awk '
 	/^#/ { next }
 	     { printf "%s ", $2 }' </etc/iproute2/rt_dsfield
-
+comp_help: <0-63> Differentiated Services Codepoint (DSCP) value
+    default  	set dscp to (000000)
+    reliability	set dscp to (000001)
+    throughput	set dscp to (000010)
+    lowdelay	set dscp to (000100)
+    priority	set dscp to (001000)
+    immediate	set dscp to (010000)
+    flash       set dscp to (011000)
+    flash-override set dscp to  (100000)
+    critical 	set dscp to (101000)
+    internet	set dscp to (110000)
+    network	set dscp to (111000)

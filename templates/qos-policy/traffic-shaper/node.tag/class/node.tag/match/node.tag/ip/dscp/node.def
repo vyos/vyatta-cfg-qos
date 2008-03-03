@@ -1,9 +1,18 @@
 type: txt
 help: Match DSCP (formerly known as TOS) value
 syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --dscp \"$VAR(@)\""
-comp_help: Differentiated Services Condepoint (DSCP) value
-    <number>   decimal number (or 0x for hex)
-or  <name>     name from /etc/iproute2/rt_dsfield 
 allowed: awk '
 	/^#/ { next }
 	     { printf "%s ", $2 }' </etc/iproute2/rt_dsfield
+comp_help: <0-63> Differentiated Services Codepoint (DSCP) value
+    default  	match dscp (000000)
+    reliability	match dscp (000001)
+    throughput	match dscp (000010)
+    lowdelay	match dscp (000100)
+    priority	match dscp (001000)
+    immediate	match dscp (010000)
+    flash       match dscp (011000)
+    flash-override match dscp (100000)
+    critical 	match dscp (101000)
+    internet	match dscp (110000)
+    network	match dscp (111000)
