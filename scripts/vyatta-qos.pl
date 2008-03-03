@@ -12,18 +12,16 @@ my $debug = $ENV{'QOS_DEBUG'};
 my @updateInterface = ();
 my @deleteInterface = ();
 my @updatePolicy = ();
-my $deletePolicy = undef;
+my @deletePolicy = ();
 my $listPolicy = undef;
-my @validateName = ();
 
 GetOptions(
-    "validate-name=s{2}"    => \@validateName,
     "update-interface=s{3}" => \@updateInterface,
     "delete-interface=s{2}" => \@deleteInterface,
 
     "list-policy"           => \$listPolicy,
     "update-policy=s{2}"    => \@updatePolicy,
-    "delete-policy=s"       => \$deletePolicy,
+    "delete-policy=s{2}"    => \@deletePolicy,
 );
 
 ## list defined qos policy names
@@ -113,7 +111,7 @@ sub update_interface {
 }
 
 sub delete_policy {
-    my ( $name ) = @_;
+    my ($shaper, $name) = @_;
     my $config = new VyattaConfig;
 
     $config->setLevel("interfaces ethernet");
@@ -142,39 +140,34 @@ sub update_policy {
     }
 }
 
-if ( defined $listPolicy ) {
+if ( $listPolicy ) {
     list_policy();
     exit 0;
 }
 
-if ( $#validateName == 1) {
-    validate_name(@validateName);
-    exit 0;
-}
 
-if ( $#deleteInterface == 1 ) {
+if ( @deleteInterface ) {
     delete_interface(@deleteInterface);
     exit 0;
 }
 
-if ( $#updateInterface == 2 ) {
+if ( @updateInterface ) {
     update_interface(@updateInterface);
     exit 0;
 }
 
-if ( defined $deletePolicy ) {
-    delete_policy($deletePolicy);
+if ( @deletePolicy ) {
+    delete_policy(@deletePolicy);
     exit 0;
 }
 
-if ( $#updatePolicy == 1) {
+if ( @updatePolicy ) {
     update_policy(@updatePolicy);
     exit 0;
 }
 
 print <<EOF;
 usage: vyatta-qos.pl --list-policy
-       vyatta-qos.pl --validate-name policy-name
        vyatta-qos.pl --update-interface interface direction policy-name
        vyatta-qos.pl --delete-interface interface direction
        vyatta-qos.pl --update-policy policy-type policy-name

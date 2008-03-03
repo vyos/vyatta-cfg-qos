@@ -4,4 +4,4 @@ help: Configure traffic shaping based policy
 syntax:expression: pattern $VAR(@) "^[[:alnum:]][-[:alnum:]]*$"
                    ; "invalid qos-policy name $VAR(@)"
 update:expression: "/opt/vyatta/sbin/vyatta-qos.pl --update-policy $VAR(../@) $VAR(@)"
-delete:expression: "/opt/vyatta/sbin/vyatta-qos.pl --delete-policy $VAR(@)"
+delete:expression: "/opt/vyatta/sbin/vyatta-qos.pl --delete-policy $VAR(../@) $VAR(@)"
