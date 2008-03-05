@@ -203,12 +203,12 @@
 }
 
 package VyattaQosTrafficShaper;
-@ISA = qw/VyattaQosPolicy/;
 use strict;
 require VyattaConfig;
 use VyattaQosUtil;
 
 my %fields = (
+    _name	=> undef,
     _rate       => undef,
     _classes    => undef,
 );
@@ -216,11 +216,13 @@ my %fields = (
 # new VyattaQosTrafficShaper($config)
 # Create a new instance based on config information
 sub new {
-    my ( $that, $config ) = @_;
+    my ( $that, $config, $name ) = @_;
     my $self = {%fields};
     my $class = ref($that) || $that;
 
+
     bless $self, $class;
+    $self->{_name} = $name;
     $self->_define($config);
 
     return $self;

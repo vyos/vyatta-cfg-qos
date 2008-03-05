@@ -1,5 +1,4 @@
 package VyattaQosFairQueue;
-@ISA = qw/VyattaQosPolicy/;
 
 #
 # This is a wrapper around Stochastic Fair Queue(SFQ) queue discipline

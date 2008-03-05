@@ -2,7 +2,6 @@
 
 use lib "/opt/vyatta/share/perl5/";
 use VyattaConfig;
-use VyattaQosPolicy;
 use strict;
 
 use Getopt::Long;
@@ -13,6 +12,13 @@ my @deleteInterface = ();
 my @updatePolicy = ();
 my @deletePolicy = ();
 my $listPolicy = undef;
+
+# map from template name to perl object
+# TODO: subdirectory
+my %policies = (
+    'traffic-shaper' => "VyattaQosTrafficShaper",
+    'fair-queue'     => "VyattaQosFairQueue",
+);
 
 GetOptions(
     "update-interface=s{3}" => \@updateInterface,
@@ -45,7 +51,7 @@ sub delete_interface {
 
     if ($direction eq "out" ) {
         # delete old qdisc - will give error if no policy in place
-	qx(sudo tc qdisc del dev "$interface" root 2>/dev/null);
+	qx(sudo /sbin/tc qdisc del dev "$interface" root 2>/dev/null);
     }
 }
 
@@ -58,12 +64,16 @@ sub update_interface {
     ( $direction eq "out" ) or die "Only out direction supported";
 
     $config->setLevel('qos-policy');
-    foreach my $policy ( $config->listNodes() ) {
-        if ( $config->exists("$policy $name") ) {
-            $config->setLevel("qos-policy $policy $name");
+    foreach my $type ( $config->listNodes() ) {
+        if ( $config->exists("$type $name") ) {
+            $config->setLevel("qos-policy $type $name");
 
-            my $policy = VyattaQosPolicy->config( $config, $policy );
-            defined $policy or die "undefined policy";
+	    my $class = $policies{$type};
+	    # This means template exists but we don't know what it is.
+	    defined $class or die "Unknown policy type $type";
+
+	    require "$class.pm";
+	    my $shaper = $class->new($config, $name);
 
 	    # When doing debugging just echo the commands
 	    my $out;
@@ -71,19 +81,20 @@ sub update_interface {
 		open $out, '>-'
 		    or die "can't open stdout: $!";
 	    } else {
-		open $out, "|-" or exec qw/sudo tc -batch -/
+		open $out, "|-" or exec qw:sudo /sbin/tc -batch -:
 		    or die "Tc setup failed: $!\n";
 	    }
 
-            $policy->commands($out, $interface);
+            $shaper->commands($out, $interface);
 	    if (! close $out && ! defined $debug) {
+		# cleanup any partial commands
 		delete_interface($interface, $direction);
 
 		# replay commands to stdout
 		open $out, '>-';
-		$policy->commands($out, $interface);
+		$shaper->commands($out, $interface);
 		close $out;
-		die "Conversion of configuration to tc command error\n";
+		die "TC command failed.";
 	    }
             exit 0;
         }
