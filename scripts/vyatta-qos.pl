@@ -38,25 +38,6 @@ sub list_policy {
     print join( ' ', @nodes ), "\n";
 }
 
-## check if name is okay
-sub validate_name {
-    my ($policy, $name) = @_;
-    my $config = new VyattaConfig;
-
-    ($name =~ '^\w[\w_-]*$') or die "Invalid policy name $name\n";
-
-    foreach my $p ($config->listNodes($qosNode) ) {
-	if ($p ne $policy) {
-	    foreach my $n ($config->listNodes("$qosNode $policy") ) {
-		if ($n eq $name) {
-		    die "Name $name is already in use by $p\n";
-		}
-	    }
-	}
-    }
-}
-
-
 ## delete_interface('eth0', 'out')
 # remove all filters and qdisc's
 sub delete_interface {
