@@ -24,7 +24,7 @@ sub new {
     my $class = ref($that) || $that;
     my $self = {%fields};
 
-    $self->{_perturb} = $config->returnValue("rekey-interval");
+    $self->{_perturb} = $config->returnValue("hash-interval");
     $self->{_limit}   = $config->returnValue("queue-limit");
     return bless $self, $class;
 }
