@@ -7,7 +7,6 @@ use strict;
 
 use Getopt::Long;
 
-my $qosNode = 'qos-policy';
 my $debug = $ENV{'QOS_DEBUG'};
 my @updateInterface = ();
 my @deleteInterface = ();
@@ -29,8 +28,9 @@ sub list_policy {
     my $config = new VyattaConfig;
     my @nodes  = ();
 
-    foreach my $type ($config->listNodes($qosNode) ) {
-        foreach my $name ($config->listNodes("$qosNode $type") ) {
+    $config->setLevel('qos-policy');
+    foreach my $type ( $config->listNodes() ) {
+        foreach my $name ( $config->listNodes($type) ) {
             push @nodes, $name;
         }
     }
@@ -57,9 +57,10 @@ sub update_interface {
 
     ( $direction eq "out" ) or die "Only out direction supported";
 
-    foreach my $policy ( $config->listNodes($qosNode) ) {
-        if ( $config->exists("$qosNode $policy $name") ) {
-            $config->setLevel("$qosNode $policy $name");
+    $config->setLevel('qos-policy');
+    foreach my $policy ( $config->listNodes() ) {
+        if ( $config->exists("$policy $name") ) {
+            $config->setLevel("qos-policy $policy $name");
 
             my $policy = VyattaQosPolicy->config( $config, $policy );
             defined $policy or die "undefined policy";
@@ -88,7 +89,7 @@ sub update_interface {
         }
     }
 
-    die "Unknown $qosNode $name\n";
+    die "Unknown qos-policy $name\n";
 }
 
 sub delete_policy {
@@ -97,7 +98,7 @@ sub delete_policy {
 
     $config->setLevel("interfaces ethernet");
     foreach my $interface ( $config->listNodes() ) {
-	foreach my $direction ($config->listNodes("$interface qos-policy")) {
+	foreach my $direction ( $config->listNodes("$interface qos-policy") ) {
 	    if ($config->returnValue("$interface qos-policy $direction") eq $name) {
 		# can't delete active policy
 		die "Qos policy $name still in use on ethernet $interface $direction\n";
@@ -111,8 +112,8 @@ sub update_policy {
     my $config = new VyattaConfig;
 
     $config->setLevel("interfaces ethernet");
-    foreach my $interface ( $config->listNodes()) {
-	foreach my $direction ($config->listNodes("$interface qos-policy")) {
+    foreach my $interface ( $config->listNodes() ) {
+	foreach my $direction ( $config->listNodes("$interface qos-policy") ) {
 	    if ($config->returnValue("$interface qos-policy $direction") eq $name) {
 		delete_interface($interface, $direction);
 		update_interface($interface, $direction, $name);
