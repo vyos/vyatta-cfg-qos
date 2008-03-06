@@ -10,7 +10,6 @@ sbin_SCRIPTS += scripts/vyatta-qos.pl
 sbin_SCRIPTS += scripts/vyatta-qos-util.pl
 
 share_perl5_DATA += scripts/VyattaQosUtil.pm
-share_perl5_DATA += scripts/VyattaQosPolicy.pm
 share_perl5_DATA += scripts/VyattaQosFairQueue.pm
 share_perl5_DATA += scripts/VyattaQosTrafficShaper.pm
 share_perl5_DATA += scripts/VyattaQosMatch.pm
