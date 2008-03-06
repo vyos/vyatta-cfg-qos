@@ -40,7 +40,7 @@
 	my @matches = ();
 
         $self->{_rate}     = $config->returnValue("bandwidth");
-	defined $self->{_rate}  or die "Bandwidth not defined for class $id\n";
+	defined $self->{_rate}  or die "$level bandwidth not defined\n";
 
         $self->{_priority} = $config->returnValue("priority");
         $self->{_ceiling}  = $config->returnValue("ceiling");
@@ -85,13 +85,19 @@
 	my $ceil = _getPercentRate($self->{_ceiling}, $speed);
 
 	if ($rate > $speed) {
-	    die "Bandwidth for class $self->{id} ($rate) > total ($speed)\n";
+	    printf "policy bandwidth %dKbps < class bandwidth %dKbps\n",
+	    	$speed / 1000, $rate / 1000;
+	    return undef;
 	}
 
 	# create the class
         if (defined $ceil && $ceil < $rate) {
-	    die "Ceiling ($ceil) must be greater than bandwith ($rate)\n";
+	    printf "ceiling %dKbps < bandwidth %dKbps\n",
+	    	$ceil / 1000, $rate / 1000;
+	    return undef;
 	}
+
+	return !0;
     }
 
     sub prioQdisc {
@@ -208,7 +214,7 @@ require VyattaConfig;
 use VyattaQosUtil;
 
 my %fields = (
-    _name	=> undef,
+    _level	=> undef,
     _rate       => undef,
     _classes    => undef,
 );
@@ -220,9 +226,7 @@ sub new {
     my $self = {%fields};
     my $class = ref($that) || $that;
 
-
     bless $self, $class;
-    $self->{_name} = $name;
     $self->_define($config);
 
     return $self;
@@ -252,9 +256,10 @@ sub _define {
     my @classes = ( );
 
     $self->{_rate} = $config->returnValue("bandwidth");
+    $self->{_level} = $level;
 
     $config->exists("default")
-	or die "Configuration not complete: missing default class\n";
+	or die "$level configuration not complete: missing default class\n";
 
     # make sure no clash of different types of tc filters
     my %matchTypes = ();
@@ -271,7 +276,7 @@ sub _define {
 	while (my ($type, $usage) = each(%matchTypes)) {
 	    print "   class $usage $type\n";
 	}
-	die "Can't match on both ip and other types\n";
+	die "$level can not match on both ip and other types\n";
     }
 
 
@@ -291,11 +296,18 @@ sub commands {
     my $rate = _getAutoRate($self->{_rate}, $dev);
     my $classes = $self->{_classes};
     my %dsmark = ();
-
+    my $default = shift @$classes;
     my $maxid = 1;
+
+    if (! $default->rateCheck($rate) ) {
+	die "$self->{_level} default : invalid parameter\n";
+    }
+
     foreach my $class (@$classes) {
 	# rate constraints
-	$class->rateCheck($rate);
+	if (! $class->rateCheck($rate) ) {
+	    die "$self->{_level} class $class->{id} : invalid parameter\n";
+	}
 
 	# find largest class id
 	if (defined $class->{id} && $class->{id} > $maxid) {
@@ -304,7 +316,6 @@ sub commands {
     }
 
     # fill in id of default
-    my $default = shift @$classes;
     $default->{id} = ++$maxid;
     unshift @$classes, $default;
 
