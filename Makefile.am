@@ -1,9 +1,7 @@
 cfgdir = $(datadir)/vyatta-cfg/templates
 share_perl5dir = /opt/vyatta/share/perl5
 
-bin_SCRIPTS =
 sbin_SCRIPTS =
-sysconf_DATA =
 share_perl5_DATA =
 
 sbin_SCRIPTS += scripts/vyatta-qos.pl
