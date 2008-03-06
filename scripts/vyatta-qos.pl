@@ -7,27 +7,47 @@ use strict;
 use Getopt::Long;
 
 my $debug = $ENV{'QOS_DEBUG'};
+my $check = undef;
 my @updateInterface = ();
 my @deleteInterface = ();
-my @updatePolicy = ();
-my @deletePolicy = ();
-my $listPolicy = undef;
 
-# map from template name to perl object
-# TODO: subdirectory
-my %policies = (
-    'traffic-shaper' => "VyattaQosTrafficShaper",
-    'fair-queue'     => "VyattaQosFairQueue",
-);
+my $listPolicy = undef;
+my $deletePolicy = undef;
+my @createPolicy = ();
+my @updatePolicy = ();
 
 GetOptions(
+    "check"		    => \$check,
     "update-interface=s{3}" => \@updateInterface,
     "delete-interface=s{2}" => \@deleteInterface,
 
     "list-policy"           => \$listPolicy,
+    "delete-policy=s"       => \$deletePolicy,
+    "create-policy=s{2}"    => \@createPolicy,
     "update-policy=s{2}"    => \@updatePolicy,
-    "delete-policy=s{2}"    => \@deletePolicy,
 );
+
+# class factory for policies
+# TODO use hierarcy (ie VyattaQos::TrafficShaper)
+#      and reference to object, not string dynamic binding
+my %policies = (
+    'traffic-shaper' => "VyattaQosTrafficShaper",
+    'fair-queue'     => "VyattaQosFairQueue",
+);
+use VyattaQosTrafficShaper;
+use VyattaQosFairQueue;
+
+sub make_policy {
+    my ($config, $type, $name) = @_;
+    my $class = $policies{$type};
+
+    # This means template exists but we don't know what it is.
+    defined $class or die "Unknown policy type $type";
+
+    $config->setLevel("qos-policy $type $name");
+
+    return $class->new($config, $name);
+}
 
 ## list defined qos policy names
 sub list_policy {
@@ -66,14 +86,7 @@ sub update_interface {
     $config->setLevel('qos-policy');
     foreach my $type ( $config->listNodes() ) {
         if ( $config->exists("$type $name") ) {
-            $config->setLevel("qos-policy $type $name");
-
-	    my $class = $policies{$type};
-	    # This means template exists but we don't know what it is.
-	    defined $class or die "Unknown policy type $type";
-
-	    require "$class.pm";
-	    my $shaper = $class->new($config, $name);
+	    my $shaper = make_policy($config, $type, $name);
 
 	    # When doing debugging just echo the commands
 	    my $out;
@@ -104,7 +117,7 @@ sub update_interface {
 }
 
 sub delete_policy {
-    my ($shaper, $name) = @_;
+    my ($name) = @_;
     my $config = new VyattaConfig;
 
     $config->setLevel("interfaces ethernet");
@@ -118,9 +131,34 @@ sub delete_policy {
     }
 }
 
+sub check_conflict {
+    my $config = new VyattaConfig;
+    my %other = ();
+
+    $config->setLevel("qos-policy");
+    foreach my $type ( $config->listNodes() ) {
+	foreach my $name ( $config->listNodes($type) ) {
+	    my $conflict = $other{$name};
+	    die "Policy $name used by $conflict and $type\n" if ($conflict);
+	    $other{$name} = $type;
+	}
+    }
+}
+
+sub create_policy {
+    my ($shaper, $name) = @_;
+    my $config = new VyattaConfig;
+
+    # Syntax check
+    make_policy($config, $shaper, $name);
+}
+
 sub update_policy {
     my ($shaper, $name) = @_;
     my $config = new VyattaConfig;
+
+    # Syntax check
+    make_policy($config, $shaper, $name);
 
     $config->setLevel("interfaces ethernet");
     foreach my $interface ( $config->listNodes() ) {
@@ -133,37 +171,49 @@ sub update_policy {
     }
 }
 
+if ($check) {
+    check_conflict();
+    exit 0;
+}
+
 if ( $listPolicy ) {
     list_policy();
     exit 0;
 }
 
-
-if ( @deleteInterface ) {
+if ( $#deleteInterface == 1 ) {
     delete_interface(@deleteInterface);
     exit 0;
 }
 
-if ( @updateInterface ) {
+if ( $#updateInterface == 2 ) {
     update_interface(@updateInterface);
     exit 0;
 }
 
-if ( @deletePolicy ) {
-    delete_policy(@deletePolicy);
+if ( $#createPolicy == 1) {
+    create_policy(@createPolicy);
     exit 0;
 }
 
-if ( @updatePolicy ) {
+if ( $#updatePolicy == 1) {
     update_policy(@updatePolicy);
     exit 0;
 }
 
+if ( $deletePolicy ) {
+    delete_policy($deletePolicy);
+    exit 0;
+}
+
 print <<EOF;
-usage: vyatta-qos.pl --list-policy
+usage: vyatta-qos.pl --check
+       vyatta-qos.pl --list-policy
+       vyatta-qos.pl --create-policy policy-type policy-name
+       vyatta-qos.pl --delete-policy policy-name
+       vyatta-qos.pl --update-policy policy-type policy-name
        vyatta-qos.pl --update-interface interface direction policy-name
        vyatta-qos.pl --delete-interface interface direction
-       vyatta-qos.pl --update-policy policy-type policy-name
-       vyatta-qos.pl --delete-policy policy-type policy-name
+
 EOF
 exit 1;
