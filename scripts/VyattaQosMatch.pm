@@ -51,7 +51,7 @@ sub filter {
 	return;
     }
 
-    print {$out} "filter add dev $dev parent $parent:0 prio 1";
+    printf {$out} "filter add dev $dev parent %x:0 prio 1", $parent;
     if (defined $ip) {
 	print {$out} " protocol ip u32";
 	print {$out} " match ip dsfield $$ip{dsfield} 0xff"

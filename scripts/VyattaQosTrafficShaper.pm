@@ -48,13 +48,20 @@
 	$self->{_limit}	   = $config->returnValue("queue-limit");
 	$self->{_qdisc}    = $config->returnValue("queue-type");
 
-        $self->{dsmark} = VyattaQosUtil::getDsfield($config->returnValue("set-dscp"));
+        $self->{dsmark} =
+	    VyattaQosUtil::getDsfield($config->returnValue("set-dscp"));
 
 	foreach my $match ($config->listNodes("match")) {
             $config->setLevel("$level match $match");
 	    push @matches, new VyattaQosMatch($config);
         }
 	$self->{_match}    = \@matches;
+    }
+
+    sub matchRules {
+	my ($self) = @_;
+	my $matches = $self->{_match};
+	return @$matches;
     }
 
     sub _getPercentRate {
@@ -187,11 +194,6 @@
 	} else {
 	    die "Unknown queue type $self->{_qdisc}\n";
         }
-
-	my $matches = $self->{_match};
-	foreach my $match (@$matches) {
-	    $match->filter( $out, $dev, $parent, $self->{id} );
-        }
     }
 
     sub dsmarkClass {
@@ -199,6 +201,7 @@
 
 	printf ${out} "class change dev %s classid %x:%x dsmark", 
 		$dev, $parent, $self->{id};
+
 	if ($self->{dsmark}) {
 	    print ${out} " mask 0 value $self->{dsmark}\n";
 	} else {
@@ -342,8 +345,15 @@ sub commands {
 	    . " indices $indices default_index $default->{id}\n";
 
 	foreach my $class (@$classes) {
-	    $class->dsmarkClass($out, "1", $dev);
+	    $class->dsmarkClass($out, 1, $dev);
+	   
+	    if ($class->{dsmark}) {
+		foreach my $match ($class->matchRules()) {
+		    $match->filter($out, $dev, 1, $class->{id});
+		}
+	    }
 	}
+
 	$parent = $indices + 1;
 	$root = "parent 1:1"
     }
@@ -355,6 +365,11 @@ sub commands {
 
     foreach my $class (@$classes) {
         $class->htbClass($out, $dev, $parent, $rate);
+
+	foreach my $match ($class->matchRules()) {
+	    $match->filter($out, $dev, $parent, $class->{id});
+        }
+
     }
 }
 
