@@ -88,6 +88,9 @@ sub update_interface {
         if ( $config->exists("$type $name") ) {
 	    my $shaper = make_policy($config, $type, $name);
 
+	    # Remove old policy
+	    delete_interface($interface, $direction);
+
 	    # When doing debugging just echo the commands
 	    my $out;
 	    if (defined $debug) {
@@ -163,10 +166,8 @@ sub update_policy {
     $config->setLevel("interfaces ethernet");
     foreach my $interface ( $config->listNodes() ) {
 	foreach my $direction ( $config->listNodes("$interface qos-policy") ) {
-	    if ($config->returnValue("$interface qos-policy $direction") eq $name) {
-		delete_interface($interface, $direction);
+	    if ($config->returnValue("$interface qos-policy $direction") eq $name)
 		update_interface($interface, $direction, $name);
-	    }
 	}
     }
 }
