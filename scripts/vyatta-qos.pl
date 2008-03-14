@@ -180,8 +180,9 @@ sub update_policy {
     $config->setLevel("interfaces ethernet");
     foreach my $interface ( $config->listNodes() ) {
 	foreach my $direction ( $config->listNodes("$interface qos-policy") ) {
-	    if ($config->returnValue("$interface qos-policy $direction") eq $name)
+	    if ($config->returnValue("$interface qos-policy $direction") eq $name) {
 		update_interface($interface, $direction, $name);
+	    }
 	}
     }
 }
