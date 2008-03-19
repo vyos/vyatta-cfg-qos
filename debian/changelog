@@ -1,3 +1,45 @@
+vyatta-cfg-qos (0.3) unstable; urgency=low
+
+  3.0.1
+  [ Mark O'Brien ]
+
+
+  [ Stephen Hemminger ]
+  * remove leftover template for default/queue
+  * cleanup variable names for clarity
+  * auto-completion for qos-policies
+  * autocompletion for dscp field names
+  * DSCP values should be scaled
+  * Show DSCP field values
+  * change syntax checks for policy name
+  * QOS perl script policy management changes
+  * validate queue-limit syntax
+  * remove dead code in qos script
+  * fix parsing problems during update
+  * add QOS support for serial
+  * Better help message for class identifier
+  * Fix syntax checking for queue-limit
+  * fix handling of hash-interval
+  * use object factory rather than hardcoded switch for policy config
+  * better error messages for configuration problems
+  * better syntax/semantic checking of qos-policy
+  * syntax fix for fair-queue/queue-limit
+  * fix filtering rules when using set-dscp
+  * clear old policy before applying new QOS
+  * tab completion for protocol values
+  * Replace VLP with GPLv2
+  * Update copyright to GPLv2
+  * add license text to scripts
+  * fix script problem when updating interface
+
+  [ rbalocca ]
+  * Fix build problem
+  * Remove empty directories from the debian package
+
+  [ Mark O'Brien ]
+
+ -- Mark O'Brien <mobrien@vyatta.com>  Tue, 18 Mar 2008 19:03:39 -0700
+
 vyatta-cfg-qos (0.2) unstable; urgency=low
 
   vc4.0.0
