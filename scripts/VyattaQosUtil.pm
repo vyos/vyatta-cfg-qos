@@ -198,11 +198,10 @@ sub interfaceRate {
 ## ethtoolRate("eth0")
 # Fetch actual rate using ethtool and format to valid tc rate
 sub ethtoolRate {
-    my ($dev) = @_;
+    my $dev = shift;
     my $rate = undef;
 
-    open my $ethtool, "-|" 
-	or exec 'sudo', 'ethtool', $dev
+    open(my $ethtool, "/usr/sbin/ethtool $dev 2>&1 |")
  	or die "ethtool failed: $!\n";
 
     # ethtool produces:
