@@ -16,19 +16,18 @@
 # **** End License ****
 
 package VyattaQosUtil;
+use POSIX;
 require Exporter;
-@EXPORT	= qw/getRate getBurstSize getProtocol getDsfield getIfIndex interfaceRate/;
+@EXPORT	= qw/getRate getSize getProtocol getDsfield getIfIndex interfaceRate/;
 use strict;
 
 sub get_num  {
-    use POSIX qw(strtod);
     my ($str) = @_;
-    $str =~s/^\s+//;
-    $str =~s/\s+$//;
-
+    
+    # clear errno
     $! = 0;
-    my ($num, $unparsed) = strtod($str);
-    if (($unparsed == length($str)) || $!) {
+    my ($num, $unparsed) = POSIX::strtod($str);
+    if (($str eq '') || $!) {
 	return;	# undefined (bad input)
     }
 
@@ -39,80 +38,68 @@ sub get_num  {
 ## get_rate("10mbit")
 # convert rate specification to number
 # from tc/tc_util.c
-
-my %rates = (
-    'bit'	=> 1,
-    'kibit'	=> 1024,
-    'kbit'	=> 1000.,
-    'mibit'	=> 1048576.,
-    'mbit'	=> 1000000.,
-    'gibit'	=> 1073741824.,
-    'gbit'	=> 1000000000.,
-    'tibit'	=> 1099511627776.,
-    'tbit'	=> 1000000000000.,
-    'bps'	=> 8.,
-    'kibps'	=> 8192.,
-    'kbps'	=> 8000.,
-    'mibps'	=> 8388608.,
-    'mbps'	=> 8000000.,
-    'gibps'	=> 8589934592.,
-    'gbps'	=> 8000000000.,
-    'tibps'	=> 8796093022208.,
-    'tbps'	=> 8000000000000.,
-);
-
 sub getRate {
     my $rate = shift;
     my ($num, $suffix) = get_num($rate);
 
-    defined $num
-	or die "$rate is not a valid bandwidth (not a number)\n";
-    ($num >= 0)
-	or die "$rate is not a valid bandwidth (negative value)\n";
+    defined $num or die "Invald bandwith string: $rate\n";
 
     if (defined $suffix) {
-	my $scale = $rates{lc $suffix};
+      SWITCH: {
+	  ($suffix eq 'bit')	&& do { last SWITCH; };
+	  ($suffix eq 'kibit')	&& do { $num *= 1024.; last SWITCH };
+	  ($suffix eq 'kbit')	&& do { $num *= 1000.,; last SWITCH; };
+	  ($suffix eq 'mibit')	&& do { $num *= 1048576.,; last SWITCH; };
+	  ($suffix eq 'mbit')	&& do { $num *= 1000000.,; last SWITCH; };
+	  ($suffix eq 'gibit')	&& do { $num *= 1073741824.,; last SWITCH; };
+	  ($suffix eq 'gbit')	&& do { $num *= 1000000000.,; last SWITCH; };
+	  ($suffix eq 'tibit')	&& do { $num *= 1099511627776.,; last SWITCH; };
+	  ($suffix eq 'tbit')	&& do { $num *= 1000000000000.,; last SWITCH; };
+	  ($suffix eq 'bps')	&& do { $num *= 8.,; last SWITCH; };
+	  ($suffix eq 'kibps')	&& do { $num *= 8192.,; last SWITCH; };
+	  ($suffix eq 'kbps')	&& do { $num *= 8000.,; last SWITCH; };
+	  ($suffix eq 'mibps')	&& do { $num *= 8388608.,; last SWITCH; };
+	  ($suffix eq 'mbps')	&& do { $num *= 8000000.,; last SWITCH; };
+	  ($suffix eq 'gibps')	&& do { $num *= 8589934592.,; last SWITCH; };
+	  ($suffix eq 'gbps')	&& do { $num *= 8000000000.,; last SWITCH; };
+	  ($suffix eq 'tibps')	&& do { $num *= 8796093022208.,; last SWITCH; };
+	  ($suffix eq 'tbps')	&& do { $num *= 8000000000000.,; last SWITCH; };
 
-	if (defined $scale) {
-	    return $num * $scale;
+	  die "Unknown bandwidth suffix \"$suffix\"\n";
 	}
-
-	die "$rate is not a valid bandwidth (unknown scale suffix)\n";
     } else {
 	# No suffix implies Kbps just as IOS
-	return $num * 1000;
+	$num *= 1000;
     }
+    
+    ($num >= 0) or die "Negative bandwidth not allowed\n";
+    return $num;
 }
 
-my %scales = (
-    'b'		=> 1,
-    'k'		=> 1024,
-    'kb'	=> 1024,
-    'kbit'	=> 1024/8,
-    'm'		=> 1024*1024,
-    'mb'	=> 1024*1024,
-    'mbit'	=> 1024*1024/8,
-    'g'		=> 1024*1024*1024, 
-    'gb'	=> 1024*1024*1024,
-);
-
-sub getBurstSize {
+sub getSize {
     my $size = shift;
     my ($num, $suffix) = get_num($size);
 
-    defined $num 
-	or die "$size is not a valid burst size (not a number)\n";
-
-    ($num >= 0)
-	or die "$size is not a valid burst size (negative value)\n";
+    defined $num or die "Invald size string: $size\n";
 
     if (defined $suffix) {
-	my $scale = $scales{lc $suffix};
-	defined $scale or
-	    die "$size is not a valid burst size (unknown scale suffix)\n";
-	$num *= $scale;
+      SWITCH: {
+	  ($suffix eq 'b')		&& do { $num *= 1.,; last SWITCH; };
+	  ($suffix eq 'k')		&& do { $num *= 1024.,; last SWITCH; };
+	  ($suffix eq 'kb')		&& do { $num *= 1024.,; last SWITCH; };
+	  ($suffix eq 'kbit')	&& do { $num *= 128.,; last SWITCH; };
+	  ($suffix eq 'm')		&& do { $num *= 1048576.,; last SWITCH; };
+	  ($suffix eq 'mb')		&& do { $num *= 1048576.,; last SWITCH; };
+	  ($suffix eq 'mbit')	&& do { $num *= 131072.,; last SWITCH; };
+	  ($suffix eq 'g')		&& do { $num *= 1073741824.,; last SWITCH; };
+	  ($suffix eq 'gb')		&& do { $num *= 1073741824.,; last SWITCH; };
+	  ($suffix eq 'gbit')	&& do { $num *= 134217728.,; last SWITCH; };
+	  
+	  die "Unknown suffix suffix \"$suffix\"\n";
+	}
     }
-
+    
+    $num >= 0 or  die "Negative size not allowed\n";
     return $num;
 }
 
@@ -144,7 +131,7 @@ sub getDsfield {
     # match number (or hex)
     if ($str =~ /^([0-9]+)|(0x[0-9a-fA-F]+)$/) {
 	if ($str < 0 || $str > 63) {
-	    die "$str is not a valid DSCP value\n";
+	    die "$str is not a valid dscp value\n";
 	}
 	# convert DSCP value to header value used by iproute
 	return $str << 2;
@@ -162,7 +149,7 @@ sub getDsfield {
     }
     close($ds) or die "read $dsFileName error\n";
     
-    (defined $match) or die "\"$str\" unknown DSCP value\n";
+    (defined $match) or die "\"$str\" unknown dsfield value\n";
     return $match;
 }
 
@@ -198,10 +185,11 @@ sub interfaceRate {
 ## ethtoolRate("eth0")
 # Fetch actual rate using ethtool and format to valid tc rate
 sub ethtoolRate {
-    my $dev = shift;
+    my ($dev) = @_;
     my $rate = undef;
 
-    open(my $ethtool, "/usr/sbin/ethtool $dev 2>&1 |")
+    open my $ethtool, "-|" 
+	or exec 'sudo', 'ethtool', $dev
  	or die "ethtool failed: $!\n";
 
     # ethtool produces:
