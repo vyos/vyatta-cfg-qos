@@ -36,7 +36,7 @@ if ( defined $rate ) {
 }
 
 if ( defined $burst ) {
-    my $b = VyattaQosUtil::getBurstSize($burst);
+    my $b = VyattaQosUtil::getSize($burst);
     exit 0;
 }
 
