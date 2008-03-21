@@ -7,13 +7,16 @@ Standards-Version: 3.7.2
 
 Package: vyatta-cfg-qos
 Architecture: all
-Depends: bash (>= 3.1),
- sed (>= 4.1.5),
+Depends: sed (>= 4.1.5),
  perl (>= 5.8.8),
  procps (>= 1:3.2.7-3),
  coreutils (>= 5.97-5.3),
- vyatta-cfg, sudo,
- vyatta-bash, bridge-utils, vyatta-iproute, ethtool
+ vyatta-cfg,
+ vyatta-bash,
+ vyatta-iproute,
+ sudo,
+ bridge-utils, 
+ ethtool
 Suggests: util-linux (>= 2.13-5),
  net-tools,
 Description: Vyatta Qos configuration templates/scripts
