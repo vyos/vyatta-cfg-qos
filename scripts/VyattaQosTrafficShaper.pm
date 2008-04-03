@@ -193,6 +193,7 @@
 	printf ${out} "class add dev %s parent %x:1 classid %x:%x htb rate %s",
 	    $dev, $parent, $parent, $self->{id}, $rate;
 
+	print ${out} " ceil $self->{_ceiling}"  if ( defined $self->{_ceiling} );
 	print ${out} " burst $self->{_burst}"   if ( defined $self->{_burst} );
 	print ${out} " prio $self->{_priority}" if ( defined $self->{_priority} );
 	print {$out} "\n";
