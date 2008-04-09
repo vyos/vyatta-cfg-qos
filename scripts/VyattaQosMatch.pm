@@ -88,5 +88,5 @@ sub filter {
 	print {$out} " match meta\(vlan mask 0xfff eq $vif\)"
 	    if (defined $vif);
     }
-    print {$out} " classid $parent:$id\n";
+    printf {$out} " classid $parent:%x\n", $id;
 }
