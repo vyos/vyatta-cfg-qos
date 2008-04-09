@@ -1,5 +1,5 @@
 type: txt
-help: Match IP protocol name or number
+help: Set IP protocol name or number for this match
 syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --protocol \"$VAR(@)\"" 
 allowed: awk '
 	/^#/ { next }
@@ -7,7 +7,7 @@ allowed: awk '
 comp_help: <0-255> IP protocol value or name
 Common names:
 	icmp	 Internet Control Message Protocol
-	igmp	 Internet Group Management
+	igmp	 Internet Group Management Protocol
 	ggp	 Gateway-Gateway protocol
 	tcp	 Transmission Control Protocol
 	egp	 Exterior Gateway Protocol

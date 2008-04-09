@@ -4,6 +4,6 @@ syntax:expression: exec "[[ \"$VAR(@)\" =~  '^[0-9]+(\.[0-9]*)?%$' ]] || \
 	      /opt/vyatta/sbin/vyatta-qos-util.pl --rate \"$VAR(@)\""
 comp_help: Allowed values:
  <number>          Limit in Kbps
- <number>%%         Percentage of overall rate
+ <number>%%        Percentage of overall rate
  <number><suffix>  Value with scaling suffix
                    bits per sec (kbit, mbit, gbit)

@@ -1,2 +1,2 @@
 type: u32
-help: Rehash interval (seconds)
+help: Set rehash interval (seconds)

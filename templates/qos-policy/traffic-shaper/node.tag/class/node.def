@@ -1,6 +1,6 @@
 tag:
 type: u32
-help: Configure class handle
+help: Set class handle
 syntax:expression: $VAR(@) > 1 && $VAR(@) < 4096; "Class identifier must be between 3 and 4095"
 comp_help: possible completions
  <2-4095>	Class ID
