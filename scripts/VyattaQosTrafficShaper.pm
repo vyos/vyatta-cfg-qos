@@ -102,24 +102,21 @@
     }
 
     sub rateCheck {
-	my ($self, $speed) = @_;
-        my $rate = _getPercentRate($self->{_rate}, $speed);
-	my $ceil = _getPercentRate($self->{_ceiling}, $speed);
+	my ($self, $limit, $level) = @_;
 
-	if ($rate > $speed) {
-	    printf "policy bandwidth %dKbps < class bandwidth %dKbps\n",
-	    	$speed / 1000, $rate / 1000;
-	    return undef;
+        my $rate = _getPercentRate($self->{_rate}, $limit);
+	if ($rate > $limit) {
+	    printf STDERR
+		"Warning: $level\nbandwidth %dKbps > overall bandwidth %dKbps\n",
+		$rate / 1000, $limit / 1000;
 	}
 
-	# create the class
+	my $ceil = _getPercentRate($self->{_ceiling}, $limit);
         if (defined $ceil && $ceil < $rate) {
-	    printf "ceiling %dKbps < bandwidth %dKbps\n",
+	    printf STDERR
+		"Warning: $level\nceiling %dKbps < class bandwidth %dKbps\n",
 	    	$ceil / 1000, $rate / 1000;
-	    return undef;
 	}
-
-	return !0;
     }
 
     sub prioQdisc {
@@ -196,6 +193,7 @@
 	printf ${out} "class add dev %s parent %x:1 classid %x:%x htb rate %s",
 	    $dev, $parent, $parent, $self->{id}, $rate;
 
+	print ${out} " ceil $self->{_ceiling}"  if ( defined $self->{_ceiling} );
 	print ${out} " burst $self->{_burst}"   if ( defined $self->{_burst} );
 	print ${out} " prio $self->{_priority}" if ( defined $self->{_priority} );
 	print {$out} "\n";
@@ -317,15 +315,10 @@ sub commands {
     my $default = shift @$classes;
     my $maxid = 1;
 
-    if (! $default->rateCheck($rate) ) {
-	die "$self->{_level} default : invalid parameter\n";
-    }
+    $default->rateCheck($rate, "$self->{_level} default");
 
     foreach my $class (@$classes) {
-	# rate constraints
-	if (! $class->rateCheck($rate) ) {
-	    die "$self->{_level} class $class->{id} : invalid parameter\n";
-	}
+	$class->rateCheck($rate, "$self->{_level} class $class->{id}");
 
 	# find largest class id
 	if (defined $class->{id} && $class->{id} > $maxid) {
