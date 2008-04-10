@@ -124,7 +124,7 @@
 	my $prio_id = 0x4000 + $self->{id};
 	my $limit = $self->{_limit};
 
-	print {$out} "handle $prio_id: prio\n";
+	printf {$out} "handle %x: prio\n", $prio_id;
 
 	if ($limit) {
 	    foreach my $i (qw/1 2 3/) {
