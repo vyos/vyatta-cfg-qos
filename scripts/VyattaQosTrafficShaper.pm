@@ -255,7 +255,7 @@ sub _getAutoRate {
     if ( $rate eq "auto" ) {
         $rate = VyattaQosUtil::interfaceRate($dev);
         if ( ! defined $rate ) {
-	    die "Interface speed defined as auto but can't get rate from $dev\n";
+	    die "Interface $dev speed cannot be determined; use explicit bandwidth value\n";
 	}
     } else {
 	$rate = VyattaQosUtil::getRate($rate);
