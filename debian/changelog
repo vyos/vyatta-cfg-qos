@@ -1,3 +1,22 @@
+vyatta-cfg-qos (0.5) unstable; urgency=low
+
+  VC4.0.2
+  [ Mark O'Brien ]
+
+
+  [ Stephen Hemminger ]
+  * allow qos over vlan
+  * Allow qos over vlan
+  * Fix match rule formatting
+  * fix bug with interpretation of ceiling
+  * fix QoS traffic shaper priority-queue setup
+  * change error message when speed can not be determined
+  * Limit Qos priority values
+
+  [ Mark O'Brien ]
+
+ -- Mark O'Brien <mobrien@vyatta.com>  Wed, 16 Apr 2008 09:49:56 -0700
+
 vyatta-cfg-qos (0.4) unstable; urgency=low
 
   3.0.2
