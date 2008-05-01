@@ -1,0 +1,5 @@
+type: txt
+help: Set outbound QOS policy for specified ethernet interface
+allowed: /opt/vyatta/sbin/vyatta-qos.pl --list-policy
+update: /opt/vyatta/sbin/vyatta-qos.pl --update-interface pppoe$VAR(../../@) $VAR(.) $VAR(@)
+delete: /opt/vyatta/sbin/vyatta-qos.pl --delete-interface pppoe$VAR(../../@) $VAR(.)
