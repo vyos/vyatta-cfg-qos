@@ -113,8 +113,7 @@
 
 	my $ceil = _getPercentRate($self->{_ceiling}, $limit);
         if (defined $ceil && $ceil < $rate) {
-	    printf STDERR
-		"Warning: $level\nceiling %dKbps < class bandwidth %dKbps\n",
+	    die "$level\nceiling %dKbps < class bandwidth %dKbps\n",
 	    	$ceil / 1000, $rate / 1000;
 	}
     }
