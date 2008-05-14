@@ -50,7 +50,7 @@
     }
 
     sub _define {
-        my ( $self, $config, $id ) = @_;
+        my ( $self, $config ) = @_;
 	my $level = $config->setLevel();
 	my @matches = ();
 
