@@ -47,9 +47,11 @@ GetOptions(
 my %policies = (
     'traffic-shaper' => "VyattaQosTrafficShaper",
     'fair-queue'     => "VyattaQosFairQueue",
+    'rate-limit'     => "VyattaQosRateLimiter",
 );
 use VyattaQosTrafficShaper;
 use VyattaQosFairQueue;
+use VyattaQosRateLimiter;
 
 sub make_policy {
     my ($config, $type, $name) = @_;

@@ -1,0 +1,7 @@
+type: txt
+syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --time \"$VAR(@)\""
+default: "50ms"
+help: Set maximum latency
+comp_help: Limit on the queue size based on latency
+  <number>         Latency in milliseconds
+  <number><suffix> Time with suffx (secs, ms, us)

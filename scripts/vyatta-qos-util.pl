@@ -28,6 +28,7 @@ GetOptions(
     "protocol=s" => \$protocol,
     "dscp=s"	 => \$dsfield,
     "tos=s"	 => \$dsfield,
+    "time=s"	 => \$time,
 );
 
 if ( defined $rate ) {
@@ -50,8 +51,14 @@ if ( defined $dsfield ) {
     exit 0;
 }
 
+if ( defined $time ) {
+    my $t = VyattaQosUtil::getTime($time);
+    exit 0;
+}
+
 print <<EOF;
 usage: vyatta-qos-util.pl --rate rate
+       vyatta-qos-util.pl --time time
        vyatta-qos-util.pl --burst size
        vyatta-qos-util.pl --protocol protocol
        vyatta-qos-util.pl --dscp tos|dsfield

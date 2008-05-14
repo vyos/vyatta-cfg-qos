@@ -84,6 +84,44 @@ sub getRate {
     }
 }
 
+# Default time units for tc are usec.
+my %timeunits = (
+    's'		=> 1000000,
+    'sec'	=> 1000000,
+    'secs'	=> 1000000,
+    'ms'	=> 1000,
+    'msec'	=> 1000,
+    'msecs'	=> 1000,
+    'us'	=> 1,
+    'usec'	=> 1,
+    'usecs'	=> 1,
+);
+
+sub getTime {
+    my $time = shift;
+    my ($num, $suffix) = get_num($time);
+
+    defined $num
+	or die "$time is not a valid time interval (not a number)\n";
+    ($num >= 0)
+	or die "$time is not a valid time interval (negative value)\n";
+
+    if (defined $suffix) {
+	my $scale = $timeunits{lc $suffix};
+
+	if (defined $scale) {
+	    return $num * $scale;
+	}
+
+	die "$time is not a valid time interval (unknown suffix)\n";
+    } else {
+	# No suffix implies ms
+	return $num * 1000;
+    }
+}
+
+
+
 my %scales = (
     'b'		=> 1,
     'k'		=> 1024,
