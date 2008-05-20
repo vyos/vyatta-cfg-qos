@@ -12,6 +12,7 @@
 /debian/files
 /debian/vyatta-cfg-qos.postinst
 /debian/vyatta-cfg-qos
+/debian/vyatta-cfg-qos.debhelper.log
 /INSTALL
 /Makefile.in
 /Makefile
