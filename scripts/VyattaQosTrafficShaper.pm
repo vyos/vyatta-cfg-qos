@@ -341,6 +341,7 @@ sub commands {
     my $parent = 1;
     my $root = "root";
 
+    # if we need to change dsfield values, then put dsmark in front
     if ($usedsmark) {
 	# dsmark max index must be power of 2
 	my $indices = $maxid + 1;
@@ -374,9 +375,8 @@ sub commands {
         $class->htbClass($out, $dev, $parent, $rate);
 
 	foreach my $match ($class->matchRules()) {
-	    $match->filter($out, $dev, $parent, $class->{id});
+	    $match->filter($out, $dev, 1, $class->{id});
         }
-
     }
 }
 
