@@ -56,7 +56,7 @@ sub _define {
 }
 
 sub filter {
-    my ( $self, $out, $dev, $parent, $id ) = @_;
+    my ( $self, $out, $dev, $parent, $id, $dsmark ) = @_;
     my $ip = $self->{_ip};
     my $indev = $self->{_dev};
     my $vif = $self->{_vif};
@@ -66,7 +66,17 @@ sub filter {
 	return;
     }
 
-    printf {$out} "filter add dev $dev parent %x:0 prio 1", $parent;
+    # Special case for when dsmarking is used with ds matching
+    # original dscp is saved in tc_index
+    if (defined $dsmark && defined $ip && defined $$ip{dsfield}) {
+	printf {$out} "filter add dev %s parent %x:0 protocol ip prio 1",
+		$dev, $parent;
+	printf ${out} " handle %d tcindex classid %x:%x\n",
+		$$ip{dsfield}, $parent, $id;
+	return;
+    }
+
+    printf {$out} "filter add dev %s parent %x:0 prio 1", $dev, $parent;
     if (defined $ip) {
 	print {$out} " protocol ip u32";
 	print {$out} " match ip dsfield $$ip{dsfield} 0xff"
@@ -88,5 +98,5 @@ sub filter {
 	print {$out} " match meta\(vlan mask 0xfff eq $vif\)"
 	    if (defined $vif);
     }
-    printf {$out} " classid $parent:%x\n", $id;
+    printf {$out} " classid %x:%x\n", $parent, $id;
 }

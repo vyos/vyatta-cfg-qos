@@ -350,15 +350,12 @@ sub commands {
 	}
 
 	print {$out} "qdisc add dev $dev handle 1:0 root dsmark"
-	    . " indices $indices default_index $default->{id}\n";
+	    . " indices $indices default_index $default->{id} set_tc_index\n";
 
 	foreach my $class (@$classes) {
 	    $class->dsmarkClass($out, 1, $dev);
-	   
-	    if ($class->{dsmark}) {
-		foreach my $match ($class->matchRules()) {
-		    $match->filter($out, $dev, 1, $class->{id});
-		}
+	    foreach my $match ($class->matchRules()) {
+		$match->filter($out, $dev, 1, $class->{id});
 	    }
 	}
 
@@ -375,8 +372,8 @@ sub commands {
         $class->htbClass($out, $dev, $parent, $rate);
 
 	foreach my $match ($class->matchRules()) {
-	    $match->filter($out, $dev, 1, $class->{id});
-        }
+	    $match->filter($out, $dev, $parent, $class->{id}, $class->{dsmark});
+	}
     }
 }
 
