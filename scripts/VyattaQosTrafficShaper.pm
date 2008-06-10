@@ -106,15 +106,22 @@
 
         my $rate = _getPercentRate($self->{_rate}, $limit);
 	if ($rate > $limit) {
-	    printf STDERR
-		"Warning: $level\nbandwidth %dKbps > overall bandwidth %dKbps\n",
-		$rate / 1000, $limit / 1000;
+	    print "Configuration error in: $level\n";
+	    printf STDERR "The bandwidth reserved for this class (%dKbps) must be",
+	    	$rate / 1000;
+	    printf STDERR "less than the bandwidth for the overall policy (%dKbps)\n",
+	        $limit / 1000;
+	    exit 1;
 	}
 
 	my $ceil = _getPercentRate($self->{_ceiling}, $limit);
         if (defined $ceil && $ceil < $rate) {
-	    die "$level\nceiling %dKbps < class bandwidth %dKbps\n",
-	    	$ceil / 1000, $rate / 1000;
+	    print "Configuration error in: $level\n";
+	    printf STDERR "The bandwidth ceiling for this class (%dKbps) must be",
+	    	$ceil / 1000;
+	    printf STDERR "less than the reserved bandwidth for the class (%dKbps)\n",
+	        $rate / 1000;
+	    exit 1;
 	}
     }
 
