@@ -1,3 +1,38 @@
+vyatta-cfg-qos (0.10) unstable; urgency=low
+
+	  3.1.0
+  [ Mark O'Brien ]
+
+
+  [ Stephen Hemminger ]
+  * Fix formatting of error message
+  * Fix error messages for misconfiguration
+  * Fix speed detection on vlan interface
+  * Fix mixing of set-dscp and dscp match
+  * Apply filters always to root.
+
+  [ rbalocca ]
+  * Ignore derived files
+
+  [ Stephen Hemminger ]
+  * new qos-policy type rate-limit
+  * remove unused uninitialized variable
+  * Fail on commit if ceiling is less than bandwidth
+
+  [ rbalocca ]
+  * Convert to our method of changelog creation
+
+  [ Bob Gilligan ]
+  * Add QoS policy configurability for PPPOE, PPPOA and classical IP
+    over
+
+  [ Mohit Mehta ]
+  * Fix Bug 3069 Help strings should be standardized
+
+  [ Mark O'Brien ]
+
+ -- Mark O'Brien <mobrien@firebolt.vyatta.com>  Tue, 17 Jun 2008 09:26:10 -0700
+
 vyatta-cfg-qos (0.9) unstable; urgency=low
 
   3.0.5
