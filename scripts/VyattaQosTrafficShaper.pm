@@ -119,7 +119,7 @@
         if (defined $ceil && $ceil < $rate) {
 	    print "Configuration error in: $level\n";
 	    printf STDERR 
-		"The bandwidth ceiling for this class (%dKbps) must be less than\n",
+		"The bandwidth ceiling for this class (%dKbps) must be greater or equal to\n",
 	    	$ceil / 1000;
 	    printf STDERR "the reserved bandwidth for the class (%dKbps)\n",
 	        $rate / 1000;
