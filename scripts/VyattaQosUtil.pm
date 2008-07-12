@@ -220,17 +220,28 @@ sub getIfIndex {
 # return result in bits per second
 sub interfaceRate {
     my ($interface) = @_;
+    my $speed;
     my $config = new VyattaConfig;
 
     $config->setLevel("interfaces ethernet");
     if ($config->exists("$interface")) {
-	my $speed  = $config->returnValue("$interface speed");
+	$speed  = $config->returnValue("$interface speed");
 	if (defined($speed) && $speed ne "auto") {
 	    return $speed * 1000000;
 	}
     } 
 
-    return ethtoolRate($interface);
+    # During boot it may take time for auto-negotiation
+    for (my $retries = 0; $retries < 5; $retries++) {
+	$speed = ethtoolRate($interface);
+	if (defined $speed) {
+	    return $speed;
+	}
+	sleep 1;
+    }
+
+    warn "Could not determine speed for $interface, assuming 100mbit\n";
+    return 100 * 1000000;
 }
 
 ## ethtoolRate("eth0")
