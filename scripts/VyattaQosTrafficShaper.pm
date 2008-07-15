@@ -253,7 +253,25 @@ sub new {
     bless $self, $class;
     $self->_define($config);
 
+    $self->_validate($config);
+
     return $self;
+}
+
+sub _validate {
+    my $self = shift;
+
+    if ( $self->{_rate} ne "auto" ) {
+	my $classes = $self->{_classes};
+	my $default = shift @$classes;
+	my $rate = VyattaQosUtil::getRate($self->{_rate});
+
+	$default->rateCheck($rate, "$self->{_level} default");
+
+	foreach my $class (@$classes) {
+	    $class->rateCheck($rate, "$self->{_level} class $class->{id}");
+	}
+    }
 }
 
 # Rate can be something like "auto" or "10.2mbit"
