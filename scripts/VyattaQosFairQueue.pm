@@ -37,8 +37,8 @@ sub new {
     my $class = ref($that) || $that;
     my $self = {%fields};
 
-    $self->{_perturb} = $config->returnValue("hash-interval");
-    $self->{_limit}   = $config->returnValue("queue-limit");
+    $self->{_perturb} = $config->returnValue('hash-interval');
+    $self->{_limit}   = $config->returnValue('queue-limit');
     return bless $self, $class;
 }
 
@@ -51,4 +51,16 @@ sub commands {
     print "\n";
 }
 
+sub isChanged {
+    my ( $self, $name ) = @_;
+    my $config = new VyattaConfig;
+
+    $config->setLevel("qos-policy fair-queue $name");
+    foreach my $attr ('hash-interval', 'queue-limit') {
+	if ($config->isChanged($attr)) {
+	    return $attr
+	}
+    }
+    return undef; # false
+}
 1;

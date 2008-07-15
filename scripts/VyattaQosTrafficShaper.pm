@@ -404,4 +404,54 @@ sub commands {
     }
 }
 
+# Walk configuration tree and look for changed nodes
+# The configuration system should do this but doesn't do it right
+sub isChanged {
+    my ($self, $name) = @_;
+    my $config = new VyattaConfig;
+
+    $config->setLevel("qos-policy traffic-shaper $name");
+
+    if ($config->isChanged('bandwidth') ) {
+	return 'bandwidth';
+    }
+
+    foreach my $attr ('bandwidth', 'burst', 'ceiling', 'priority', 'queue-limit', 'queue-type') {
+	if ($config->isChanged("default $attr")) {
+	    return "default $attr";
+	}
+    }
+    
+    my %classNodes = $config->listNodeStatus('class');
+    while (my ($class, $status) = each %classNodes) {
+	if ($status ne 'static') {
+	    return "class $class";
+	}
+	
+	foreach my $attr ('bandwidth', 'burst', 'ceiling', 'priority', 'queue-limit', 'queue-type') {
+	    if ($config->isChanged("class $class $attr")) {
+		return "class $class $attr";
+	    }
+	}
+
+	my %matchNodes = $config->listNodeStatus("class $class match");
+	while (my ($match, $status) = each %matchNodes) {
+	    my $level = "class $class match $match"; 
+	    if ($status ne 'static') {
+		return $level;
+	    }
+	    
+	    foreach my $parm ('vif', 'interface', 'ip dscp', 'ip protocol', 
+			      'ip source address', 'ip destination address',
+			      'ip source port', 'ip destination port')  {
+		if ($config->isChanged("$level $parm")) {
+		    return "$level $parm";
+		}
+	    }
+	}
+    }
+
+    return undef; # false
+}
+
 1;

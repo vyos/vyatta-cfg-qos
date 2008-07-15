@@ -21,24 +21,22 @@ use strict;
 use Getopt::Long;
 
 my $debug = $ENV{'QOS_DEBUG'};
-my $check = undef;
+my ($check, $update, $applyChanges);
 my @updateInterface = ();
 my @deleteInterface = ();
 
-my $listPolicy = undef;
-my $deletePolicy = undef;
+my ($listPolicy, $deletePolicy);
 my @createPolicy = ();
-my @updatePolicy = ();
 
 GetOptions(
     "check"		    => \$check,
+    "apply-changes"         => \$applyChanges,
     "update-interface=s{3}" => \@updateInterface,
     "delete-interface=s{2}" => \@deleteInterface,
 
     "list-policy"           => \$listPolicy,
     "delete-policy=s"       => \$deletePolicy,
     "create-policy=s{2}"    => \@createPolicy,
-    "update-policy=s{2}"    => \@updatePolicy,
 );
 
 # class factory for policies
@@ -135,18 +133,91 @@ sub update_interface {
     die "Unknown qos-policy $name\n";
 }
 
-sub delete_policy {
+sub using_policy {
+    my ($config, $name, $interface) = @_;
+    my @inuse = ();
+
+    foreach my $dir ( $config->listNodes("$interface qos-policy") ) {
+	my $policy = $config->returnValue("$interface qos-policy $dir");
+	if ($policy eq $name) {
+	    push @inuse, "$interface $dir";
+	}
+    }
+    return @inuse;
+}
+
+sub interfaces_using {
     my ($name) = @_;
     my $config = new VyattaConfig;
+    my @affected = ();
 
-    $config->setLevel("interfaces ethernet");
-    foreach my $interface ( $config->listNodes() ) {
-	foreach my $direction ( $config->listNodes("$interface qos-policy") ) {
-	    if ($config->returnValue("$interface qos-policy $direction") eq $name) {
-		# can't delete active policy
-		die "Qos policy $name still in use on ethernet $interface $direction\n";
+    $config->setLevel('interfaces');
+    foreach my $type ( $config->listNodes() ) {
+	foreach my $interface ( $config->listNodes($type) ) {
+	    push @affected, using_policy($config, $name, "$type $interface");
+
+	    if ($type eq 'ethernet') {
+		foreach my $vif ( $config->listNodes("$type $interface vif") ) {
+		    push @affected, using_policy($config, $name, "$type $interface vif $vif");
+		}
+	    }
+
+	    if ($type eq 'adsl') {
+		foreach my $pvc ( $config->listNodes("adsl $interface pvc") ) {
+		    foreach my $pvctype ( $config->listNodes("adsl $interface pvc $pvc") ) {
+			foreach my $vc ( $config->listNodes("adsl $interface pvc $pvc $pvctype") ) {
+			    push @affected, using_policy($config, $name, 
+						      "adsl $interface pvc $pvc $pvctype $vc");
+			}
+		    }
+		}
 	    }
 	}
+    }
+
+    return @affected;
+}
+
+sub etherName {
+    my $eth = shift;
+
+    if ($_ =~ /vif/) {
+	shift; 
+	$eth .= $_;
+    }
+    return $eth;
+}
+
+sub serialName {
+    my $wan = shift;
+    # XXX add vif
+    return $wan;
+}
+
+sub adslName {
+    # adsl-name pvc pvc-num ppp-type id
+    my (undef, undef, undef, $type, $id) = @_;
+
+    return $type . $id;
+}
+
+# Handle mapping of interface types to device names
+my %interfaceTypes = (
+    'ethernet'	=> \&etherName,
+    'serial'	=> \&serialName,
+    'adsl'	=> \&adslName,
+    );
+
+sub delete_policy {
+    my ($name) = @_;
+    my @inuse = interfaces_using($name);
+
+    if ( @inuse ) {
+	foreach my $usage (@inuse) {
+	    warn "QoS policy $name used by $usage\n";
+	}
+	# can't delete active policy
+	die "Must delete QoS policy from interfaces before deleting rules\n";
     }
 }
 
@@ -172,18 +243,24 @@ sub create_policy {
     make_policy($config, $shaper, $name);
 }
 
-sub update_policy {
-    my ($shaper, $name) = @_;
+sub apply_changes {
     my $config = new VyattaConfig;
 
-    # Syntax check
-    make_policy($config, $shaper, $name);
+    $config->setLevel('qos-policy');
+    foreach my $policy ($config->listNodes()) {
+	foreach my $name ($config->listNodes($policy)) {
+	    my $shaper = make_policy($config, $policy, $name);
 
-    $config->setLevel("interfaces ethernet");
-    foreach my $interface ( $config->listNodes() ) {
-	foreach my $direction ( $config->listNodes("$interface qos-policy") ) {
-	    if ($config->returnValue("$interface qos-policy $direction") eq $name) {
-		update_interface($interface, $direction, $name);
+	    if ($shaper->isChanged($name)) {
+		foreach my $cfgpath (interfaces_using($name)) {
+		    my @elements = split / /, $cfgpath;
+		    my $direction = pop @elements;  # out, in, ...
+		    my $type = shift @elements;     # ethernet, serial, ...
+		    my $interface = $interfaceTypes{$type};
+		    my $device = $interface->(@elements);
+
+		    update_interface($device, $direction, $name);
+		}
 	    }
 	}
     }
@@ -214,22 +291,24 @@ if ( $#createPolicy == 1) {
     exit 0;
 }
 
-if ( $#updatePolicy == 1) {
-    update_policy(@updatePolicy);
-    exit 0;
-}
-
 if ( $deletePolicy ) {
     delete_policy($deletePolicy);
+    exit 0;
+} 
+
+if ( $applyChanges ) {
+    apply_changes();
     exit 0;
 }
 
 print <<EOF;
 usage: vyatta-qos.pl --check
        vyatta-qos.pl --list-policy
+
        vyatta-qos.pl --create-policy policy-type policy-name
        vyatta-qos.pl --delete-policy policy-name
-       vyatta-qos.pl --update-policy policy-type policy-name
+       vyatta-qos.pl --apply-changes policy-type policy-name
+
        vyatta-qos.pl --update-interface interface direction policy-name
        vyatta-qos.pl --delete-interface interface direction
 
