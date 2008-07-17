@@ -271,6 +271,7 @@ sub _validate {
 	foreach my $class (@$classes) {
 	    $class->rateCheck($rate, "$self->{_level} class $class->{id}");
 	}
+	unshift @$classes, $default
     }
 }
 
