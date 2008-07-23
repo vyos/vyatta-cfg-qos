@@ -106,7 +106,7 @@
 
         my $rate = _getPercentRate($self->{_rate}, $limit);
 	if ($rate > $limit) {
-	    print "Configuration error in: $level\n";
+	    print STDERR "Configuration error in: $level\n";
 	    printf STDERR 
 		"The bandwidth reserved for this class (%dKbps) must be less than\n",
 	    	$rate / 1000;
@@ -117,7 +117,7 @@
 
 	my $ceil = _getPercentRate($self->{_ceiling}, $limit);
         if (defined $ceil && $ceil < $rate) {
-	    print "Configuration error in: $level\n";
+	    print STDERR "Configuration error in: $level\n";
 	    printf STDERR 
 		"The bandwidth ceiling for this class (%dKbps) must be greater or equal to\n",
 	    	$ceil / 1000;
@@ -281,8 +281,9 @@ sub _getAutoRate {
 
     if ( $rate eq "auto" ) {
         $rate = VyattaQosUtil::interfaceRate($dev);
-        if ( ! defined $rate ) {
-	    die "Interface $dev speed cannot be determined; use explicit bandwidth value\n";
+        if (! defined $rate ) {
+	    print STDERR "Interface $dev speed cannot be determined (assuming 10mbit)\n";
+	    $rate = 10000000;
 	}
     } else {
 	$rate = VyattaQosUtil::getRate($rate);

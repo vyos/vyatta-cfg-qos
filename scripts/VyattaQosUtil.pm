@@ -235,13 +235,12 @@ sub interfaceRate {
     for (my $retries = 0; $retries < 5; $retries++) {
 	$speed = ethtoolRate($interface);
 	if (defined $speed) {
-	    return $speed;
+	    last;
 	}
 	sleep 1;
     }
 
-    warn "Could not determine speed for $interface, assuming 100mbit\n";
-    return 100 * 1000000;
+    return $speed;
 }
 
 ## ethtoolRate("eth0")
@@ -265,8 +264,10 @@ sub ethtoolRate {
     while (<$ethtool>) {
 	my @line = split;
 	if ($line[0] =~ /^Speed:/) {
-	    $rate = $line[1];
-	    $rate =~ s#Mb/s#000000#;
+	    if ($line[1] =~ /[0-9]+Mb\/s/ ) {
+		$rate = $line[1];
+		$rate =~ s#Mb/s#000000#;
+	    }
 	    last;
 	}
     }
