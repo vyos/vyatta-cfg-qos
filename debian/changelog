@@ -1,3 +1,21 @@
+vyatta-cfg-qos (0.11) unstable; urgency=low
+
+	  3.1.2
+  [ Mark O'Brien ]
+
+
+  [ Stephen Hemminger ]
+  * Handle auto bandwidth value better
+  * Don't get classes confused and cause internal error
+  * Look for changes in QoS after commit
+  * Retry to find interface speed
+  * Fix error message when ceiling < rate
+  * validate traffic shaper rates at commit time if possible
+
+  [ Mark O'Brien ]
+
+ -- Mark O'Brien <mobrien@firebolt.vyatta.com>  Wed, 23 Jul 2008 21:35:49 -0700
+
 vyatta-cfg-qos (0.10) unstable; urgency=low
 
 	  3.1.0
