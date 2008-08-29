@@ -46,10 +46,8 @@ my %policies = (
     'traffic-shaper' => "VyattaQosTrafficShaper",
     'fair-queue'     => "VyattaQosFairQueue",
     'rate-limit'     => "VyattaQosRateLimiter",
+    'drop-tail'	     => "VyattaQosDropTail",
 );
-use VyattaQosTrafficShaper;
-use VyattaQosFairQueue;
-use VyattaQosRateLimiter;
 
 sub make_policy {
     my ($config, $type, $name) = @_;
@@ -58,8 +56,10 @@ sub make_policy {
     # This means template exists but we don't know what it is.
     defined $class or die "Unknown policy type $type";
 
-    $config->setLevel("qos-policy $type $name");
+    my $location = "$class.pm";
+    require $location;
 
+    $config->setLevel("qos-policy $type $name");
     return $class->new($config, $name);
 }
 
