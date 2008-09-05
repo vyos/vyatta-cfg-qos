@@ -17,7 +17,7 @@
 
 package VyattaQosUtil;
 require Exporter;
-@EXPORT	= qw/getRate getBurstSize getProtocol getDsfield getIfIndex interfaceRate/;
+@EXPORT	= qw/getRate getPercent getBurstSize getProtocol getDsfield getIfIndex interfaceRate/;
 use strict;
 
 sub get_num  {
@@ -83,6 +83,23 @@ sub getRate {
 	return $num * 1000;
     }
 }
+
+sub getPercent {
+    my $percent = shift;
+    my ($num, $suffix) = get_num($percent);
+
+    ($suffix eq '%')
+	or die "$percent incorrect suffix (expect %)\n";
+    defined $num
+	or die "$percent is not a valid percent bandwidth (not a number)\n";
+    ($num >= 0)
+	or die "$percent is not a acceptable percent bandwidth (negative value)\n";
+    ($num <= 100)
+	or die "$percent is not a acceptable percent bandwidth (greater than 100%)\n";
+
+    return $num;
+}
+
 
 # Default time units for tc are usec.
 my %timeunits = (

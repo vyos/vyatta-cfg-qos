@@ -22,7 +22,10 @@ use lib "/opt/vyatta/share/perl5/";
 use VyattaQosUtil;
 use Getopt::Long;
 
+my ($percent, $rate, $burst, $protocol, $dsfield, $time);
+
 GetOptions(
+    "percent-or-rate=s" => \$percent,
     "rate=s"     => \$rate,
     "burst=s"    => \$burst,
     "protocol=s" => \$protocol,
@@ -30,6 +33,15 @@ GetOptions(
     "tos=s"	 => \$dsfield,
     "time=s"	 => \$time,
 );
+
+if ( defined $percent ) {
+    if ($percent =~ /%$/) {
+	my $p = VyattaQosUtil::getPercent($percent);
+    } else {
+	my $r = VyattaQosUtil::getRate($percent);
+    }
+    exit 0;
+}
 
 if ( defined $rate ) {
     my $r = VyattaQosUtil::getRate($rate);
@@ -57,7 +69,8 @@ if ( defined $time ) {
 }
 
 print <<EOF;
-usage: vyatta-qos-util.pl --rate rate
+usage: vyatta-qos-util.pl --percent-or-rate value
+       vyatta-qos-util.pl --rate rate
        vyatta-qos-util.pl --time time
        vyatta-qos-util.pl --burst size
        vyatta-qos-util.pl --protocol protocol
