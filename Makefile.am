@@ -10,6 +10,7 @@ share_perl5_DATA += scripts/VyattaQosTrafficShaper.pm
 share_perl5_DATA += scripts/VyattaQosMatch.pm
 share_perl5_DATA += scripts/VyattaQosRateLimiter.pm
 share_perl5_DATA += scripts/VyattaQosDropTail.pm
+share_perl5_DATA += scripts/VyattaQosTrafficLimiter.pm
 
 cpiop = find  . ! -regex '\(.*~\|.*\.bak\|.*\.swp\|.*\#.*\#\)' -print0 | \
   cpio -0pd

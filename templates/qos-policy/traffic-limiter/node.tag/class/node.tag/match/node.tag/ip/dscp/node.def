@@ -1,0 +1,18 @@
+type: txt
+help: Set Differentiated Services Codepoint (DSCP, formerly known as TOS) value for this match
+syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --dscp \"$VAR(@)\""
+allowed: awk '
+	/^#/ { next }
+	     { printf "%s ", $2 }' </etc/iproute2/rt_dsfield
+comp_help: <0-63> Differentiated Services Codepoint (DSCP) value
+    default  		match DSCP (000000)
+    reliability		match DSCP (000001)
+    throughput		match DSCP (000010)
+    lowdelay		match DSCP (000100)
+    priority		match DSCP (001000)
+    immediate		match DSCP (010000)
+    flash       	match DSCP (011000)
+    flash-override 	match DSCP (100000)
+    critical 		match DSCP (101000)
+    internet		match DSCP (110000)
+    network		match DSCP (111000)

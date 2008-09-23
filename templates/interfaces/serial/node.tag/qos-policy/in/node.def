@@ -1,5 +1,5 @@
 type: txt
-help: Set output QOS policy for specified ethernet interface
-allowed: /opt/vyatta/sbin/vyatta-qos.pl --list-policy out
+help: Set inbound QOS policy for specified serial interface
+allowed: /opt/vyatta/sbin/vyatta-qos.pl --list-policy in
 update: /opt/vyatta/sbin/vyatta-qos.pl --update-interface $VAR(../../@) $VAR(.) $VAR(@)
 delete: /opt/vyatta/sbin/vyatta-qos.pl --delete-interface $VAR(../../@) $VAR(.)

@@ -384,7 +384,8 @@ sub commands {
 	foreach my $class (@$classes) {
 	    $class->dsmarkClass($out, 1, $dev);
 	    foreach my $match ($class->matchRules()) {
-		$match->filter($out, $dev, 1, $class->{id});
+		$match->filter($out, $dev, 1, 1);
+		printf {$out} " classid %x:%x\n", $parent, $class->{id};
 	    }
 	}
 
@@ -401,7 +402,8 @@ sub commands {
         $class->htbClass($out, $dev, $parent, $rate);
 
 	foreach my $match ($class->matchRules()) {
-	    $match->filter($out, $dev, $parent, $class->{id}, $class->{dsmark});
+	    $match->filter($out, $dev, $parent, 1, $class->{dsmark});
+	    printf {$out} " classid %x:%x\n", $parent, $class->{id};
 	}
     }
 }

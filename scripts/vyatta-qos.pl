@@ -34,45 +34,65 @@ GetOptions(
     "update-interface=s{3}" => \@updateInterface,
     "delete-interface=s{2}" => \@deleteInterface,
 
-    "list-policy"           => \$listPolicy,
+    "list-policy=s"         => \$listPolicy,
     "delete-policy=s"       => \$deletePolicy,
     "create-policy=s{2}"    => \@createPolicy,
 );
 
-# class factory for policies
-# TODO use hierarcy (ie VyattaQos::TrafficShaper)
-#      and reference to object, not string dynamic binding
 my %policies = (
-    'traffic-shaper' => "VyattaQosTrafficShaper",
-    'fair-queue'     => "VyattaQosFairQueue",
-    'rate-limit'     => "VyattaQosRateLimiter",
-    'drop-tail'	     => "VyattaQosDropTail",
+    'out' => {
+	'traffic-shaper' => 'VyattaQosTrafficShaper',
+	'fair-queue'     => 'VyattaQosFairQueue',
+	'rate-limit'     => 'VyattaQosRateLimiter',
+	'drop-tail'	 => 'VyattaQosDropTail',
+    },
+    'in' => {
+	'traffic-limiter' => 'VyattaQosTrafficLimiter',
+    }
 );
 
+# class factory for policies
 sub make_policy {
-    my ($config, $type, $name) = @_;
-    my $class = $policies{$type};
+    my ($config, $type, $name, $direction) = @_;
+    my $class;
+
+    if ($direction) {
+	$class = $policies{$direction}{$type};
+    } else {
+	foreach $direction (keys %policies) {
+	    $class = $policies{$direction}{$type};
+	    last if defined $class;
+	}
+    }
 
     # This means template exists but we don't know what it is.
-    defined $class or die "Unknown policy type $type";
+    if (! defined $class) {
+	foreach $direction (keys %policies) {
+	    die "QoS policy $name is type $type and is only valid for $direction\n"
+		if defined $policies{$direction}{$type};
+	}
+	die "QoS policy $name has not been created\n";
+    }
 
     my $location = "$class.pm";
     require $location;
 
     $config->setLevel("qos-policy $type $name");
-    return $class->new($config, $name);
+    return $class->new($config, $name, $direction);
 }
 
 ## list defined qos policy names
 sub list_policy {
+    my $direction = shift;
     my $config = new VyattaConfig;
     my @nodes  = ();
 
     $config->setLevel('qos-policy');
     foreach my $type ( $config->listNodes() ) {
-        foreach my $name ( $config->listNodes($type) ) {
-            push @nodes, $name;
-        }
+	next if ! defined $policies{$direction}{$type};
+	foreach my $name ( $config->listNodes ) {
+	    push @nodes, $name;
+	}
     }
 
     print join( ' ', @nodes ), "\n";
@@ -83,9 +103,15 @@ sub list_policy {
 sub delete_interface {
     my ($interface, $direction ) = @_;
 
-    if ($direction eq "out" ) {
-        # delete old qdisc - will give error if no policy in place
-	qx(sudo /sbin/tc qdisc del dev "$interface" root 2>/dev/null);
+    for ($direction) {
+	# delete old qdisc - silence error if no qdisc loaded
+	if (/^out$/) {
+	    qx(sudo /sbin/tc qdisc del dev "$interface" root 2>/dev/null);
+	} elsif (/^in$/) {
+	    qx(sudo /sbin/tc qdisc del dev "$interface" parent ffff: 2>/dev/null);
+	} else {
+	    die "bad direction $direction";
+	}
     }
 }
 
@@ -95,12 +121,10 @@ sub update_interface {
     my ($interface, $direction, $name ) = @_;
     my $config = new VyattaConfig;
 
-    ( $direction eq "out" ) or die "Only out direction supported";
-
     $config->setLevel('qos-policy');
     foreach my $type ( $config->listNodes() ) {
         if ( $config->exists("$type $name") ) {
-	    my $shaper = make_policy($config, $type, $name);
+	    my $shaper = make_policy($config, $type, $name, $direction);
 
 	    # Remove old policy
 	    delete_interface($interface, $direction);
@@ -122,7 +146,7 @@ sub update_interface {
 
 		# replay commands to stdout
 		open $out, '>-';
-		$shaper->commands($out, $interface);
+		$shaper->commands($out, $interface, $direction);
 		close $out;
 		die "TC command failed.";
 	    }
@@ -272,7 +296,7 @@ if ($check) {
 }
 
 if ( $listPolicy ) {
-    list_policy();
+    list_policy($listPolicy);
     exit 0;
 }
 
