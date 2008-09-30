@@ -48,7 +48,7 @@
         my $level   = $config->setLevel();
         my @matches = ();
 
-        $self->{rate} = $config->returnValue("bandwidth");
+        $self->{rate} = VyattaQosUtil::getRate($config->returnValue("bandwidth"));
         defined $self->{rate} or die "$level bandwidth not defined\n";
 
         $self->{priority} = $config->returnValue("priority");
@@ -64,29 +64,6 @@
         my ($self) = @_;
         my $matches = $self->{_match};
         return @$matches;
-    }
-
-    sub _getPercentRate {
-        my ( $rate, $speed ) = @_;
-
-        if ( !defined $rate ) {
-            return;    # leave rate undef
-        }
-
-        # Rate might be a percentage of speed
-        if ( $rate =~ /%$/ ) {
-            my $percent = substr( $rate, 0, length($rate) - 1 );
-            if ( $percent < 0 || $percent > 100 ) {
-                die "Invalid percentage bandwidth: $percent\n";
-            }
-
-            $rate = ( $percent * $speed ) / 100.;
-        }
-        else {
-            $rate = VyattaQosUtil::getRate($rate);
-        }
-
-        return $rate;
     }
 
 }
