@@ -89,8 +89,8 @@ sub list_policy {
 
     $config->setLevel('qos-policy');
     foreach my $type ( $config->listNodes() ) {
-	next if ! defined $policies{$direction}{$type};
-	foreach my $name ( $config->listNodes ) {
+	next unless defined $policies{$direction}{$type};
+	foreach my $name ( $config->listNodes($type) ){
 	    push @nodes, $name;
 	}
     }
