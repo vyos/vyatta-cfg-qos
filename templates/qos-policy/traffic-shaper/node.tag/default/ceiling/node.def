@@ -1,9 +1,8 @@
 type: txt
 help: Set the bandwidth limit for default traffic
-default: "100%"
 syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --percent-or-rate \"$VAR(@)\""
 comp_help: Allowed values:
  <number>          Limit in Kbps
- <number>%%        Percentage of overall rate (default 100%%)
+ <number>%%        Percentage of overall rate
  <number><suffix>  Value with scaling suffix
                    bits per sec (kbit, mbit, gbit)
