@@ -1,0 +1,6 @@
+type: txt
+help: Set the tunnel QoS policy
+allowed: /opt/vyatta/sbin/vyatta-qos.pl --list-policy out
+create: sudo ip link set dev $VAR(../../../@).$VAR(../../@) txqueuelen 100
+update: /opt/vyatta/sbin/vyatta-qos.pl --update-interface $VAR(../../@) $VAR(.) $VAR(@)
+delete: /opt/vyatta/sbin/vyatta-qos.pl --delete-interface $VAR(../../@) $VAR(.)
