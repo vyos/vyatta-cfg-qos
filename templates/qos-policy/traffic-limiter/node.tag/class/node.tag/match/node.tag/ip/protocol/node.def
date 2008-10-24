@@ -1,5 +1,5 @@
 type: txt
-help: Set IP protocol name or number for this match
+help: Match IP protocol name or number
 syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --protocol \"$VAR(@)\"" 
 allowed: awk '
 	/^#/ { next }
