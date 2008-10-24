@@ -47,9 +47,10 @@
         my ( $self, $config ) = @_;
         my $level   = $config->setLevel();
         my @matches = ();
-
-        $self->{rate} = VyattaQosUtil::getRate($config->returnValue("bandwidth"));
-        defined $self->{rate} or die "$level bandwidth not defined\n";
+	my $rate = $config->returnValue("bandwidth");
+	
+	defined $rate or die "bandwidth must be defined for $level\n";
+        $self->{rate} = VyattaQosUtil::getRate($rate);
 
         $self->{priority} = $config->returnValue("priority");
 
