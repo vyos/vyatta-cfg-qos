@@ -158,17 +158,65 @@ sub update_interface {
 }
 
 sub using_policy {
-    my ($config, $name, $interface) = @_;
+    my ($config, $name, $path) = @_;
     my @inuse = ();
 
-    foreach my $dir ( $config->listNodes("$interface qos-policy") ) {
-	my $policy = $config->returnValue("$interface qos-policy $dir");
+    foreach my $dir ( $config->listNodes("$path qos-policy") ) {
+	my $policy = $config->returnValue("$path qos-policy $dir");
 	if ($policy eq $name) {
-	    push @inuse, "$interface $dir";
+	    push @inuse, "$path $dir";
 	}
     }
     return @inuse;
 }
+
+sub ether_vif_using {
+    my ($config, $name, $type, $interface) = @_;
+    my @affected = ();
+
+    foreach my $vif ( $config->listNodes("$type $interface vif") ) {
+	my $path = "$type $interface vif $vif";
+	push @affected, using_policy($config, $name, $path);
+    }
+    return @affected;
+}
+
+sub adsl_vif_using {
+    my ($config, $name, $type, $interface) = @_;
+    my @affected = ();
+
+    foreach my $pvc ( $config->listNodes("$type $interface pvc") ) {
+	foreach my $pvctype ( $config->listNodes("$type $interface pvc $pvc") ) {
+	    foreach my $vc ( $config->listNodes("$type $interface pvc $pvc $pvctype") ) {
+		my $path = "$type $interface pvc $pvc $pvctype $vc";
+		push @affected, using_policy($config, $name, $path);
+	    }
+	}
+    }
+    return @affected;
+}
+
+sub serial_vif_using {
+    my ($config, $name, $type, $interface) = @_;
+    my @affected = ();
+
+    foreach my $encap (qw/cisco-hdlc frame-relay ppp/) {
+	foreach my $vif ( $config->listNodes("$type $interface vif") ) {
+	    push @affected, 
+	    	using_policy($config, $name, "$type $interface $encap vif $vif");
+	}
+    }
+
+    return @affected;
+}
+
+
+my %interfaceVifUsing = (
+    'ethernet'	=> \&ether_vif_using,
+    'bonding'	=> \&ether_vif_using,
+    'serial'	=> \&serial_vif_using,
+    'adsl'	=> \&adsl_vif_using,
+);
 
 sub interfaces_using {
     my ($name) = @_;
@@ -179,22 +227,10 @@ sub interfaces_using {
     foreach my $type ( $config->listNodes() ) {
 	foreach my $interface ( $config->listNodes($type) ) {
 	    push @affected, using_policy($config, $name, "$type $interface");
-
-	    if ($type eq 'ethernet') {
-		foreach my $vif ( $config->listNodes("$type $interface vif") ) {
-		    push @affected, using_policy($config, $name, "$type $interface vif $vif");
-		}
-	    }
-
-	    if ($type eq 'adsl') {
-		foreach my $pvc ( $config->listNodes("adsl $interface pvc") ) {
-		    foreach my $pvctype ( $config->listNodes("adsl $interface pvc $pvc") ) {
-			foreach my $vc ( $config->listNodes("adsl $interface pvc $pvc $pvctype") ) {
-			    push @affected, using_policy($config, $name, 
-						      "adsl $interface pvc $pvc $pvctype $vc");
-			}
-		    }
-		}
+	    
+	    my $vif_check = $interfaceVifUsing{$type};
+	    if ($vif_check) {
+		push @affected, $vif_check->($config, $name, $type, $interface);
 	    }
 	}
     }
@@ -203,34 +239,44 @@ sub interfaces_using {
 }
 
 sub etherName {
-    my $eth = shift;
+    my ($eth, $vif, $id) = @_;
 
-    if ($_ =~ /vif/) {
-	shift; 
-	$eth .= $_;
+    if ($vif eq 'vif') {
+	return "$eth.$id";
+    } else {
+	return $eth;
     }
-    return $eth;
 }
 
 sub serialName {
-    my $wan = shift;
-    # XXX add vif
-    return $wan;
+    my ($wan, $encap, $type, $id) = @_;
+
+    if ($encap && $type eq 'vif') {
+	return "$wan.$id";
+    } else {
+	return $wan;
+    }
 }
 
 sub adslName {
     # adsl-name pvc pvc-num ppp-type id
-    my (undef, undef, undef, $type, $id) = @_;
-
-    return $type . $id;
+    my ($name, undef, undef, $type, $id) = @_;
+    
+    if ($id) {
+	return "$name.$id";
+    } else {
+	return $name;
+    }
 }
 
-# Handle mapping of interface types to device names
+# Handle mapping of interface types to device names with vif's
+# This is because of differences in config layout
 my %interfaceTypes = (
     'ethernet'	=> \&etherName,
+    'bonding'	=> \&etherName,
     'serial'	=> \&serialName,
     'adsl'	=> \&adslName,
-    );
+);
 
 sub delete_policy {
     my ($name) = @_;
@@ -277,6 +323,7 @@ sub apply_changes {
 
 	    if ($shaper->isChanged($name)) {
 		foreach my $cfgpath (interfaces_using($name)) {
+		    # ethernet ethX vif 1 out
 		    my @elements = split / /, $cfgpath;
 		    my $direction = pop @elements;  # out, in, ...
 		    my $type = shift @elements;     # ethernet, serial, ...
@@ -328,10 +375,10 @@ if ( $applyChanges ) {
 print <<EOF;
 usage: vyatta-qos.pl --check
        vyatta-qos.pl --list-policy
+       vyatta-qos.pl --apply-changes
 
        vyatta-qos.pl --create-policy policy-type policy-name
        vyatta-qos.pl --delete-policy policy-name
-       vyatta-qos.pl --apply-changes policy-type policy-name
 
        vyatta-qos.pl --update-interface interface direction policy-name
        vyatta-qos.pl --delete-interface interface direction
