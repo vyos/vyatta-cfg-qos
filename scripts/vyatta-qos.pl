@@ -14,7 +14,7 @@
 # All Rights Reserved.
 # **** End License ****
 
-use lib "/opt/vyatta/share/perl5/";
+use lib "/opt/vyatta/share/perl5";
 use VyattaConfig;
 use strict;
 
@@ -41,43 +41,45 @@ GetOptions(
 
 my %policies = (
     'out' => {
-	'traffic-shaper' => 'VyattaQosTrafficShaper',
-	'fair-queue'     => 'VyattaQosFairQueue',
-	'rate-limit'     => 'VyattaQosRateLimiter',
-	'drop-tail'	 => 'VyattaQosDropTail',
+	'traffic-shaper'   => 'TrafficShaper',
+	'fair-queue'       => 'FairQueue',
+	'rate-limit'       => 'RateLimiter',
+	'drop-tail'	   => 'DropTail',
     },
     'in' => {
-	'traffic-limiter' => 'VyattaQosTrafficLimiter',
+	'traffic-limiter' => 'TrafficLimiter',
     }
 );
 
 # class factory for policies
 sub make_policy {
     my ($config, $type, $name, $direction) = @_;
-    my $class;
+    my $policy_type;
 
     if ($direction) {
-	$class = $policies{$direction}{$type};
+	$policy_type = $policies{$direction}{$type};
     } else {
 	foreach $direction (keys %policies) {
-	    $class = $policies{$direction}{$type};
-	    last if defined $class;
+	    $policy_type = $policies{$direction}{$type};
+	    last if defined $policy_type;
 	}
     }
 
     # This means template exists but we don't know what it is.
-    if (! defined $class) {
+    if (! defined $policy_type) {
 	foreach $direction (keys %policies) {
 	    die "QoS policy $name is type $type and is only valid for $direction\n"
 		if defined $policies{$direction}{$type};
 	}
 	die "QoS policy $name has not been created\n";
     }
+    $config->setLevel("qos-policy $type $name");
 
-    my $location = "$class.pm";
+    my $location = "Vyatta/Qos/$policy_type.pm";
+    my $class = "Vyatta::Qos::$policy_type";
+
     require $location;
 
-    $config->setLevel("qos-policy $type $name");
     return $class->new($config, $name, $direction);
 }
 

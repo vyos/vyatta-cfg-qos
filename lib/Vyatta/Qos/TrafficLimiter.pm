@@ -21,7 +21,8 @@
     package LimiterClass;
     use strict;
     require VyattaConfig;
-    use VyattaQosMatch;
+    use Vyatta::Qos::Match;
+    use Vyatta::Qos::Util qw/getRate/;
 
     my %fields = (
 	id	 => undef,
@@ -50,13 +51,13 @@
 	my $rate = $config->returnValue("bandwidth");
 	
 	defined $rate or die "bandwidth must be defined for $level\n";
-        $self->{rate} = VyattaQosUtil::getRate($rate);
+        $self->{rate} = getRate($rate);
 
         $self->{priority} = $config->returnValue("priority");
 
         foreach my $match ( $config->listNodes("match") ) {
             $config->setLevel("$level match $match");
-            push @matches, new VyattaQosMatch($config);
+            push @matches, new Vyatta::Qos::Match($config);
         }
         $self->{_match} = \@matches;
     }
@@ -69,17 +70,15 @@
 
 }
 
-package VyattaQosTrafficLimiter;
+package Vyatta::Qos::TrafficLimiter;
 use strict;
 require VyattaConfig;
-use VyattaQosUtil;
 
 my %fields = (
     _level   => undef,
     _classes => undef,
 );
 
-# new VyattaQosTrafficLimiter($config)
 # Create a new instance based on config information
 sub new {
     my ( $that, $config, $name ) = @_;

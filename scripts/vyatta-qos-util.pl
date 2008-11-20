@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#! /usr/bin/perl
 #
 # Utility routines for validating input
 # These functions don't change existing QoS parameters
@@ -18,62 +18,43 @@
 # All Rights Reserved.
 # **** End License ****
 
-use lib "/opt/vyatta/share/perl5/";
-use VyattaQosUtil;
+use lib "/opt/vyatta/share/perl5";
+use Vyatta::Qos::Util qw( getPercent getRate getBurstSize getProtocol 
+			  getDsfield getTime );
 use Getopt::Long;
 
-my ($percent, $rate, $burst, $protocol, $dsfield, $time);
+sub getPercentOrRate {
+    my $percent = shift;
+    if ( $percent =~ /%$/ ) {
+        return getPercent($percent);
+    }
+    else {
+        return getRate($percent);
+    }
+}
+
+sub usage {
+    print <<EOF;
+  usage: 
+      vyatta-qos-util.pl --percent value
+      vyatta-qos-util.pl --percent-or-rate value
+      vyatta-qos-util.pl --rate rate
+      vyatta-qos-util.pl --time time
+      vyatta-qos-util.pl --burst size
+      vyatta-qos-util.pl --protocol protocol
+      vyatta-qos-util.pl --dscp tos|dsfield
+EOF
+    exit 1;
+}
 
 GetOptions(
-    "percent-or-rate=s" => \$percent,
-    "rate=s"     => \$rate,
-    "burst=s"    => \$burst,
-    "protocol=s" => \$protocol,
-    "dscp=s"	 => \$dsfield,
-    "tos=s"	 => \$dsfield,
-    "time=s"	 => \$time,
-);
+    "percent=s"         => sub { getPercent( $_[1] ); },
+    "percent-or-rate=s" => sub { getPercentOrRate( $_[1] ); },
+    "rate=s"            => sub { getRate( $_[1] ); },
+    "burst=s"           => sub { getBurstSize( $_[1] ); },
+    "protocol=s"        => sub { getProtocol( $_[1] ); },
+    "dscp=s"            => sub { getDsfield( $_[1] ); },
+    "tos=s"             => sub { getDsfield( $_[1] ); },
+    "time=s"            => sub { getTime( $_[1] ); },
+) or usage();
 
-if ( defined $percent ) {
-    if ($percent =~ /%$/) {
-	my $p = VyattaQosUtil::getPercent($percent);
-    } else {
-	my $r = VyattaQosUtil::getRate($percent);
-    }
-    exit 0;
-}
-
-if ( defined $rate ) {
-    my $r = VyattaQosUtil::getRate($rate);
-    exit 0;
-}
-
-if ( defined $burst ) {
-    my $b = VyattaQosUtil::getBurstSize($burst);
-    exit 0;
-}
-
-if ( defined $protocol ) {
-    my $p = VyattaQosUtil::getProtocol($protocol);
-    exit 0;
-}
-
-if ( defined $dsfield ) {
-    my $d = VyattaQosUtil::getDsfield($dsfield);
-    exit 0;
-}
-
-if ( defined $time ) {
-    my $t = VyattaQosUtil::getTime($time);
-    exit 0;
-}
-
-print <<EOF;
-usage: vyatta-qos-util.pl --percent-or-rate value
-       vyatta-qos-util.pl --rate rate
-       vyatta-qos-util.pl --time time
-       vyatta-qos-util.pl --burst size
-       vyatta-qos-util.pl --protocol protocol
-       vyatta-qos-util.pl --dscp tos|dsfield
-EOF
-exit 1;

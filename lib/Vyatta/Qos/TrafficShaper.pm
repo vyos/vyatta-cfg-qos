@@ -22,7 +22,8 @@
     package ShaperClass;
     use strict;
     require VyattaConfig;
-    use VyattaQosMatch;
+    use Vyatta::Qos::Match;
+    use Vyatta::Qos::Util qw/getDsfield getRate/;
 
     my %fields = (
 	id	  => undef,
@@ -63,12 +64,11 @@
 	$self->{_limit}	   = $config->returnValue("queue-limit");
 	$self->{_qdisc}    = $config->returnValue("queue-type");
 
-        $self->{dsmark} =
-	    VyattaQosUtil::getDsfield($config->returnValue("set-dscp"));
+        $self->{dsmark} = getDsfield($config->returnValue("set-dscp"));
 
 	foreach my $match ($config->listNodes("match")) {
             $config->setLevel("$level match $match");
-	    push @matches, new VyattaQosMatch($config);
+	    push @matches, new Vyatta::Qos::Match($config);
         }
 	$self->{_match}    = \@matches;
     }
@@ -95,7 +95,7 @@
 
             $rate = ( $percent * $speed ) / 100.;
         } else {
-	    $rate = VyattaQosUtil::getRate($rate);
+	    $rate = getRate($rate);
 	}
 
 	return $rate;
@@ -232,10 +232,12 @@
 
 }
 
-package VyattaQosTrafficShaper;
+package Vyatta::Qos::TrafficShaper;
 use strict;
+
 require VyattaConfig;
-use VyattaQosUtil;
+use Vyatta::Qos::Util qw/getRate interfaceRate/;
+
 
 my %fields = (
     _level	=> undef,
@@ -243,7 +245,6 @@ my %fields = (
     _classes    => undef,
 );
 
-# new VyattaQosTrafficShaper($config)
 # Create a new instance based on config information
 sub new {
     my ( $that, $config, $name ) = @_;
@@ -264,7 +265,7 @@ sub _validate {
     if ( $self->{_rate} ne "auto" ) {
 	my $classes = $self->{_classes};
 	my $default = shift @$classes;
-	my $rate = VyattaQosUtil::getRate($self->{_rate});
+	my $rate = getRate($self->{_rate});
 
 	$default->rateCheck($rate, "$self->{_level} default");
 
@@ -280,13 +281,13 @@ sub _getAutoRate {
     my ($rate, $dev) = @_;
 
     if ( $rate eq "auto" ) {
-        $rate = VyattaQosUtil::interfaceRate($dev);
+        $rate = interfaceRate($dev);
         if (! defined $rate ) {
 	    print STDERR "Interface $dev speed cannot be determined (assuming 10mbit)\n";
 	    $rate = 10000000;
 	}
     } else {
-	$rate = VyattaQosUtil::getRate($rate);
+	$rate = getRate($rate);
     }
 
     return $rate;

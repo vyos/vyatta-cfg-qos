@@ -1,4 +1,6 @@
-# This is a wrapper around Token Bucket Filter (TBF) queue discipline
+# This is a wrapper around Stochastic Fair Queue(SFQ) queue discipline
+# Since SFQ is a hard to explain, use the name fair-queue since SFQ
+# is most similar to Weighted Fair Queue (WFQ) on Cisco IOS.
 #
 #
 # **** License ****
@@ -16,51 +18,46 @@
 # All Rights Reserved.
 # **** End License ****
 
-package VyattaQosRateLimiter;
+package Vyatta::Qos::FairQueue;
 
 use strict;
+use warnings;
 
 require VyattaConfig;
-use VyattaQosUtil;
+
+# Fair Queue
+# Uses SFQ which is similar to (but not same as) WFQ
 
 my %fields = (
-    _rate	=> undef,
-    _burst	=> undef,
-    _latency	=> undef,
+    _perturb => undef,
+    _limit   => undef,
 );
 
 sub new {
     my ( $that, $config ) = @_;
-    my $level = $config->setLevel();
     my $class = ref($that) || $that;
     my $self = {%fields};
 
-    $self->{_rate}     = VyattaQosUtil::getRate($config->returnValue("bandwidth"));
-    defined $self->{_rate}  or die "$level bandwidth not defined\n";
-
-    $self->{_burst}     = $config->returnValue("burst");
-    defined $self->{_burst}  or die "$level burst not defined\n";
-
-    $self->{_latency}     = VyattaQosUtil::getTime($config->returnValue("latency"));
-    defined $self->{_latency}  or die "$level latency not defined\n";
-
+    $self->{_perturb} = $config->returnValue('hash-interval');
+    $self->{_limit}   = $config->returnValue('queue-limit');
     return bless $self, $class;
 }
 
 sub commands {
     my ( $self, $out, $dev ) = @_;
-
     
-    printf {$out} "qdisc add dev %s root tbf rate %s latency %s burst %s\n",
-	    $dev, $self->{_rate}, $self->{_latency}, $self->{_burst};
+    print {$out} "qdisc add dev $dev root sfq";
+    print {$out} " perturb $self->{_perturb}" if ( defined $self->{_perturb} );
+    print {$out} " limit $self->{_limit}"     if ( defined $self->{_limit} );
+    print "\n";
 }
 
 sub isChanged {
-    my ($self, $name) = @_;
+    my ( $self, $name ) = @_;
     my $config = new VyattaConfig;
 
-    $config->setLevel("qos-policy rate-limit $name");
-    foreach my $attr ('bandwidth', 'burst', 'latency') {
+    $config->setLevel("qos-policy fair-queue $name");
+    foreach my $attr ('hash-interval', 'queue-limit') {
 	if ($config->isChanged($attr)) {
 	    return $attr
 	}

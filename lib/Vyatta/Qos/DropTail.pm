@@ -16,11 +16,12 @@
 # All Rights Reserved.
 # **** End License ****
 
-package VyattaQosDropTail;
+package Vyatta::Qos::DropTail;
 
 use strict;
+use warnings;
+
 require VyattaConfig;
-use VyattaQosUtil;
 
 my %fields = (
     _limit	=> undef,
@@ -32,7 +33,7 @@ sub new {
     my $class = ref($that) || $that;
     my $self = {%fields};
 
-    $self->{_limit}     = $config->returnValue("queue-limit");
+    $self->{_limit}  = $config->returnValue("queue-limit");
 
     return bless $self, $class;
 }

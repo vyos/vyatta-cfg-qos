@@ -13,10 +13,12 @@
 # All Rights Reserved.
 # **** End License ****
 
-package VyattaQosMatch;
+package Vyatta::Qos::Match;
 require VyattaConfig;
-use VyattaQosUtil;
+use Vyatta::Qos::Util qw(getIfIndex getDSfield getProtocol);
+
 use strict;
+use warnings;
 
 my %fields = (
 	_dev      => undef,
@@ -40,13 +42,13 @@ sub _define {
     my $level = $config->setLevel();
 
     $self->{_vif} = $config->returnValue("vif");
-    $self->{_dev} = VyattaQosUtil::getIfIndex($config->returnValue("interface"));
+    $self->{_dev} = getIfIndex($config->returnValue("interface"));
 
     if ($config->exists("ip")) {
 	my %ip;
 
-	$ip{dsfield} = VyattaQosUtil::getDsfield( $config->returnValue("ip dscp"));
-	$ip{protocol} = VyattaQosUtil::getProtocol($config->returnValue("ip protocol"));
+	$ip{dsfield} = getDsfield( $config->returnValue("ip dscp"));
+	$ip{protocol} = getProtocol($config->returnValue("ip protocol"));
 	$ip{src} = $config->returnValue("ip source address");
 	$ip{dst} = $config->returnValue("ip destination address");
 	$ip{sport} = $config->returnValue("ip source port");
