@@ -27,6 +27,7 @@
     my %fields = (
 	id	 => undef,
         priority => undef,
+	burst	 => undef,
         rate     => undef,
         _match   => undef,
     );
@@ -50,8 +51,11 @@
         my @matches = ();
 	my $rate = $config->returnValue("bandwidth");
 	
-	defined $rate or die "bandwidth must be defined for $level\n";
         $self->{rate} = getRate($rate);
+	defined $rate or die "bandwidth must be defined for $level\n";
+
+        $self->{burst}    = $config->returnValue("burst");
+	defined $self->{burst} or die "burst must be defined for $level\n";
 
         $self->{priority} = $config->returnValue("priority");
 
@@ -133,13 +137,10 @@ sub commands {
 
     printf {$out} "qdisc add dev %s handle %x: ingress\n", $dev, $parent;
     foreach my $class (@$classes) {
-        my $id       = $class->{id};
-        my $rate     = $class->{rate};
-        my $priority = $class->{priority};
-
         foreach my $match ( $class->matchRules() ) {
-            $match->filter( $out, $dev, $parent, $priority );
-            printf {$out} " police avrate %s drop flowid :%x\n", $rate, $id;
+	    $match->filter( $out, $dev, $parent, $class->{priority} );
+	    printf {$out} " police rate %s burst %s drop flowid :%x\n", 
+	        $class->{rate}, $class->{burst}, $class->{id};
         }
     }
 }
