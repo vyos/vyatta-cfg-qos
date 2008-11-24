@@ -15,7 +15,7 @@
 # **** End License ****
 
 use lib "/opt/vyatta/share/perl5";
-use VyattaConfig;
+use Vyatta::Config;
 use strict;
 
 use Getopt::Long;
@@ -86,7 +86,7 @@ sub make_policy {
 ## list defined qos policy names
 sub list_policy {
     my $direction = shift;
-    my $config = new VyattaConfig;
+    my $config = new Vyatta::Config;
     my @nodes  = ();
 
     $config->setLevel('qos-policy');
@@ -121,7 +121,7 @@ sub delete_interface {
 # update policy to interface
 sub update_interface {
     my ($interface, $direction, $name ) = @_;
-    my $config = new VyattaConfig;
+    my $config = new Vyatta::Config;
 
     $config->setLevel('qos-policy');
     foreach my $type ( $config->listNodes() ) {
@@ -222,7 +222,7 @@ my %interfaceVifUsing = (
 
 sub interfaces_using {
     my ($name) = @_;
-    my $config = new VyattaConfig;
+    my $config = new Vyatta::Config;
     my @affected = ();
 
     $config->setLevel('interfaces');
@@ -294,7 +294,7 @@ sub delete_policy {
 }
 
 sub check_conflict {
-    my $config = new VyattaConfig;
+    my $config = new Vyatta::Config;
     my %other = ();
 
     $config->setLevel("qos-policy");
@@ -309,14 +309,14 @@ sub check_conflict {
 
 sub create_policy {
     my ($shaper, $name) = @_;
-    my $config = new VyattaConfig;
+    my $config = new Vyatta::Config;
 
     # Syntax check
     make_policy($config, $shaper, $name);
 }
 
 sub apply_changes {
-    my $config = new VyattaConfig;
+    my $config = new Vyatta::Config;
 
     $config->setLevel('qos-policy');
     foreach my $policy ($config->listNodes()) {

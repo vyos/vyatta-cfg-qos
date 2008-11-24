@@ -21,7 +21,7 @@ package Vyatta::Qos::RateLimiter;
 use strict;
 use warnings;
 
-use VyattaConfig;
+use Vyatta::Config;
 use Vyatta::Qos::Util qw/getRate getTime/;
 
 my %fields = (
@@ -58,7 +58,7 @@ sub commands {
 
 sub isChanged {
     my ($self, $name) = @_;
-    my $config = new VyattaConfig;
+    my $config = new Vyatta::Config;
 
     $config->setLevel("qos-policy rate-limit $name");
     foreach my $attr ('bandwidth', 'burst', 'latency') {
