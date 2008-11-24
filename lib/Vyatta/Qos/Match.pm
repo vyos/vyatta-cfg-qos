@@ -14,7 +14,7 @@
 # **** End License ****
 
 package Vyatta::Qos::Match;
-require VyattaConfig;
+require Vyatta::Config;
 use Vyatta::Qos::Util qw(getIfIndex getDSfield getProtocol);
 
 use strict;

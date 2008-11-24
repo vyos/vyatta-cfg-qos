@@ -21,7 +21,7 @@
 {
     package ShaperClass;
     use strict;
-    require VyattaConfig;
+    require Vyatta::Config;
     use Vyatta::Qos::Match;
     use Vyatta::Qos::Util qw/getDsfield getRate/;
 
@@ -235,7 +235,7 @@
 package Vyatta::Qos::TrafficShaper;
 use strict;
 
-require VyattaConfig;
+require Vyatta::Config;
 use Vyatta::Qos::Util qw/getRate interfaceRate/;
 
 
@@ -413,7 +413,7 @@ sub commands {
 # The configuration system should do this but doesn't do it right
 sub isChanged {
     my ($self, $name) = @_;
-    my $config = new VyattaConfig;
+    my $config = new Vyatta::Config;
 
     $config->setLevel("qos-policy traffic-shaper $name");
 

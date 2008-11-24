@@ -21,7 +21,7 @@ package Vyatta::Qos::DropTail;
 use strict;
 use warnings;
 
-require VyattaConfig;
+require Vyatta::Config;
 
 my %fields = (
     _limit	=> undef,
@@ -49,7 +49,7 @@ sub commands {
 
 sub isChanged {
     my ($self, $name) = @_;
-    my $config = new VyattaConfig;
+    my $config = new Vyatta::Config;
 
     $config->setLevel("qos-policy drop-tail $name");
     return $config->isChanged('queue-limit');

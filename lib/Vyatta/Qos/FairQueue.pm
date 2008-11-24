@@ -23,7 +23,7 @@ package Vyatta::Qos::FairQueue;
 use strict;
 use warnings;
 
-require VyattaConfig;
+require Vyatta::Config;
 
 # Fair Queue
 # Uses SFQ which is similar to (but not same as) WFQ
@@ -54,7 +54,7 @@ sub commands {
 
 sub isChanged {
     my ( $self, $name ) = @_;
-    my $config = new VyattaConfig;
+    my $config = new Vyatta::Config;
 
     $config->setLevel("qos-policy fair-queue $name");
     foreach my $attr ('hash-interval', 'queue-limit') {

@@ -245,7 +245,7 @@ sub getIfIndex {
 sub interfaceRate {
     my ($interface) = @_;
     my $speed;
-    my $config = new VyattaConfig;
+    my $config = new Vyatta::Config;
 
     $config->setLevel("interfaces ethernet");
     if ( $config->exists("$interface") ) {
