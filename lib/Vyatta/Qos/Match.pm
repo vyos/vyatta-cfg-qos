@@ -15,7 +15,7 @@
 
 package Vyatta::Qos::Match;
 require Vyatta::Config;
-use Vyatta::Qos::Util qw(getIfIndex getDSfield getProtocol);
+use Vyatta::Qos::Util qw(getIfIndex getDsfield getProtocol);
 
 use strict;
 use warnings;
