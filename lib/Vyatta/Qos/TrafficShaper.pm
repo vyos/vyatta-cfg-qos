@@ -311,6 +311,7 @@ sub _define {
     foreach my $class ( $config->listNodes("class")) {
 	foreach my $match ( $config->listNodes("class $class match") ) {
 	    foreach my $type ( $config->listNodes("class $class match $match") ) {
+		next if ($type eq 'description');
 		$matchTypes{$type} = "$class match $match";
 	    }
 	}
