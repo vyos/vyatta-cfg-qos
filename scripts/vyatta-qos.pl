@@ -45,6 +45,7 @@ my %policies = (
 	'fair-queue'       => 'FairQueue',
 	'rate-limit'       => 'RateLimiter',
 	'drop-tail'	   => 'DropTail',
+	'network-emulator' => 'NetworkEmulator',
     },
     'in' => {
 	'traffic-limiter' => 'TrafficLimiter',

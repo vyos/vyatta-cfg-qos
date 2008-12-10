@@ -24,13 +24,8 @@ use Vyatta::Qos::Util qw( getPercent getRate getBurstSize getProtocol
 use Getopt::Long;
 
 sub getPercentOrRate {
-    my $percent = shift;
-    if ( $percent =~ /%$/ ) {
-        return getPercent($percent);
-    }
-    else {
-        return getRate($percent);
-    }
+    my $rate = shift;
+    return ( $rate =~ /%$/ ) ? getPercent($rate) : getRate($rate);
 }
 
 sub usage {
@@ -57,4 +52,3 @@ GetOptions(
     "tos=s"             => sub { getDsfield( $_[1] ); },
     "time=s"            => sub { getTime( $_[1] ); },
 ) or usage();
-

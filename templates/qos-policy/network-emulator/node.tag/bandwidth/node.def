@@ -1,0 +1,9 @@
+type: txt
+help: Set the bandwidth limit
+syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --rate \"$VAR(@)\""
+comp_help: Allowed values:
+ <number>	   Bandwidth in Kbps per second
+ <number><suffix>  Value with scaling suffix
+                   bits per sec (kbit, mbit, gbit)
+                   bytes per sec (kbps, mbps, gbps)
+
