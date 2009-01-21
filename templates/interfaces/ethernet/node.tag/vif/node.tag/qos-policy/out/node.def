@@ -6,4 +6,3 @@ update: sudo ip link set dev $VAR(../../../@).$VAR(../../@) txqueuelen 100
        --update-interface $VAR(../../../@).$VAR(../../@) $VAR(.) $VAR(@)
 delete: /opt/vyatta/sbin/vyatta-qos.pl \
 	--delete-interface $VAR(../../../@).$VAR(../../@) $VAR(.)
-    sudo ip link set dev $VAR(../../../@).$VAR(../../@) txqueuelen 0
