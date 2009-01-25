@@ -60,7 +60,7 @@ sub make_policy {
     if ($direction) {
 	$policy_type = $policies{$direction}{$type};
     } else {
-	foreach $direction (keys %policies) {
+	foreach my $direction (keys %policies) {
 	    $policy_type = $policies{$direction}{$type};
 	    last if defined $policy_type;
 	}
@@ -68,7 +68,7 @@ sub make_policy {
 
     # This means template exists but we don't know what it is.
     if (! defined $policy_type) {
-	foreach $direction (keys %policies) {
+	foreach my $direction (keys %policies) {
 	    die "QoS policy $name is type $type and is only valid for $direction\n"
 		if defined $policies{$direction}{$type};
 	}
