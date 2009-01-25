@@ -17,6 +17,7 @@
 # Portions created by Vyatta are Copyright (C) 2008 Vyatta, Inc.
 # All Rights Reserved.
 # **** End License ****
+use strict;
 
 use lib "/opt/vyatta/share/perl5";
 use Vyatta::Qos::Util qw( getPercent getRate getBurstSize getProtocol 
