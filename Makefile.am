@@ -12,10 +12,14 @@ share_perl5_DATA += lib/Vyatta/Qos/RateLimiter.pm
 share_perl5_DATA += lib/Vyatta/Qos/DropTail.pm
 share_perl5_DATA += lib/Vyatta/Qos/TrafficLimiter.pm
 
+etcdir           = /etc
+etc_SCRIPTS      =
+
 cpiop = find  . ! -regex '\(.*~\|.*\.bak\|.*\.swp\|.*\#.*\#\)' -print0 | \
   cpio -0pd
 
 install-exec-hook:
 	mkdir -p $(DESTDIR)$(cfgdir)
+	mkdir -p $(DESTDIR)/etc/ppp/ip-up.d
 	cd templates; $(cpiop) $(DESTDIR)$(cfgdir)
 

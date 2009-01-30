@@ -1,0 +1,3 @@
+#! /bin/sh
+
+/opt/vyatta/sbin/vyatta-qos.pl --start-interface $1

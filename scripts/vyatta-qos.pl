@@ -21,23 +21,6 @@ use strict;
 use Getopt::Long;
 
 my $debug = $ENV{'QOS_DEBUG'};
-my ($check, $update, $applyChanges);
-my @updateInterface = ();
-my @deleteInterface = ();
-
-my ($listPolicy, $deletePolicy);
-my @createPolicy = ();
-
-GetOptions(
-    "check"		    => \$check,
-    "apply-changes"         => \$applyChanges,
-    "update-interface=s{3}" => \@updateInterface,
-    "delete-interface=s{2}" => \@deleteInterface,
-
-    "list-policy=s"         => \$listPolicy,
-    "delete-policy=s"       => \$deletePolicy,
-    "create-policy=s{2}"    => \@createPolicy,
-);
 
 my %policies = (
     'out' => {
@@ -118,6 +101,24 @@ sub delete_interface {
     }
 }
 
+## start_interface('ppp0')
+# reapply qos policy to interface
+sub start_interface {
+    my $ifname = shift;
+    my $interface = new Vyatta::Interface($ifname);
+    
+    die "Unknown interface type: $ifname" unless $interface;
+    my $config = new Vyatta::Config;
+    $config->setLevel($interface->path() . ' qos-policy');
+
+    foreach my $direction ( $config->listNodes( ) ) {
+	my $policy = $config->returnValue($direction);
+	next unless $policy;
+
+	update_interface($ifname, $direction, $policy);
+    }    
+}
+
 ## update_interface('eth0', 'out', 'my-shaper')
 # update policy to interface
 sub update_interface {
@@ -126,35 +127,34 @@ sub update_interface {
 
     $config->setLevel('qos-policy');
     foreach my $type ( $config->listNodes() ) {
-        if ( $config->exists("$type $name") ) {
-	    my $shaper = make_policy($config, $type, $name, $direction);
+	next if (! $config->exists("$type $name"));
+	my $shaper = make_policy($config, $type, $name, $direction);
 
-	    # Remove old policy
+	# Remove old policy
+	delete_interface($interface, $direction);
+
+	# When doing debugging just echo the commands
+	my $out;
+	if (defined $debug) {
+	    open $out, '>-'
+		or die "can't open stdout: $!";
+	} else {
+	    open $out, "|-" or exec qw:sudo /sbin/tc -batch -:
+		or die "Tc setup failed: $!\n";
+	}
+
+	$shaper->commands($out, $interface, $direction);
+	if (! close $out && ! defined $debug) {
+	    # cleanup any partial commands
 	    delete_interface($interface, $direction);
-
-	    # When doing debugging just echo the commands
-	    my $out;
-	    if (defined $debug) {
-		open $out, '>-'
-		    or die "can't open stdout: $!";
-	    } else {
-		open $out, "|-" or exec qw:sudo /sbin/tc -batch -:
-		    or die "Tc setup failed: $!\n";
-	    }
-
-            $shaper->commands($out, $interface);
-	    if (! close $out && ! defined $debug) {
-		# cleanup any partial commands
-		delete_interface($interface, $direction);
-
-		# replay commands to stdout
-		open $out, '>-';
-		$shaper->commands($out, $interface, $direction);
-		close $out;
-		die "TC command failed.";
-	    }
-            exit 0;
-        }
+	    
+	    # replay commands to stdout
+	    open $out, '>-';
+	    $shaper->commands($out, $interface, $direction);
+	    close $out;
+	    die "TC command failed.";
+	}
+	return;
     }
 
     die "Unknown qos-policy $name\n";
@@ -340,42 +340,8 @@ sub apply_changes {
     }
 }
 
-if ($check) {
-    check_conflict();
-    exit 0;
-}
-
-if ( $listPolicy ) {
-    list_policy($listPolicy);
-    exit 0;
-}
-
-if ( $#deleteInterface == 1 ) {
-    delete_interface(@deleteInterface);
-    exit 0;
-}
-
-if ( $#updateInterface == 2 ) {
-    update_interface(@updateInterface);
-    exit 0;
-}
-
-if ( $#createPolicy == 1) {
-    create_policy(@createPolicy);
-    exit 0;
-}
-
-if ( $deletePolicy ) {
-    delete_policy($deletePolicy);
-    exit 0;
-} 
-
-if ( $applyChanges ) {
-    apply_changes();
-    exit 0;
-}
-
-print <<EOF;
+sub usage {
+	print <<EOF;
 usage: vyatta-qos.pl --check
        vyatta-qos.pl --list-policy
        vyatta-qos.pl --apply-changes
@@ -387,4 +353,27 @@ usage: vyatta-qos.pl --check
        vyatta-qos.pl --delete-interface interface direction
 
 EOF
-exit 1;
+	exit 1;
+}
+
+my @updateInterface = ();
+my @deleteInterface = ();
+my @createPolicy = ();
+
+GetOptions(
+    "check"		    => sub { check_conflict(); },
+    "apply-changes"         => sub { apply_changes(); },
+    "start-interace=s"	    => sub { start_interface( $_[1] ); },
+    "update-interface=s{3}" => \@updateInterface,
+    "delete-interface=s{2}" => \@deleteInterface,
+
+    "list-policy=s"         => sub { list_policy( $_[1] ); },
+    "delete-policy=s"       => sub { delete_policy( $_[1] ); },
+    "create-policy=s{2}"    => \@createPolicy,
+) or usage();
+
+delete_interface(@deleteInterface) if ( $#deleteInterface == 1 );
+update_interface(@updateInterface) if ( $#updateInterface == 2 );
+create_policy(@createPolicy)	   if ( $#createPolicy == 1);
+
+
