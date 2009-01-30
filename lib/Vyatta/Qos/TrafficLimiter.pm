@@ -51,8 +51,8 @@
         my @matches = ();
 	my $rate = $config->returnValue("bandwidth");
 	
+	die "bandwidth must be defined for $level\n" unless $rate;
         $self->{rate} = getRate($rate);
-	defined $rate or die "bandwidth must be defined for $level\n";
 
         $self->{burst}    = $config->returnValue("burst");
 	defined $self->{burst} or die "burst must be defined for $level\n";
