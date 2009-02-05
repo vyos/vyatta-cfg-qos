@@ -16,67 +16,12 @@
 # All Rights Reserved.
 # **** End License ****
 
-{
-
-    package LimiterClass;
-    use strict;
-    require Vyatta::Config;
-    use Vyatta::Qos::Match;
-    use Vyatta::Qos::Util qw/getRate/;
-
-    my %fields = (
-	id	 => undef,
-        priority => undef,
-	burst	 => undef,
-        rate     => undef,
-        _match   => undef,
-    );
-
-    sub new {
-        my ( $that, $config, $id ) = @_;
-        my $class = ref($that) || $that;
-        my $self = {%fields};
-
-        $self->{id} = $id;
-
-        bless $self, $class;
-        $self->_define($config);
-
-        return $self;
-    }
-
-    sub _define {
-        my ( $self, $config ) = @_;
-        my $level   = $config->setLevel();
-        my @matches = ();
-	my $rate = $config->returnValue("bandwidth");
-	
-	die "bandwidth must be defined for $level\n" unless $rate;
-        $self->{rate} = getRate($rate);
-
-        $self->{burst}    = $config->returnValue("burst");
-	defined $self->{burst} or die "burst must be defined for $level\n";
-
-        $self->{priority} = $config->returnValue("priority");
-
-        foreach my $match ( $config->listNodes("match") ) {
-            $config->setLevel("$level match $match");
-            push @matches, new Vyatta::Qos::Match($config);
-        }
-        $self->{_match} = \@matches;
-    }
-
-    sub matchRules {
-        my ($self) = @_;
-        my $matches = $self->{_match};
-        return @$matches;
-    }
-
-}
-
 package Vyatta::Qos::TrafficLimiter;
 use strict;
+use warnings;
+
 require Vyatta::Config;
+use Vyatta::Qos::LimiterClass;
 
 my %fields = (
     _level   => undef,
@@ -182,14 +127,12 @@ sub isChanged {
                 'ip destination port'
               )
             {
-                if ( $config->isChanged("$level $parm") ) {
-                    return "$level $parm";
-                }
+		return "$level $parm" if ( $config->isChanged("$level $parm") );
             }
         }
     }
 
-    return undef;    # false
+    return;    # false
 }
 
 1;
