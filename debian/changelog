@@ -1,3 +1,18 @@
+vyatta-cfg-qos (0.12.3) unstable; urgency=low
+
+  [ Bob Gilligan ]
+  * Move qos policy parameters for PPPOE to correct location in tree.
+  * Bugfix 4052:  Support PPPOE over ethernet VIFs.
+
+  [ Stephen Hemminger ]
+  * Fix vyatta config name change
+  * Fairqueue: fix perlcritic warnings
+  * ratelimiter: fix perlcritic warnings
+  * traffic limiter: move class to separate file
+  * Split shaperclass into separate file
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Thu, 05 Feb 2009 14:37:39 -0800
+
 vyatta-cfg-qos (0.12.2) unstable; urgency=low
 
   * Don't reset txqueuelen after removing qos
