@@ -20,7 +20,7 @@ package Vyatta::Qos::NetworkEmulator;
 use strict;
 use warnings;
 
-require VyattaConfig;
+require Vyatta::Config;
 use Vyatta::Qos::Util;
 
 my %fields = (
@@ -87,14 +87,14 @@ sub commands {
 
 sub isChanged {
     my ( $self, $name ) = @_;
-    my $config = new VyattaConfig;
+    my $config = new Vyatta::Config;
 
     $config->setLevel("qos-policy network-emulator $name");
     foreach my $attr ( "bandwidth", "burst", "queue-limit", "network-delay", 
 		       "packet-loss", "packet-corruption", "packet-reordering", ) {
         return $attr if ( $config->isChanged($attr) );
     }
-    return undef;    # false
+    return;
 }
 
 1;
