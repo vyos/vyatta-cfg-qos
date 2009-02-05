@@ -62,11 +62,9 @@ sub isChanged {
 
     $config->setLevel("qos-policy rate-limit $name");
     foreach my $attr ('bandwidth', 'burst', 'latency') {
-	if ($config->isChanged($attr)) {
-	    return $attr
-	}
+	return $attr if ($config->isChanged($attr));
     }
-    return undef; # false
+    return; # false
 }
 
 1;
