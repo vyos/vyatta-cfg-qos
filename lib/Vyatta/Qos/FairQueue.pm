@@ -58,11 +58,9 @@ sub isChanged {
 
     $config->setLevel("qos-policy fair-queue $name");
     foreach my $attr ('hash-interval', 'queue-limit') {
-	if ($config->isChanged($attr)) {
-	    return $attr
-	}
+	return $attr if ($config->isChanged($attr));
     }
-    return undef; # false
+    return; # false
 }
 
 1;
