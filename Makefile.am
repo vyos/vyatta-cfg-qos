@@ -7,10 +7,12 @@ sbin_SCRIPTS += scripts/vyatta-qos-util.pl
 share_perl5_DATA = lib/Vyatta/Qos/Util.pm
 share_perl5_DATA += lib/Vyatta/Qos/FairQueue.pm
 share_perl5_DATA += lib/Vyatta/Qos/TrafficShaper.pm
+share_perl5_DATA += lib/Vyatta/Qos/ShaperClass.pm
 share_perl5_DATA += lib/Vyatta/Qos/Match.pm
 share_perl5_DATA += lib/Vyatta/Qos/RateLimiter.pm
 share_perl5_DATA += lib/Vyatta/Qos/DropTail.pm
 share_perl5_DATA += lib/Vyatta/Qos/TrafficLimiter.pm
+share_perl5_DATA += lib/Vyatta/Qos/LimiterClass.pm
 
 etcdir           = /etc
 etc_SCRIPTS      =
