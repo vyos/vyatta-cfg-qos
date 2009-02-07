@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.12.4) unstable; urgency=low
+
+  * Add ShaperClass and LimiterClass to Makefile
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Fri, 06 Feb 2009 17:24:27 -0800
+
 vyatta-cfg-qos (0.12.3) unstable; urgency=low
 
   [ Bob Gilligan ]
