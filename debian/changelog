@@ -1,3 +1,10 @@
+vyatta-cfg-qos (0.12.5) unstable; urgency=low
+
+  * Fix loading problems with sub-class modules
+  * Use undef rather than -1 in default class
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Sun, 08 Feb 2009 15:41:42 -0800
+
 vyatta-cfg-qos (0.12.4) unstable; urgency=low
 
   * Add ShaperClass and LimiterClass to Makefile
