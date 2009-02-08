@@ -20,10 +20,11 @@
 
 package Vyatta::Qos::TrafficShaper;
 use strict;
+use warnings;
 
 require Vyatta::Config;
+require Vyatta::Qos::ShaperClass;
 use Vyatta::Qos::Util qw/getRate interfaceRate/;
-use Vyatta::Qos::ShaperClass;
 
 
 my %fields = (
@@ -114,12 +115,12 @@ sub _define {
 
 
     $config->setLevel("$level default");
-    push @classes, new ShaperClass($config, -1);
+    push @classes, new Vyatta::Qos::Vyatta::Qos::ShaperClass($config, -1);
     $config->setLevel($level);
 
     foreach my $id ( $config->listNodes("class") ) {
         $config->setLevel("$level class $id");
-	push @classes, new ShaperClass( $config, $id );
+	push @classes, new Vyatta::Qos::ShaperClass( $config, $id );
     }
     $self->{_classes} = \@classes;
 }

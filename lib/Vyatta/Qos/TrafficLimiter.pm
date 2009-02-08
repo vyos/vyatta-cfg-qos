@@ -21,7 +21,7 @@ use strict;
 use warnings;
 
 require Vyatta::Config;
-use Vyatta::Qos::LimiterClass;
+require Vyatta::Qos::LimiterClass;
 
 my %fields = (
     _level   => undef,
@@ -70,7 +70,7 @@ sub _define {
 
     foreach my $id ( $config->listNodes("class") ) {
         $config->setLevel("$level class $id");
-        push @classes, new LimiterClass( $config, $id );
+        push @classes, new Vyatta::Qos::LimiterClass( $config, $id );
     }
     $self->{_classes} = \@classes;
 }
