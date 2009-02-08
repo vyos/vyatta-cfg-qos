@@ -115,7 +115,7 @@ sub _define {
 
 
     $config->setLevel("$level default");
-    push @classes, new Vyatta::Qos::Vyatta::Qos::ShaperClass($config, -1);
+    push @classes, new Vyatta::Qos::Vyatta::Qos::ShaperClass($config);
     $config->setLevel($level);
 
     foreach my $id ( $config->listNodes("class") ) {
