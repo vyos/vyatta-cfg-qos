@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.12.6) unstable; urgency=low
+
+  * Fix double prefix when setting up ShaperClass
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Tue, 10 Feb 2009 15:26:36 -0800
+
 vyatta-cfg-qos (0.12.5) unstable; urgency=low
 
   * Fix loading problems with sub-class modules
