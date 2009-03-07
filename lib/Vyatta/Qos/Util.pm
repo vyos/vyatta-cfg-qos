@@ -16,12 +16,13 @@
 # **** End License ****
 
 package Vyatta::Qos::Util;
-our @EXPORT = qw(getRate getPercent getBurstSize getProtocol getDsfield getTime);
-our @EXPORT_OK = qw(interfaceRate getIfIndex);
-use base qw(Exporter);
-
 use strict;
 use warnings;
+
+our @EXPORT =
+  qw(getRate getPercent getBurstSize getProtocol getDsfield getTime);
+our @EXPORT_OK = qw(interfaceRate getIfIndex);
+use base qw(Exporter);
 
 sub get_num {
     use POSIX qw(strtod);
