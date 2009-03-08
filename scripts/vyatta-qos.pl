@@ -104,24 +104,23 @@ sub list_policy {
     }
 }
 
+my %delcmd = (
+    'out' => 'root',
+    'in'  => 'parent ffff:',
+);
+
 ## delete_interface('eth0', 'out')
 # remove all filters and qdisc's
 sub delete_interface {
     my ( $interface, $direction ) = @_;
+    my $arg = $delcmd{$direction};
 
-    for ($direction) {
+    die "bad direction $direction\n" unless $arg;
+    
+    my $cmd = "sudo tc qdisc del dev $interface ". $arg . " 2>/dev/null";
 
-        # delete old qdisc - silence error if no qdisc loaded
-        if (/^out$/) {
-            qx(sudo /sbin/tc qdisc del dev "$interface" root 2>/dev/null);
-        }
-        elsif (/^in$/) {
-qx(sudo /sbin/tc qdisc del dev "$interface" parent ffff: 2>/dev/null);
-        }
-        else {
-            croak "bad direction $direction";
-        }
-    }
+    # ignore errors (may have no qdisc)
+    system($cmd);
 }
 
 ## start_interface('ppp0')
