@@ -82,6 +82,7 @@ sub list_policy {
     }
 
     print join( ' ', @nodes ), "\n";
+    exit 0;
 }
 
 ## delete_interface('eth0', 'out')
@@ -292,6 +293,7 @@ sub delete_policy {
 	# can't delete active policy
 	die "Must delete QoS policy from interfaces before deleting rules\n";
     }
+    exit 0;
 }
 
 sub check_conflict {
@@ -360,10 +362,12 @@ my @updateInterface = ();
 my @deleteInterface = ();
 my @createPolicy = ();
 
+my ($check, $apply, $start);
+
 GetOptions(
-    "check"		    => sub { check_conflict(); },
-    "apply"		    => sub { apply_changes(); },
-    "start-interface=s"	    => sub { start_interface( $_[1] ); },
+    "check"		    => \$check,
+    "apply"	            => \$apply,
+    "start-interface=s"	    => \$start,
     "update-interface=s{3}" => \@updateInterface,
     "delete-interface=s{2}" => \@deleteInterface,
 
@@ -372,6 +376,10 @@ GetOptions(
     "create-policy=s{2}"    => \@createPolicy,
 ) or usage();
 
+apply_changes() if $apply;
+check_conflict() if $check;
+
 delete_interface(@deleteInterface) if ( $#deleteInterface == 1 );
 update_interface(@updateInterface) if ( $#updateInterface == 2 );
+start_interface( $start ) if $start;
 create_policy(@createPolicy)	   if ( $#createPolicy == 1);
