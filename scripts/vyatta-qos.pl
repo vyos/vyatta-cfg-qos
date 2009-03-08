@@ -3,12 +3,12 @@
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 2 as
 # published by the Free Software Foundation.
-# 
+#
 # This program is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # General Public License for more details.
-# 
+#
 # This code was originally developed by Vyatta, Inc.
 # Portions created by Vyatta are Copyright (C) 2008 Vyatta, Inc.
 # All Rights Reserved.
@@ -106,7 +106,7 @@ sub delete_interface {
 sub start_interface {
     my $ifname = shift;
     my $interface = new Vyatta::Interface($ifname);
-    
+
     die "Unknown interface type: $ifname" unless $interface;
     my $config = new Vyatta::Config;
     $config->setLevel($interface->path() . ' qos-policy');
@@ -116,7 +116,7 @@ sub start_interface {
 	next unless $policy;
 
 	update_interface($ifname, $direction, $policy);
-    }    
+    }
 }
 
 ## update_interface('eth0', 'out', 'my-shaper')
@@ -147,7 +147,7 @@ sub update_interface {
 	if (! close $out && ! defined $debug) {
 	    # cleanup any partial commands
 	    delete_interface($interface, $direction);
-	    
+
 	    # replay commands to stdout
 	    open $out, '>-';
 	    $shaper->commands($out, $interface, $direction);
@@ -205,7 +205,7 @@ sub serial_vif_using {
 
     foreach my $encap (qw/cisco-hdlc frame-relay ppp/) {
 	foreach my $vif ( $config->listNodes("$type $interface vif") ) {
-	    push @affected, 
+	    push @affected,
 	    	using_policy($config, $name, "$type $interface $encap vif $vif");
 	}
     }
@@ -230,7 +230,7 @@ sub interfaces_using {
     foreach my $type ( $config->listNodes() ) {
 	foreach my $interface ( $config->listNodes($type) ) {
 	    push @affected, using_policy($config, $name, "$type $interface");
-	    
+
 	    my $vif_check = $interfaceVifUsing{$type};
 	    if ($vif_check) {
 		push @affected, $vif_check->($config, $name, $type, $interface);
@@ -264,7 +264,7 @@ sub serialName {
 sub adslName {
     # adsl-name pvc pvc-num ppp-type id
     my ($name, undef, undef, $type, $id) = @_;
-    
+
     if ($id) {
 	return "$name.$id";
     } else {
@@ -375,5 +375,3 @@ GetOptions(
 delete_interface(@deleteInterface) if ( $#deleteInterface == 1 );
 update_interface(@updateInterface) if ( $#updateInterface == 2 );
 create_policy(@createPolicy)	   if ( $#createPolicy == 1);
-
-
