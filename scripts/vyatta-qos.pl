@@ -15,10 +15,12 @@
 # **** End License ****
 
 use lib "/opt/vyatta/share/perl5";
-use Vyatta::Config;
 use strict;
 use warnings;
 
+use Carp;
+use Vyatta::Misc;
+use Vyatta::Config;
 use Getopt::Long;
 
 my $debug = $ENV{'QOS_DEBUG'};
@@ -126,8 +128,8 @@ sub update_interface {
     my ($interface, $direction, $name ) = @_;
     my $config = new Vyatta::Config;
 
-    $config->setLevel('qos-policy');
-    foreach my $type ( $config->listNodes() ) {
+    my @policies = $config->listNodes('qos-policy');
+    foreach my $type ( @policies ) {
 	next if (! $config->exists("$type $name"));
 	my $shaper = make_policy($config, $type, $name, $direction);
 
@@ -161,138 +163,28 @@ sub update_interface {
     die "Unknown qos-policy $name\n";
 }
 
-sub using_policy {
-    my ($config, $name, $path) = @_;
+# return array of names using given qos-policy
+sub interfaces_using {
+    my $policy = shift;
+    my $config = new Vyatta::Config;
     my @inuse = ();
+    
+    foreach my $name (getInterfaces()) {
+	my $intf = new Vyatta::Interface($name);
+	next unless $intf;
 
-    foreach my $dir ( $config->listNodes("$path qos-policy") ) {
-	my $policy = $config->returnValue("$path qos-policy $dir");
-	if ($policy eq $name) {
-	    push @inuse, "$path $dir";
-	}
+	$config->setLevel( $intf->path() );
+	push @inuse, $name if ($config->exists("qos-policy $policy"));
     }
     return @inuse;
 }
-
-sub ether_vif_using {
-    my ($config, $name, $type, $interface) = @_;
-    my @affected = ();
-
-    foreach my $vif ( $config->listNodes("$type $interface vif") ) {
-	my $path = "$type $interface vif $vif";
-	push @affected, using_policy($config, $name, $path);
-    }
-    return @affected;
-}
-
-sub adsl_vif_using {
-    my ($config, $name, $type, $interface) = @_;
-    my @affected = ();
-
-    foreach my $pvc ( $config->listNodes("$type $interface pvc") ) {
-	foreach my $pvctype ( $config->listNodes("$type $interface pvc $pvc") ) {
-	    foreach my $vc ( $config->listNodes("$type $interface pvc $pvc $pvctype") ) {
-		my $path = "$type $interface pvc $pvc $pvctype $vc";
-		push @affected, using_policy($config, $name, $path);
-	    }
-	}
-    }
-    return @affected;
-}
-
-sub serial_vif_using {
-    my ($config, $name, $type, $interface) = @_;
-    my @affected = ();
-
-    foreach my $encap (qw/cisco-hdlc frame-relay ppp/) {
-	foreach my $vif ( $config->listNodes("$type $interface vif") ) {
-	    push @affected,
-	    	using_policy($config, $name, "$type $interface $encap vif $vif");
-	}
-    }
-
-    return @affected;
-}
-
-
-my %interfaceVifUsing = (
-    'ethernet'	=> \&ether_vif_using,
-    'bonding'	=> \&ether_vif_using,
-    'serial'	=> \&serial_vif_using,
-    'adsl'	=> \&adsl_vif_using,
-);
-
-sub interfaces_using {
-    my ($name) = @_;
-    my $config = new Vyatta::Config;
-    my @affected = ();
-
-    $config->setLevel('interfaces');
-    foreach my $type ( $config->listNodes() ) {
-	foreach my $interface ( $config->listNodes($type) ) {
-	    push @affected, using_policy($config, $name, "$type $interface");
-
-	    my $vif_check = $interfaceVifUsing{$type};
-	    if ($vif_check) {
-		push @affected, $vif_check->($config, $name, $type, $interface);
-	    }
-	}
-    }
-
-    return @affected;
-}
-
-sub etherName {
-    my ($eth, $vif, $id) = @_;
-
-    if ($vif eq 'vif') {
-	return "$eth.$id";
-    } else {
-	return $eth;
-    }
-}
-
-sub serialName {
-    my ($wan, $encap, $type, $id) = @_;
-
-    if ($encap && $type eq 'vif') {
-	return "$wan.$id";
-    } else {
-	return $wan;
-    }
-}
-
-sub adslName {
-    # adsl-name pvc pvc-num ppp-type id
-    my ($name, undef, undef, $type, $id) = @_;
-
-    if ($id) {
-	return "$name.$id";
-    } else {
-	return $name;
-    }
-}
-
-# Handle mapping of interface types to device names with vif's
-# This is because of differences in config layout
-my %interfaceTypes = (
-    'ethernet'	=> \&etherName,
-    'bonding'	=> \&etherName,
-    'serial'	=> \&serialName,
-    'adsl'	=> \&adslName,
-);
 
 sub delete_policy {
     my ($name) = @_;
     my @inuse = interfaces_using($name);
 
-    if ( @inuse ) {
-	foreach my $used (@inuse) {
-	    warn "QoS policy $name used by $used\n";
-	}
-	# can't delete active policy
-	die "Must delete QoS policy from interfaces before deleting rules\n";
-    }
+    die "QoS policy still in use on ", join(' ', @inuse), "\n"
+	if ( @inuse );
 }
 
 sub name_conflict {
@@ -325,19 +217,18 @@ sub create_policy {
 sub apply_changes {
     my $config = new Vyatta::Config;
 
-    $config->setLevel('qos-policy');
-    foreach my $policy ($config->listNodes()) {
+    my @policies = $config->listNodes('qos-policy');
+    foreach my $policy (@policies) {
 	foreach my $name ($config->listNodes($policy)) {
 	    my $shaper = make_policy($config, $policy, $name);
 
-	    if ($shaper->isChanged($name)) {
-		foreach my $cfgpath (interfaces_using($name)) {
-		    # ethernet ethX vif 1 out
-		    my @elements = split / /, $cfgpath;
-		    my $direction = pop @elements;  # out, in, ...
-		    my $type = shift @elements;     # ethernet, serial, ...
-		    my $interface = $interfaceTypes{$type};
-		    my $device = $interface->(@elements);
+	    next unless ($shaper->isChanged($name));
+
+	    foreach my $device (interfaces_using($name)) {
+		my $intf = new Vyatta::Interface($device);
+		$config->setLevel($intf->path());
+		foreach my $direction ($config->listNodes('qos-policy')) {
+		    next unless $config->exists("qos-policy $direction $name");
 
 		    update_interface($device, $direction, $name);
 		}
