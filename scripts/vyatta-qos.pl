@@ -88,21 +88,16 @@ sub make_policy {
     return $class->new($config, $name, $direction);
 }
 
-## list defined qos policy names
+## list defined qos policy names for a direction
 sub list_policy {
-    my $direction = shift;
     my $config = new Vyatta::Config;
-    my @nodes  = ();
-
     $config->setLevel('qos-policy');
-    foreach my $type ( $config->listNodes() ) {
-	next unless defined $policies{$direction}{$type};
-	foreach my $name ( $config->listNodes($type) ){
-	    push @nodes, $name;
-	}
-    }
 
-    print join( ' ', @nodes ), "\n";
+     while (my $direction = shift) {
+	 my @types = grep { defined $policies{$direction}{$_} } 
+	 	$config->listNodes();
+	 print join(' ',@types);
+     }
 }
 
 ## delete_interface('eth0', 'out')
@@ -125,18 +120,19 @@ sub delete_interface {
 ## start_interface('ppp0')
 # reapply qos policy to interface
 sub start_interface {
-    my $ifname = shift;
-    my $interface = new Vyatta::Interface($ifname);
+    while (my $ifname = shift) {
+	my $interface = new Vyatta::Interface($ifname);
+	die "Unknown interface type: $ifname" unless $interface;
 
-    die "Unknown interface type: $ifname" unless $interface;
-    my $config = new Vyatta::Config;
-    $config->setLevel($interface->path() . ' qos-policy');
+	my $config = new Vyatta::Config;
+	$config->setLevel($interface->path() . ' qos-policy');
 
-    foreach my $direction ( $config->listNodes( ) ) {
-	my $policy = $config->returnValue($direction);
-	next unless $policy;
+	foreach my $direction ( $config->listNodes( ) ) {
+	    my $policy = $config->returnValue($direction);
+	    next unless $policy;
 
-	update_interface($ifname, $direction, $policy);
+	    update_interface($ifname, $direction, $policy);
+	}
     }
 }
 
@@ -192,12 +188,14 @@ sub interfaces_using {
     return @inuse;
 }
 
+# check if policy name(s) are still in use
 sub delete_policy {
-    my ($name) = @_;
-    my @inuse = interfaces_using($name);
+    while (my $name = shift) {
+	my @inuse = interfaces_using($name);
 
-    die "QoS policy still in use on ", join(' ', @inuse), "\n"
-	if ( @inuse );
+	die "QoS policy still in use on ", join(' ', @inuse), "\n"
+	    if ( @inuse );
+    }
 }
 
 sub create_policy {
@@ -229,7 +227,7 @@ sub apply_policy {
 
 sub usage {
 	print <<EOF;
-usage: vyatta-qos.pl --list-policy
+usage: vyatta-qos.pl --list-policy direction
        vyatta-qos.pl --create-policy policy-type policy-name
        vyatta-qos.pl --delete-policy policy-name
        vyatta-qos.pl --apply-policy policy-name
@@ -243,24 +241,28 @@ EOF
 
 my @updateInterface = ();
 my @deleteInterface = ();
+my @listPolicy = ();
 my @createPolicy = ();
 my @applyPolicy = ();
-my $start;
+my @deletePolicy = ();
+my @startList = ();
 
 GetOptions(
-    "start-interface=s"	    => \$start,
+    "start-interface=s"	    => \@startList,
     "update-interface=s{3}" => \@updateInterface,
     "delete-interface=s{2}" => \@deleteInterface,
 
-    "list-policy=s"         => sub { list_policy( $_[1] ); },
-    "delete-policy=s"       => sub { delete_policy( $_[1] ); },
+    "list-policy=s"         => \@listPolicy,
+    "delete-policy=s"       => \@deletePolicy,
     "create-policy=s{2}"    => \@createPolicy,
     "apply-policy=s"	    => \@applyPolicy,
 ) or usage();
 
 delete_interface(@deleteInterface) if ( $#deleteInterface == 1 );
 update_interface(@updateInterface) if ( $#updateInterface == 2 );
-start_interface( $start ) if $start;
+start_interface(@startList) if (@startList);
+list_policy( @listPolicy) if (@listPolicy);
 create_policy(@createPolicy)	   if ( $#createPolicy == 1);
+delete_policy(@deletePolicy) if (@deletePolicy);
 apply_policy(@applyPolicy) if (@applyPolicy);
 
