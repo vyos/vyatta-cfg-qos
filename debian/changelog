@@ -1,3 +1,14 @@
+vyatta-cfg-qos (0.12.7) unstable; urgency=low
+
+  * Reindent traffic shaper with perl tidy
+  * Reindent Util.pm and enable strict check.
+  * Cleanup whitespace
+  * Avoid possible confusion over variable name 'usage'
+  * Change options
+  * Fix problems caused by GetOptions() change.
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Sat, 07 Mar 2009 17:36:04 -0800
+
 vyatta-cfg-qos (0.12.6) unstable; urgency=low
 
   * Fix double prefix when setting up ShaperClass
