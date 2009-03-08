@@ -17,6 +17,7 @@
 use lib "/opt/vyatta/share/perl5";
 use Vyatta::Config;
 use strict;
+use warnings;
 
 use Getopt::Long;
 
@@ -82,7 +83,6 @@ sub list_policy {
     }
 
     print join( ' ', @nodes ), "\n";
-    exit 0;
 }
 
 ## delete_interface('eth0', 'out')
@@ -97,7 +97,7 @@ sub delete_interface {
 	} elsif (/^in$/) {
 	    qx(sudo /sbin/tc qdisc del dev "$interface" parent ffff: 2>/dev/null);
 	} else {
-	    die "bad direction $direction";
+	    croak "bad direction $direction";
 	}
     }
 }
@@ -293,10 +293,9 @@ sub delete_policy {
 	# can't delete active policy
 	die "Must delete QoS policy from interfaces before deleting rules\n";
     }
-    exit 0;
 }
 
-sub check_conflict {
+sub name_conflict {
     my $config = new Vyatta::Config;
     my %other = ();
 
@@ -304,17 +303,22 @@ sub check_conflict {
     foreach my $type ( $config->listNodes() ) {
 	foreach my $name ( $config->listNodes($type) ) {
 	    my $conflict = $other{$name};
-	    die "Policy $name used by $conflict and $type\n" if ($conflict);
+	    if ($conflict) {
+		warn "Policy $name used by $conflict and $type\n";
+		return $name;
+	    }
 	    $other{$name} = $type;
 	}
     }
+    return;
 }
 
 sub create_policy {
     my ($shaper, $name) = @_;
     my $config = new Vyatta::Config;
 
-    # Syntax check
+    exit 1 if name_conflict();
+
     make_policy($config, $shaper, $name);
 }
 
@@ -344,8 +348,7 @@ sub apply_changes {
 
 sub usage {
 	print <<EOF;
-usage: vyatta-qos.pl --check
-       vyatta-qos.pl --list-policy
+usage: vyatta-qos.pl --list-policy
        vyatta-qos.pl --apply
 
        vyatta-qos.pl --create-policy policy-type policy-name
@@ -362,10 +365,9 @@ my @updateInterface = ();
 my @deleteInterface = ();
 my @createPolicy = ();
 
-my ($check, $apply, $start);
+my ($apply, $start);
 
 GetOptions(
-    "check"		    => \$check,
     "apply"	            => \$apply,
     "start-interface=s"	    => \$start,
     "update-interface=s{3}" => \@updateInterface,
@@ -377,7 +379,6 @@ GetOptions(
 ) or usage();
 
 apply_changes() if $apply;
-check_conflict() if $check;
 
 delete_interface(@deleteInterface) if ( $#deleteInterface == 1 );
 update_interface(@updateInterface) if ( $#updateInterface == 2 );
