@@ -94,9 +94,13 @@ sub list_policy {
     $config->setLevel('qos-policy');
 
     while ( my $direction = shift ) {
-        my @types =
-          grep { defined $policies{$direction}{$_} } $config->listNodes();
-        print join( ' ', @types );
+        my @qos = grep { $policies{$direction}{$_} } $config->listNodes();
+        my @names = ();
+        foreach my $type (@qos) {
+            my @n = $config->listNodes($type);
+            push @names, @n;
+        }
+        print join( ' ', @names ), "\n";
     }
 }
 
