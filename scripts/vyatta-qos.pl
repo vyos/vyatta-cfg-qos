@@ -344,7 +344,7 @@ sub usage {
 	print <<EOF;
 usage: vyatta-qos.pl --check
        vyatta-qos.pl --list-policy
-       vyatta-qos.pl --apply-changes
+       vyatta-qos.pl --apply
 
        vyatta-qos.pl --create-policy policy-type policy-name
        vyatta-qos.pl --delete-policy policy-name
@@ -362,8 +362,8 @@ my @createPolicy = ();
 
 GetOptions(
     "check"		    => sub { check_conflict(); },
-    "apply-changes"         => sub { apply_changes(); },
-    "start-interace=s"	    => sub { start_interface( $_[1] ); },
+    "apply"		    => sub { apply_changes(); },
+    "start-interface=s"	    => sub { start_interface( $_[1] ); },
     "update-interface=s{3}" => \@updateInterface,
     "delete-interface=s{2}" => \@deleteInterface,
 
