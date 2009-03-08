@@ -38,9 +38,25 @@ my %policies = (
     }
 );
 
+# find policy for name - also check for duplicates
+## find_policy('limited')
+sub find_policy {
+    my $name  = shift;
+    my $config = new Vyatta::Config;
+ 
+    $config->setLevel('qos-policy');
+    my @policy = grep { $config->exists("$_ $name") } $config->listNodes();
+
+    die "Policy name \"$name\" conflict, used by: ", join(' ', @policy), "\n"
+	if ($#policy > 0);
+
+    return $policy[0];
+}
+ 
 # class factory for policies
+## make_policy('traffic-shaper', 'limited', 'out')
 sub make_policy {
-    my ($config, $type, $name, $direction) = @_;
+    my ($type, $name, $direction) = @_;
     my $policy_type;
 
     if ($direction) {
@@ -53,13 +69,15 @@ sub make_policy {
     }
 
     # This means template exists but we don't know what it is.
-    if (! defined $policy_type) {
+    unless ($policy_type) {
 	foreach my $direction (keys %policies) {
 	    die "QoS policy $name is type $type and is only valid for $direction\n"
-		if defined $policies{$direction}{$type};
+		if $policies{$direction}{$type};
 	}
 	die "QoS policy $name has not been created\n";
     }
+
+    my $config  = new Vyatta::Config;
     $config->setLevel("qos-policy $type $name");
 
     my $location = "Vyatta/Qos/$policy_type.pm";
@@ -125,42 +143,37 @@ sub start_interface {
 ## update_interface('eth0', 'out', 'my-shaper')
 # update policy to interface
 sub update_interface {
-    my ($interface, $direction, $name ) = @_;
-    my $config = new Vyatta::Config;
+    my ($device, $direction, $name ) = @_;
+    my $policy = find_policy($name);
+    die "Unknown qos-policy $name\n" unless $policy;
 
-    my @policies = $config->listNodes('qos-policy');
-    foreach my $type ( @policies ) {
-	next if (! $config->exists("$type $name"));
-	my $shaper = make_policy($config, $type, $name, $direction);
+    my $shaper = make_policy( $policy, $name, $direction );
+    exit 1 unless $shaper;
 
-	# Remove old policy
-	delete_interface($interface, $direction);
+    # Remove old policy
+    delete_interface($device, $direction);
 
-	# When doing debugging just echo the commands
-	my $out;
-	if (defined $debug) {
-	    open $out, '>-'
-		or die "can't open stdout: $!";
-	} else {
-	    open $out, "|-" or exec qw:sudo /sbin/tc -batch -:
-		or die "Tc setup failed: $!\n";
-	}
-
-	$shaper->commands($out, $interface, $direction);
-	if (! close $out && ! defined $debug) {
-	    # cleanup any partial commands
-	    delete_interface($interface, $direction);
-
-	    # replay commands to stdout
-	    open $out, '>-';
-	    $shaper->commands($out, $interface, $direction);
-	    close $out;
-	    die "TC command failed.";
-	}
-	return;
+    # When doing debugging just echo the commands
+    my $out;
+    if (defined $debug) {
+	open $out, '>-'
+	    or die "can't open stdout: $!";
+    } else {
+	open $out, "|-" or exec qw:sudo /sbin/tc -batch -:
+	    or die "Tc setup failed: $!\n";
     }
 
-    die "Unknown qos-policy $name\n";
+    $shaper->commands($out, $device, $direction);
+    if (! close $out && ! defined $debug) {
+	# cleanup any partial commands
+	delete_interface($device, $direction);
+	
+	# replay commands to stdout
+	open $out, '>-';
+	$shaper->commands($out, $device, $direction);
+	close $out;
+	die "TC command failed.";
+    }
 }
 
 # return array of names using given qos-policy
@@ -187,51 +200,28 @@ sub delete_policy {
 	if ( @inuse );
 }
 
-sub name_conflict {
-    my $config = new Vyatta::Config;
-    my %other = ();
-
-    $config->setLevel("qos-policy");
-    foreach my $type ( $config->listNodes() ) {
-	foreach my $name ( $config->listNodes($type) ) {
-	    my $conflict = $other{$name};
-	    if ($conflict) {
-		warn "Policy $name used by $conflict and $type\n";
-		return $name;
-	    }
-	    $other{$name} = $type;
-	}
-    }
-    return;
-}
-
 sub create_policy {
-    my ($shaper, $name) = @_;
-    my $config = new Vyatta::Config;
-
-    exit 1 if name_conflict();
-
-    make_policy($config, $shaper, $name);
+    my ( $policy, $name ) = @_;
+    find_policy($name);
+ 
+     # Check policy for validity
+     my $shaper = make_policy( $policy, $name );
+     exit 1 unless $shaper;
 }
 
-sub apply_changes {
+# Configuration changed, reapply to all interfaces.
+sub apply_policy {
     my $config = new Vyatta::Config;
 
-    my @policies = $config->listNodes('qos-policy');
-    foreach my $policy (@policies) {
-	foreach my $name ($config->listNodes($policy)) {
-	    my $shaper = make_policy($config, $policy, $name);
+    while (my $name = shift) {
+	foreach my $device (interfaces_using($name)) {
+	    my $intf = new Vyatta::Interface($device);
 
-	    next unless ($shaper->isChanged($name));
+	    $config->setLevel($intf->path());
+	    foreach my $direction ($config->listNodes('qos-policy')) {
+		next unless $config->exists("qos-policy $direction $name");
 
-	    foreach my $device (interfaces_using($name)) {
-		my $intf = new Vyatta::Interface($device);
-		$config->setLevel($intf->path());
-		foreach my $direction ($config->listNodes('qos-policy')) {
-		    next unless $config->exists("qos-policy $direction $name");
-
-		    update_interface($device, $direction, $name);
-		}
+		update_interface($device, $direction, $name);
 	    }
 	}
     }
@@ -240,10 +230,9 @@ sub apply_changes {
 sub usage {
 	print <<EOF;
 usage: vyatta-qos.pl --list-policy
-       vyatta-qos.pl --apply
-
        vyatta-qos.pl --create-policy policy-type policy-name
        vyatta-qos.pl --delete-policy policy-name
+       vyatta-qos.pl --apply-policy policy-name
 
        vyatta-qos.pl --update-interface interface direction policy-name
        vyatta-qos.pl --delete-interface interface direction
@@ -255,11 +244,10 @@ EOF
 my @updateInterface = ();
 my @deleteInterface = ();
 my @createPolicy = ();
-
-my ($apply, $start);
+my @applyPolicy = ();
+my $start;
 
 GetOptions(
-    "apply"	            => \$apply,
     "start-interface=s"	    => \$start,
     "update-interface=s{3}" => \@updateInterface,
     "delete-interface=s{2}" => \@deleteInterface,
@@ -267,11 +255,12 @@ GetOptions(
     "list-policy=s"         => sub { list_policy( $_[1] ); },
     "delete-policy=s"       => sub { delete_policy( $_[1] ); },
     "create-policy=s{2}"    => \@createPolicy,
+    "apply-policy=s"	    => \@applyPolicy,
 ) or usage();
-
-apply_changes() if $apply;
 
 delete_interface(@deleteInterface) if ( $#deleteInterface == 1 );
 update_interface(@updateInterface) if ( $#updateInterface == 2 );
 start_interface( $start ) if $start;
 create_policy(@createPolicy)	   if ( $#createPolicy == 1);
+apply_policy(@applyPolicy) if (@applyPolicy);
+

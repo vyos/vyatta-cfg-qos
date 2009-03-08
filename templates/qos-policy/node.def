@@ -1,2 +1,1 @@
 help: Configure Quality of Service (QOS) policy type
-end: /opt/vyatta/sbin/vyatta-qos.pl --apply
