@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.12.9) unstable; urgency=low
+
+  * Print correct names for completion
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Sun, 08 Mar 2009 14:10:36 -0700
+
 vyatta-cfg-qos (0.12.8) unstable; urgency=low
 
   * Fold name conflict checking into policy creation
