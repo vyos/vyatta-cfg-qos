@@ -286,8 +286,8 @@ sub delete_policy {
     my @inuse = interfaces_using($name);
 
     if ( @inuse ) {
-	foreach my $usage (@inuse) {
-	    warn "QoS policy $name used by $usage\n";
+	foreach my $used (@inuse) {
+	    warn "QoS policy $name used by $used\n";
 	}
 	# can't delete active policy
 	die "Must delete QoS policy from interfaces before deleting rules\n";
