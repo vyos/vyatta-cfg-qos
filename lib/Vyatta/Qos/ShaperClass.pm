@@ -127,30 +127,30 @@ sub rateCheck {
 }
 
 sub prioQdisc {
-    my ( $self, $out, $dev, $rate ) = @_;
+    my ( $self, $dev, $rate ) = @_;
     my $prio_id = 0x4000 + $self->{id};
     my $limit   = $self->{_limit};
 
-    printf {$out} "handle %x: prio\n", $prio_id;
+    printf "handle %x: prio\n", $prio_id;
 
     if ($limit) {
         foreach my $i (qw/1 2 3/) {
-            printf {$out} "qdisc add dev %s parent %x:%d pfifo limit %d\n",
+            printf "qdisc add dev %s parent %x:%d pfifo limit %d\n",
               $dev, $prio_id, $i, $limit;
         }
     }
 }
 
 sub sfqQdisc {
-    my ( $self, $out, $dev, $rate ) = @_;
+    my ( $self, $dev, $rate ) = @_;
 
-    print ${out} "sfq";
-    print ${out} " limit $self->{_limit}" if ( $self->{_limit} );
-    print ${out} "\n";
+    print "sfq";
+    print " limit $self->{_limit}" if ( $self->{_limit} );
+    print "\n";
 }
 
 sub fifoQdisc {
-    my ( $self, $out, $dev, $rate ) = @_;
+    my ( $self, $dev, $rate ) = @_;
 
     print ${out} "pfifo";
     print ${out} " limit $self->{_limit}" if ( $self->{_limit} );
@@ -165,7 +165,7 @@ sub fifoQdisc {
 #   min          := max / 3
 #   burst        := (2 * min + max) / (3 * average)
 sub redQdisc {
-    my ( $self, $out, $dev, $rate ) = @_;
+    my ( $self, $dev, $rate ) = @_;
     my $limit = $self->{_limit};
     my $avg   = 1000;
     my $qlimit;
@@ -195,24 +195,24 @@ my %qdiscOptions = (
 );
 
 sub htbClass {
-    my ( $self, $out, $dev, $parent, $speed ) = @_;
+    my ( $self, $dev, $parent, $speed ) = @_;
     my $rate = _getPercentRate( $self->{_rate},    $speed );
     my $ceil = _getPercentRate( $self->{_ceiling}, $speed );
 
-    printf ${out} "class add dev %s parent %x:1 classid %x:%x htb rate %s",
+    printf "class add dev %s parent %x:1 classid %x:%x htb rate %s",
       $dev, $parent, $parent, $self->{id}, $rate;
 
-    print ${out} " ceil $ceil"              if ($ceil);
-    print ${out} " burst $self->{_burst}"   if ( defined $self->{_burst} );
-    print ${out} " prio $self->{_priority}" if ( defined $self->{_priority} );
-    print {$out} "\n";
+    print " ceil $ceil"              if ($ceil);
+    print " burst $self->{_burst}"   if ( defined $self->{_burst} );
+    print " prio $self->{_priority}" if ( defined $self->{_priority} );
+    print "\n";
 
     # create leaf qdisc
     my $q = $qdiscOptions{ $self->{_qdisc} };
     if ( defined $q ) {
-        printf {$out} "qdisc add dev %s parent %x:%x ",
+        printf "qdisc add dev %s parent %x:%x ",
           $dev, $parent, $self->{id};
-        $q->( $self, $out, $dev, $rate );
+        $q->( $self, $dev, $rate );
     }
     else {
         die "Unknown queue type $self->{_qdisc}\n";
@@ -220,16 +220,16 @@ sub htbClass {
 }
 
 sub dsmarkClass {
-    my ( $self, $out, $parent, $dev ) = @_;
+    my ( $self, $parent, $dev ) = @_;
 
-    printf ${out} "class change dev %s classid %x:%x dsmark",
+    printf "class change dev %s classid %x:%x dsmark",
       $dev, $parent, $self->{id};
 
     if ( $self->{dsmark} ) {
-        print ${out} " mask 0 value $self->{dsmark}\n";
+        print " mask 0 value $self->{dsmark}\n";
     }
     else {
-        print ${out} " mask 0xff value 0\n";
+        print " mask 0xff value 0\n";
     }
 }
 

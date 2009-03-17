@@ -76,15 +76,15 @@ sub _define {
 }
 
 sub commands {
-    my ( $self, $out, $dev ) = @_;
+    my ( $self, $dev ) = @_;
     my $classes = $self->{_classes};
     my $parent  = 0xffff;
 
-    printf {$out} "qdisc add dev %s handle %x: ingress\n", $dev, $parent;
+    printf "qdisc add dev %s handle %x: ingress\n", $dev, $parent;
     foreach my $class (@$classes) {
         foreach my $match ( $class->matchRules() ) {
-	    $match->filter( $out, $dev, $parent, $class->{priority} );
-	    printf {$out} " police rate %s burst %s drop flowid :%x\n", 
+	    $match->filter( $dev, $parent, $class->{priority} );
+	    printf " police rate %s burst %s drop flowid :%x\n", 
 	        $class->{rate}, $class->{burst}, $class->{id};
         }
     }

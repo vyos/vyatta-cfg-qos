@@ -58,7 +58,7 @@ sub _define {
 }
 
 sub filter {
-    my ( $self, $out, $dev, $parent, $prio, $dsmark ) = @_;
+    my ( $self, $dev, $parent, $prio, $dsmark ) = @_;
     my $ip = $self->{_ip};
     my $indev = $self->{_dev};
     my $vif = $self->{_vif};
@@ -71,32 +71,32 @@ sub filter {
     # Special case for when dsmarking is used with ds matching
     # original dscp is saved in tc_index
     if (defined $dsmark && defined $ip && defined $$ip{dsfield}) {
-	printf {$out} "filter add dev %s parent %x: protocol ip prio 1",
+	printf "filter add dev %s parent %x: protocol ip prio 1",
 		$dev, $parent;
 	printf ${out} " handle %d tcindex", $$ip{dsfield};
 	return;
     }
 
-    printf {$out} "filter add dev %s parent %x: prio %d", $dev, $parent, $prio;
+    printf "filter add dev %s parent %x: prio %d", $dev, $parent, $prio;
     if (defined $ip) {
-	print {$out} " protocol ip u32";
-	print {$out} " match ip dsfield $$ip{dsfield} 0xff"
+	print " protocol ip u32";
+	print " match ip dsfield $$ip{dsfield} 0xff"
 	    if defined $$ip{dsfield};
-	print {$out} " match ip protocol $$ip{protocol} 0xff"
+	print " match ip protocol $$ip{protocol} 0xff"
 	    if defined $$ip{protocol};
-	print {$out} " match ip src $$ip{src}"
+	print " match ip src $$ip{src}"
 	    if defined $$ip{src};
-	print {$out} " match ip sport $$ip{sport} 0xffff"
+	print " match ip sport $$ip{sport} 0xffff"
 	    if defined $$ip{sport};
-	print {$out} " match ip dst $$ip{dst}"
+	print " match ip dst $$ip{dst}"
 	    if defined $$ip{dst};
-	print {$out} " match ip dport $$ip{dport} 0xffff"
+	print " match ip dport $$ip{dport} 0xffff"
 	    if defined $$ip{dport};
     } else {
-	print {$out} " protocol all basic";
-	print {$out} " match meta\(rt_iif eq $indev\)"
+	print " protocol all basic";
+	print " match meta\(rt_iif eq $indev\)"
 	    if (defined $indev);
-	print {$out} " match meta\(vlan mask 0xfff eq $vif\)"
+	print " match meta\(vlan mask 0xfff eq $vif\)"
 	    if (defined $vif);
     }
 }

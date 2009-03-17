@@ -39,12 +39,12 @@ sub new {
 }
 
 sub commands {
-    my ( $self, $out, $dev ) = @_;
+    my ( $self, $dev ) = @_;
     my $limit = $self->{_limit};
     my $cmd = "qdisc add dev $dev root pfifo";
 
     $cmd .= " limit $limit" if defined $limit;
-    printf {$out} "%s\n", $cmd;
+    printf "%s\n", $cmd;
 }
 
 sub isChanged {

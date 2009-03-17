@@ -44,11 +44,11 @@ sub new {
 }
 
 sub commands {
-    my ( $self, $out, $dev ) = @_;
+    my ( $self, $dev ) = @_;
     
-    print {$out} "qdisc add dev $dev root sfq";
-    print {$out} " perturb $self->{_perturb}" if ( defined $self->{_perturb} );
-    print {$out} " limit $self->{_limit}"     if ( defined $self->{_limit} );
+    print "qdisc add dev $dev root sfq";
+    print " perturb $self->{_perturb}" if ( $self->{_perturb} );
+    print " limit $self->{_limit}"     if ( $self->{_limit} );
     print "\n";
 }
 

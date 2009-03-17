@@ -49,10 +49,9 @@ sub new {
 }
 
 sub commands {
-    my ( $self, $out, $dev ) = @_;
-
+    my ( $self, $dev ) = @_;
     
-    printf {$out} "qdisc add dev %s root tbf rate %s latency %s burst %s\n",
+    printf "qdisc add dev %s root tbf rate %s latency %s burst %s\n",
 	    $dev, $self->{_rate}, $self->{_latency}, $self->{_burst};
 }
 

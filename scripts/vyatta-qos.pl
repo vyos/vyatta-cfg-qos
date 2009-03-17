@@ -157,26 +157,24 @@ sub update_interface {
 
     # When doing debugging just echo the commands
     my $out;
-    if ( defined $debug ) {
-        open $out, '>-'
-          or die "can't open stdout: $!";
-    }
-    else {
+    unless ($debug) {
         open $out, "|-"
           or exec qw:sudo /sbin/tc -batch -:
           or die "Tc setup failed: $!\n";
+
+	select $out;
     }
 
-    $shaper->commands( $out, $device, $direction );
-    if ( !close $out && !defined $debug ) {
+    $shaper->commands( $device, $direction );
+    return if ($debug);
 
+    select STDOUT;
+    unless (close $out) {
         # cleanup any partial commands
         delete_interface( $device, $direction );
 
         # replay commands to stdout
-        open $out, '>-';
-        $shaper->commands( $out, $device, $direction );
-        close $out;
+        $shaper->commands($device, $direction );
         die "TC command failed.";
     }
 }

@@ -127,7 +127,7 @@ sub _define {
 }
 
 sub commands {
-    my ( $self, $out, $dev ) = @_;
+    my ( $self, $dev ) = @_;
     my $rate    = _getAutoRate( $self->{_rate}, $dev );
     my $classes = $self->{_classes};
     my %dsmark  = ();
@@ -170,14 +170,14 @@ sub commands {
             ++$indices;
         }
 
-        print {$out} "qdisc add dev $dev handle 1:0 root dsmark"
+        print "qdisc add dev $dev handle 1:0 root dsmark"
           . " indices $indices default_index $default->{id} set_tc_index\n";
 
         foreach my $class (@$classes) {
-            $class->dsmarkClass( $out, 1, $dev );
+            $class->dsmarkClass( 1, $dev );
             foreach my $match ( $class->matchRules() ) {
-                $match->filter( $out, $dev, 1, 1 );
-                printf {$out} " classid %x:%x\n", $parent, $class->{id};
+                $match->filter( $dev, 1, 1 );
+                printf " classid %x:%x\n", $parent, $class->{id};
             }
         }
 
@@ -185,17 +185,17 @@ sub commands {
         $root   = "parent 1:1";
     }
 
-    printf {$out} "qdisc add dev %s %s handle %x: htb default %x\n",
+    printf "qdisc add dev %s %s handle %x: htb default %x\n",
       $dev, $root, $parent, $default->{id};
-    printf {$out} "class add dev %s parent %x: classid %x:1 htb rate %s\n",
+    printf "class add dev %s parent %x: classid %x:1 htb rate %s\n",
       $dev, $parent, $parent, $rate;
 
     foreach my $class (@$classes) {
-        $class->htbClass( $out, $dev, $parent, $rate );
+        $class->htbClass( $dev, $parent, $rate );
 
         foreach my $match ( $class->matchRules() ) {
-            $match->filter( $out, $dev, $parent, 1, $class->{dsmark} );
-            printf {$out} " classid %x:%x\n", $parent, $class->{id};
+            $match->filter( $dev, $parent, 1, $class->{dsmark} );
+            printf " classid %x:%x\n", $parent, $class->{id};
         }
     }
 }

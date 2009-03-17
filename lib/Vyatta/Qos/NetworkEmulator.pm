@@ -52,37 +52,37 @@ sub new {
 }
 
 sub commands {
-    my ( $self, $out, $dev ) = @_;
+    my ( $self, $dev ) = @_;
     my $rate = $self->{_rate};
 
     if ($rate) {
         my $burst = $self->{_burst};
         $burst or $burst = "15K";
 
-        printf {$out} "qdisc add dev %s root handle 1:0 tbf rate %s burst %s\n",
+        printf "qdisc add dev %s root handle 1:0 tbf rate %s burst %s\n",
           $dev, $rate, $burst;
-        printf {$out} "qdisc add dev %s parent 1:1 handle 10: netem";
+        printf "qdisc add dev %s parent 1:1 handle 10: netem";
     }
     else {
-        printf {$out} "qdisc add dev %s root netem";
+        printf "qdisc add dev %s root netem";
     }
 
     my $delay = $self->{_delay};
-    print {$out} " delay $delay" if ($delay);
+    print " delay $delay" if ($delay);
 
     my $limit = $self->{_limit};
-    print {$out} " limit $limit" if ($limit);
+    print " limit $limit" if ($limit);
 
     my $drop = $self->{_drop};
-    print {$out} " drop $drop" if ($drop);
+    print " drop $drop" if ($drop);
 
     my $corrupt = $self->{_corrupt};
-    print {$out} " corrupt $corrupt" if ($corrupt);
+    print " corrupt $corrupt" if ($corrupt);
 
     my $reorder = $self->{_reorder};
-    print {$out} " reorder $reorder" if ($reorder);
+    print " reorder $reorder" if ($reorder);
 
-    print {$out} "\n";
+    print "\n";
 }
 
 sub isChanged {
