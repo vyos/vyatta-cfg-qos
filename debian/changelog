@@ -1,3 +1,10 @@
+vyatta-cfg-qos (0.12.10) unstable; urgency=low
+
+  * Use hash rather than if/else for delete_interface
+  * Replace update with create on multi-node
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Wed, 18 Mar 2009 10:08:41 -0700
+
 vyatta-cfg-qos (0.12.9) unstable; urgency=low
 
   * Print correct names for completion
