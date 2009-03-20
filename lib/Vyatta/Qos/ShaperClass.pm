@@ -152,9 +152,9 @@ sub sfqQdisc {
 sub fifoQdisc {
     my ( $self, $dev, $rate ) = @_;
 
-    print ${out} "pfifo";
-    print ${out} " limit $self->{_limit}" if ( $self->{_limit} );
-    print ${out} "\n";
+    print "pfifo";
+    print " limit $self->{_limit}" if ( $self->{_limit} );
+    print "\n";
 }
 
 # Red is has way to many configuration options
@@ -181,9 +181,9 @@ sub redQdisc {
     my $qmax = $qlimit / 8;
     my $qmin = $qmax / 3;
 
-    printf ${out} "red limit %d min %d max %d avpkt %d",
+    printf "red limit %d min %d max %d avpkt %d",
       $qlimit, $qmin, $qmax, $avg;
-    printf ${out} " burst %d probability 0.02 bandwidth %d ecn\n",
+    printf " burst %d probability 0.02 bandwidth %d ecn\n",
       ( 2 * $qmin + $qmax ) / ( 3 * $avg ), $rate / 1000;
 }
 

@@ -73,7 +73,7 @@ sub filter {
     if (defined $dsmark && defined $ip && defined $$ip{dsfield}) {
 	printf "filter add dev %s parent %x: protocol ip prio 1",
 		$dev, $parent;
-	printf ${out} " handle %d tcindex", $$ip{dsfield};
+	printf " handle %d tcindex", $$ip{dsfield};
 	return;
     }
 
