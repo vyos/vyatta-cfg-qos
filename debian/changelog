@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.12.12) unstable; urgency=low
+
+  * Fix problems created by switch to using 'select'
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Fri, 20 Mar 2009 11:48:49 -0700
+
 vyatta-cfg-qos (0.12.11) unstable; urgency=low
 
   * Use select to avoid passing output path around
