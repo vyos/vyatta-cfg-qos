@@ -31,6 +31,7 @@ clean-local:
 install-exec-hook:
 	mkdir -p $(DESTDIR)$(cfgdir)
 	mkdir -p $(DESTDIR)/etc/ppp/ip-up.d
+	install -m 0755 scripts/ppp/qos $(DESTDIR)/etc/ppp/ip-up.d
 	cd templates; $(cpiop) $(DESTDIR)$(cfgdir)
 	cd $(gentmpdir); $(cpiop) $(DESTDIR)$(cfgdir)
 
