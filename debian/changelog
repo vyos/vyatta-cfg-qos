@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.12.14) unstable; urgency=low
+
+  * Install PPP qos script properly
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Mon, 30 Mar 2009 14:56:59 -0700
+
 vyatta-cfg-qos (0.12.13) unstable; urgency=low
 
   * Generate QoS interface templates
