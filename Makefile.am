@@ -1,4 +1,5 @@
 cfgdir = $(datadir)/vyatta-cfg/templates
+gentmpdir = generated-templates
 share_perl5dir = /opt/vyatta/share/perl5/Vyatta/Qos
 
 sbin_SCRIPTS = scripts/vyatta-qos.pl
@@ -20,8 +21,16 @@ etc_SCRIPTS      =
 cpiop = find  . ! -regex '\(.*~\|.*\.bak\|.*\.swp\|.*\#.*\#\)' -print0 | \
   cpio -0pd
 
+all-local:
+	rm -rf $(gentmpdir)
+	./gen-interface-templates.pl $(gentmpdir)
+
+clean-local:
+	rm -rf $(gentmpdir)
+
 install-exec-hook:
 	mkdir -p $(DESTDIR)$(cfgdir)
 	mkdir -p $(DESTDIR)/etc/ppp/ip-up.d
 	cd templates; $(cpiop) $(DESTDIR)$(cfgdir)
+	cd $(gentmpdir); $(cpiop) $(DESTDIR)$(cfgdir)
 
