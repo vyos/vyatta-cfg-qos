@@ -191,7 +191,8 @@ sub commands {
       $dev, $parent, $parent, $rate;
 
     foreach my $class (@$classes) {
-        $class->htbClass( $dev, $parent, $rate );
+        $class->gen_class( $dev, 'htb', $parent, $rate );
+        $class->gen_leaf( $dev, $parent, $rate );
 
         foreach my $match ( $class->matchRules() ) {
             $match->filter( $dev, $parent, 1, $class->{dsmark} );
