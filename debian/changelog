@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.12.15) unstable; urgency=low
+
+  * Add IPV6 support to Qos
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Thu, 09 Apr 2009 17:39:45 -0700
+
 vyatta-cfg-qos (0.12.14) unstable; urgency=low
 
   * Install PPP qos script properly
