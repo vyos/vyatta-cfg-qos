@@ -26,41 +26,24 @@ require Vyatta::Config;
 require Vyatta::Qos::ShaperClass;
 use Vyatta::Qos::Util qw/getRate interfaceRate/;
 
-my %fields = (
-    _level   => undef,
-    _rate    => undef,
-    _classes => undef,
-);
-
 # Create a new instance based on config information
 sub new {
     my ( $that, $config, $name ) = @_;
-    my $self = {%fields};
+    my $rate    = $config->returnValue("bandwidth");
+    my $level   = $config->setLevel();
+    my @classes = _getClasses($level);
+
+    _checkClasses( $level, getRate($rate), @classes )
+      if ( $rate ne "auto" );
+
+    my $self = {};
     my $class = ref($that) || $that;
-
     bless $self, $class;
-    $self->_define($config);
 
-    $self->_validate($config);
-
+    $self->{_rate}    = $rate;
+    $self->{_level}   = $level;
+    $self->{_classes} = \@classes;
     return $self;
-}
-
-sub _validate {
-    my $self = shift;
-
-    if ( $self->{_rate} ne "auto" ) {
-        my $classes = $self->{_classes};
-        my $default = shift @$classes;
-        my $rate    = getRate( $self->{_rate} );
-
-        $default->rateCheck( $rate, "$self->{_level} default" );
-
-        foreach my $class (@$classes) {
-            $class->rateCheck( $rate, "$self->{_level} class $class->{id}" );
-        }
-        unshift @$classes, $default;
-    }
 }
 
 # Rate can be something like "auto" or "10.2mbit"
@@ -82,38 +65,14 @@ sub _getAutoRate {
     return $rate;
 }
 
-# Setup new instance.
-# Assumes caller has done $config->setLevel to "traffic-shaper $name"
-sub _define {
-    my ( $self, $config ) = @_;
-    my $level   = $config->setLevel();
-    my @classes = ();
+sub _getClasses {
+    my $level = shift;
+    my @classes;
+    my $config = new Vyatta::Config;
 
-    $self->{_rate}  = $config->returnValue("bandwidth");
-    $self->{_level} = $level;
-
+    $config->setLevel($level);
     $config->exists("default")
       or die "$level configuration not complete: missing default class\n";
-
-    # make sure no clash of different types of tc filters
-    my %matchTypes = ();
-    foreach my $class ( $config->listNodes("class") ) {
-        foreach my $match ( $config->listNodes("class $class match") ) {
-            foreach my $type ( $config->listNodes("class $class match $match") )
-            {
-                next if ( $type eq 'description' );
-                $matchTypes{$type} = "$class match $match";
-            }
-        }
-    }
-
-    if ( scalar keys %matchTypes > 1 && $matchTypes{ip} ) {
-        print "Match type conflict:\n";
-        while ( my ( $type, $usage ) = each(%matchTypes) ) {
-            print "   class $usage $type\n";
-        }
-        die "$level can not match on both ip and other types\n";
-    }
 
     $config->setLevel("$level default");
     push @classes, new Vyatta::Qos::ShaperClass($config);
@@ -123,7 +82,20 @@ sub _define {
         $config->setLevel("$level class $id");
         push @classes, new Vyatta::Qos::ShaperClass( $config, $id );
     }
-    $self->{_classes} = \@classes;
+
+    return @classes;
+}
+
+sub _checkClasses {
+    my $level   = shift;
+    my $rate    = shift;
+    my $default = shift;
+
+    $default->rateCheck( $rate, "$level default" );
+
+    foreach my $class (@_) {
+        $class->rateCheck( $rate, "$level class $class->{id}" );
+    }
 }
 
 sub commands {
