@@ -43,7 +43,7 @@ sub new {
     $self->{id} = $id;
 
     bless $self, $class;
-    $self->_define($config);
+    $self->_define($config) if ($config);
 
     return $self;
 }
@@ -135,7 +135,7 @@ sub prioQdisc {
 
     if ($limit) {
         foreach my $i (qw/1 2 3/) {
-            printf "qdisc add dev %s parent %x:%d pfifo limit %d\n",
+            printf "qdisc add dev %s parent %x:%x pfifo limit %d\n",
               $dev, $prio_id, $i, $limit;
         }
     }
