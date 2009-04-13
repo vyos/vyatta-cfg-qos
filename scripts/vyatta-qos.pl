@@ -32,6 +32,8 @@ my %policies = (
         'rate-limit'       => 'RateLimiter',
         'drop-tail'        => 'DropTail',
         'network-emulator' => 'NetworkEmulator',
+	'round-robin'	   => 'RoundRobin',
+	'priority-queue'   => 'Priority',
     },
     'in' => { 'traffic-limiter' => 'TrafficLimiter', }
 );
