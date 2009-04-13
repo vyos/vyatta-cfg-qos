@@ -1,0 +1,4 @@
+type: u32
+help: Set priority 
+syntax:expression: $VAR(@) >= 0 && $VAR(@) < 8 ; "priority must be between 0 than 7"
+help: Priority value

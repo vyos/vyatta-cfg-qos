@@ -43,7 +43,7 @@ sub new {
     $self->{id} = $id;
 
     bless $self, $class;
-    $self->_define($config);
+    $self->_define($config) if ($config);
 
     return $self;
 }
@@ -135,7 +135,7 @@ sub prioQdisc {
 
     if ($limit) {
         foreach my $i (qw/1 2 3/) {
-            printf "qdisc add dev %s parent %x:%d pfifo limit %d\n",
+            printf "qdisc add dev %s parent %x:%x pfifo limit %d\n",
               $dev, $prio_id, $i, $limit;
         }
     }
@@ -181,8 +181,7 @@ sub redQdisc {
     my $qmax = $qlimit / 8;
     my $qmin = $qmax / 3;
 
-    printf "red limit %d min %d max %d avpkt %d",
-      $qlimit, $qmin, $qmax, $avg;
+    printf "red limit %d min %d max %d avpkt %d", $qlimit, $qmin, $qmax, $avg;
     printf " burst %d probability 0.02 bandwidth %d ecn\n",
       ( 2 * $qmin + $qmax ) / ( 3 * $avg ), $rate / 1000;
 }
@@ -194,29 +193,28 @@ my %qdiscOptions = (
     'drop-tail'     => \&fifoQdisc,
 );
 
-sub htbClass {
-    my ( $self, $dev, $parent, $speed ) = @_;
+sub gen_class {
+    my ( $self, $dev, $qdisc, $parent, $speed ) = @_;
     my $rate = _getPercentRate( $self->{_rate},    $speed );
     my $ceil = _getPercentRate( $self->{_ceiling}, $speed );
 
-    printf "class add dev %s parent %x:1 classid %x:%x htb rate %s",
-      $dev, $parent, $parent, $self->{id}, $rate;
+    printf "class add dev %s parent %x:1 classid %x:%x %s",
+      $dev, $parent, $parent, $self->{id}, $qdisc;
 
+    print " rate $rate"              if ($rate);
     print " ceil $ceil"              if ($ceil);
-    print " burst $self->{_burst}"   if ( defined $self->{_burst} );
-    print " prio $self->{_priority}" if ( defined $self->{_priority} );
+    print " burst $self->{_burst}"   if ( $self->{_burst} );
+    print " prio $self->{_priority}" if ( $self->{_priority} );
     print "\n";
+}
 
-    # create leaf qdisc
+sub gen_leaf {
+    my ( $self, $dev, $parent, $rate ) = @_;
     my $q = $qdiscOptions{ $self->{_qdisc} };
-    if ( defined $q ) {
-        printf "qdisc add dev %s parent %x:%x ",
-          $dev, $parent, $self->{id};
-        $q->( $self, $dev, $rate );
-    }
-    else {
-        die "Unknown queue type $self->{_qdisc}\n";
-    }
+    die "Unknown queue type $self->{_qdisc}\n" unless $q;
+
+    printf "qdisc add dev %s parent %x:%x ", $dev, $parent, $self->{id};
+    $q->( $self, $dev, $rate );
 }
 
 sub dsmarkClass {

@@ -1,0 +1,9 @@
+type: txt
+default: "fair-queue"
+syntax:expression: $VAR(@) in "fair-queue", "drop-tail", "random-detect"; "Unknown queue-type"
+help: Set the queue type for this class
+comp_help:Possible completions
+  fair-queue\tStochastic Fair Queue (SFQ)
+  drop-tail\tFirst-In-First-Out (FIFO)
+  random-detect\tRandom Early Detection (RED)
+
