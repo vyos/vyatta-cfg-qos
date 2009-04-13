@@ -23,52 +23,45 @@ require Vyatta::Config;
 use Vyatta::Qos::Match;
 use Vyatta::Qos::Util qw/getDsfield getRate/;
 
-my %fields = (
-    id        => undef,
-    dsmark    => undef,
-    _priority => undef,
-    _rate     => undef,
-    _ceiling  => undef,
-    _burst    => undef,
-    _match    => undef,
-    _limit    => undef,
-    _qdisc    => undef,
-);
 
 sub new {
     my ( $that, $config, $id ) = @_;
-    my $class = ref($that) || $that;
-    my $self = {%fields};
+    my $class   = ref($that) || $that;
+    my $self    = { };
 
     $self->{id} = $id;
 
     bless $self, $class;
-    $self->_define($config) if ($config);
+    
+    if ($config) {
+	my $level   = $config->setLevel();
+
+	$self->{level}     = $level;
+	$self->{_rate}     = $config->returnValue("bandwidth");
+	$self->{_priority} = $config->returnValue("priority");
+	$self->{_ceiling}  = $config->returnValue("ceiling");
+	$self->{_burst}    = $config->returnValue("burst");
+	$self->{_limit}    = $config->returnValue("queue-limit");
+	$self->{_qdisc}    = $config->returnValue("queue-type");
+
+	$self->{dsmark} = getDsfield( $config->returnValue("set-dscp") );
+	my @matches = _getMatch("$level match");
+	$self->{_match} = \@matches;
+    }
 
     return $self;
 }
 
-sub _define {
-    my ( $self, $config ) = @_;
-    my $level   = $config->setLevel();
-    my @matches = ();
+sub _getMatch {
+    my $level = shift;
+    my @matches;
+    my $config = new Vyatta::Config;
 
-    $self->{_rate} = $config->returnValue("bandwidth");
-    defined $self->{_rate} or die "$level bandwidth not defined\n";
-
-    $self->{_priority} = $config->returnValue("priority");
-    $self->{_ceiling}  = $config->returnValue("ceiling");
-    $self->{_burst}    = $config->returnValue("burst");
-    $self->{_limit}    = $config->returnValue("queue-limit");
-    $self->{_qdisc}    = $config->returnValue("queue-type");
-
-    $self->{dsmark} = getDsfield( $config->returnValue("set-dscp") );
-
-    foreach my $match ( $config->listNodes("match") ) {
-        $config->setLevel("$level match $match");
+    foreach my $match ( $config->listNodes($level) ) {
+        $config->setLevel("$level $match");
         push @matches, new Vyatta::Qos::Match($config);
     }
-    $self->{_match} = \@matches;
+    return @matches;
 }
 
 sub matchRules {
@@ -210,11 +203,11 @@ sub gen_class {
 
 sub gen_leaf {
     my ( $self, $dev, $parent, $rate ) = @_;
-    my $q = $qdiscOptions{ $self->{_qdisc} };
-    die "Unknown queue type $self->{_qdisc}\n" unless $q;
 
     printf "qdisc add dev %s parent %x:%x ", $dev, $parent, $self->{id};
-    $q->( $self, $dev, $rate );
+
+    my $q = $qdiscOptions{ $self->{_qdisc} };
+    $q->( $self, $dev, $rate ) if ($q);
 }
 
 sub dsmarkClass {

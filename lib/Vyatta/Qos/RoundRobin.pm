@@ -67,9 +67,8 @@ sub commands {
     my $classes = $self->{_classes};
     my $parent  = 1;
 
-    printf "qdisc add dev %s s handle %x: drr", $dev, 'root', $parent;
-    my $quantum = $self->{_quantum};
-    print " quantum $quantum" if ($quantum);
+    printf "qdisc add dev %s root  handle %x: drr", $dev, $parent;
+    print " quantum $self->{_quantum}" if ( $self->{_quantum} );
     print "\n";
 
     foreach my $class (@$classes) {

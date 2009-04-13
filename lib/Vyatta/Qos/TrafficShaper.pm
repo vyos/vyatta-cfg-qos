@@ -33,8 +33,7 @@ sub new {
     my $level   = $config->setLevel();
     my @classes = _getClasses($level);
 
-    _checkClasses( $level, getRate($rate), @classes )
-      if ( $rate ne "auto" );
+    _checkClasses( $level, $rate, @classes );
 
     my $self = {};
     my $class = ref($that) || $that;
@@ -86,15 +85,19 @@ sub _getClasses {
     return @classes;
 }
 
+# Check constraints on class bandwidth values
 sub _checkClasses {
-    my $level   = shift;
-    my $rate    = shift;
+    my $level = shift;
+    my $rate = shift;
     my $default = shift;
-
-    $default->rateCheck( $rate, "$level default" );
+    
+    # if auto, can't check at create must wait for policy to be applied
+    $rate = ( $rate eq "auto") ? undef : getRate($rate);
+    $default->rateCheck( $rate, "$level default" ) if $rate;
 
     foreach my $class (@_) {
-        $class->rateCheck( $rate, "$level class $class->{id}" );
+	die "$class->{level} bandwidth not defined\n" unless $class->{_rate};
+        $class->rateCheck( $rate, "$level class $class->{id}" ) if $rate;
     }
 }
 
