@@ -27,11 +27,12 @@ sub new {
 
     bless $self, $class;
 
-    $self->{_vif} = $config->returnValue("vif");
-    $self->{_dev} = getIfIndex($config->returnValue("interface"));
-
     foreach my $ip (qw(ip ipv6)) {
 	next unless $config->exists($ip);
+
+	foreach my $t (qw(vif dev)) {
+	    die "can not match on $ip and $t\n" if $config->exists($t);
+	}
 
 	# TODO make this data driven?
 	my %fields;
@@ -43,6 +44,9 @@ sub new {
 	$fields{dport} = $config->returnValue("$ip destination port");
 	$self->{$ip} = \%fields;
     }
+
+    $self->{_vif} = $config->returnValue("vif");
+    $self->{_dev} = getIfIndex($config->returnValue("interface"));
 
     return $self;
 }
