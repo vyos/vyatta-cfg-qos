@@ -72,10 +72,7 @@ sub matchRules {
 
 sub _getPercentRate {
     my ( $rate, $speed ) = @_;
-
-    if ( !defined $rate ) {
-        return;    # leave rate undef
-    }
+    return unless $rate;	# no rate defined;
 
     # Rate might be a percentage of speed
     if ( $rate =~ /%$/ ) {
