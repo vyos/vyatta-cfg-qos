@@ -1,3 +1,17 @@
+vyatta-cfg-qos (0.12.16) unstable; urgency=low
+
+  * Remove extra help text
+  * Split class and sub qdisc generation
+  * Check for conflicts when match is created
+  * Redo traffic-shaper class contstructor
+  * Allow constructor with out configuration
+  * Add deficit Round-Robin support
+  * Add priority policy support
+  * Add RoundRobin and Priority to build
+  * Fix RoundRobin scheduler
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Mon, 13 Apr 2009 17:56:05 -0700
+
 vyatta-cfg-qos (0.12.15) unstable; urgency=low
 
   * Add IPV6 support to Qos
