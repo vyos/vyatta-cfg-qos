@@ -1,0 +1,3 @@
+type: u32
+help: Set Ethernet protocol for this match
+syntax:expression: ($VAR(@) >= 0 && $VAR(@) < 65536) ; "protocol must be between 0 and 65535"
