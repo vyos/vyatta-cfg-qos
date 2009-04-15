@@ -1,3 +1,12 @@
+vyatta-cfg-qos (0.12.17) unstable; urgency=low
+
+  * Simplify some code in rate handling
+  * Need to generate classes for Round Robin
+  * Remove priority queue implementation
+  * Add Qos matching based on Ethernet MAC address
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Wed, 15 Apr 2009 16:02:37 -0700
+
 vyatta-cfg-qos (0.12.16) unstable; urgency=low
 
   * Remove extra help text
