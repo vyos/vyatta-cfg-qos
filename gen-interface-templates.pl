@@ -35,8 +35,8 @@ my %interface_hash = (
     'ethernet/node.tag/vif/node.tag/pppoe/node.tag' => 'pppoe$VAR(@)',
     'bonding/node.tag'                              => '$VAR(@)',
     'bonding/node.tag/vif/node.tag'                 => '$VAR(../@).$VAR(@)',
-    'virtual-ethernet/node.tag'                     => '$VAR(@)',
-    'virtual-ethernet/node.tag/vif/node.tag'        => '$VAR(../@).$VAR(@)',
+    'pseudo-ethernet/node.tag'                      => '$VAR(@)',
+    'pseudo-ethernet/node.tag/vif/node.tag'         => '$VAR(../@).$VAR(@)',
 
     'tunnel/node.tag'                               => '$VAR(@)',
     'bridge/node.tag'                               => '$VAR(@)',
