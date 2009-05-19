@@ -43,6 +43,8 @@ sub new {
 	$self->{_burst}    = $config->returnValue("burst");
 	$self->{_limit}    = $config->returnValue("queue-limit");
 	$self->{_qdisc}    = $config->returnValue("queue-type");
+	$self->{_avgpkt}   = $config->returnValue("packet-length");
+	$self->{_latency}  = $config->returnValue("latency");
 
 	$self->{dsmark} = getDsfield( $config->returnValue("set-dscp") );
 	my @matches = _getMatch("$level match");
