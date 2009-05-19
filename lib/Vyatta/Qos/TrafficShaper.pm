@@ -162,6 +162,7 @@ sub commands {
 sub isChanged {
     my ( $self, $name ) = @_;
     my $config = new Vyatta::Config;
+    my @attributes = qw(bandwidth burst ceiling priority queue-limit queue-type);
 
     $config->setLevel("qos-policy traffic-shaper $name");
 
@@ -169,11 +170,7 @@ sub isChanged {
         return 'bandwidth';
     }
 
-    foreach my $attr (
-        'bandwidth',   'burst', 'ceiling', 'priority',
-        'queue-limit', 'queue-type'
-      )
-    {
+    foreach my $attr (@attributes)  {
         if ( $config->isChanged("default $attr") ) {
             return "default $attr";
         }
@@ -185,11 +182,7 @@ sub isChanged {
             return "class $class";
         }
 
-        foreach my $attr (
-            'bandwidth',   'burst', 'ceiling', 'priority',
-            'queue-limit', 'queue-type'
-          )
-        {
+        foreach my $attr (@attributes) {
             if ( $config->isChanged("class $class $attr") ) {
                 return "class $class $attr";
             }
@@ -204,6 +197,9 @@ sub isChanged {
 
             foreach my $parm (
                 'vif',
+		'ether destination',
+		'ether source',
+		'ether protocol',
                 'interface',
                 'ip dscp',
                 'ip protocol',
