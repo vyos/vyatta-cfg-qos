@@ -1,3 +1,18 @@
+vyatta-cfg-qos (0.12.20) unstable; urgency=low
+
+  * Add packet-length and latency as class attributes
+  * Move getAutoRate into Util
+  * Detect changes to ethernet match rules
+  * Fix missing comma in drr setup
+  * Move RED parameter computation to common code
+  * Add Weighted RED Qos
+  * Add missing NetworkEmulator module
+  * Fix network emulator when no rate defined
+  * Fix exports for new module
+  * Rename weighted-random
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Tue, 19 May 2009 16:08:52 -0700
+
 vyatta-cfg-qos (0.12.19) unstable; urgency=low
 
   * Rename virtual-ethernet to pseudo-ethernet
