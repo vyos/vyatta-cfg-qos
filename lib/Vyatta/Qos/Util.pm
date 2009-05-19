@@ -20,7 +20,7 @@ use strict;
 use warnings;
 
 our @EXPORT =
-  qw(getRate getPercent getBurstSize getProtocol getDsfield getTime);
+  qw(getRate getPercent getBurstSize getProtocol getDsfield getTime getAutoRate);
 our @EXPORT_OK = qw(interfaceRate getIfIndex);
 use base qw(Exporter);
 
@@ -64,6 +64,25 @@ my %rates = (
     'tibps' => 8796093022208.,
     'tbps'  => 8000000000000.,
 );
+
+# Rate can be something like "auto" or "10.2mbit"
+sub getAutoRate {
+    my ( $rate, $dev ) = @_;
+
+    if ( $rate eq "auto" ) {
+        $rate = interfaceRate($dev);
+        if ( !defined $rate ) {
+            print STDERR
+              "Interface $dev speed cannot be determined (assuming 10mbit)\n";
+            $rate = 10000000;
+        }
+    }
+    else {
+        $rate = getRate($rate);
+    }
+
+    return $rate;
+}
 
 sub getRate {
     my $rate = shift;

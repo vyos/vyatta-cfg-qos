@@ -45,25 +45,6 @@ sub new {
     return $self;
 }
 
-# Rate can be something like "auto" or "10.2mbit"
-sub _getAutoRate {
-    my ( $rate, $dev ) = @_;
-
-    if ( $rate eq "auto" ) {
-        $rate = interfaceRate($dev);
-        if ( !defined $rate ) {
-            print STDERR
-              "Interface $dev speed cannot be determined (assuming 10mbit)\n";
-            $rate = 10000000;
-        }
-    }
-    else {
-        $rate = getRate($rate);
-    }
-
-    return $rate;
-}
-
 sub _getClasses {
     my $level = shift;
     my @classes;
@@ -103,7 +84,7 @@ sub _checkClasses {
 
 sub commands {
     my ( $self, $dev ) = @_;
-    my $rate    = _getAutoRate( $self->{_rate}, $dev );
+    my $rate    = getAutoRate( $self->{_rate}, $dev );
     my $classes = $self->{_classes};
     my %dsmark  = ();
     my $default = shift @$classes;
