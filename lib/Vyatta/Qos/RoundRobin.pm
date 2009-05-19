@@ -72,7 +72,7 @@ sub commands {
     print "\n";
 
     foreach my $class (@$classes) {
-        $class->gen_class( $dev, 'drr' $parent );
+        $class->gen_class( $dev, 'drr', $parent );
         $class->gen_leaf( $dev, $parent );
         foreach my $match ( $class->matchRules() ) {
             $match->filter( $dev, $parent, 1 );
