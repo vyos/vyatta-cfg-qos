@@ -39,13 +39,15 @@ sub new {
     my $class = ref($that) || $that;
     my $self  = {%fields};
 
-    $self->{_rate} = getRate( $config->returnValue("bandwidth") );
+    my $bw = $config->returnValue("bandwidth");
+    $self->{_rate} 	 = getRate( $bw ) if ($bw);
+
     $self->{_burst}      = $config->returnValue("burst");
-    $self->{_limit}       = $config->returnValue("queue-limit");
-    $self->{_delay}       = getTime($config->returnValue("network-delay"));
-    $self->{_drop}        = $config->returnValue("packet-loss");
-    $self->{_corrupt}     = $config->returnValue("packet-corruption");
-    $self->{_reorder}     = $config->returnValue("packet-reordering");
+    $self->{_limit}      = $config->returnValue("queue-limit");
+    $self->{_delay}      = getTime($config->returnValue("network-delay"));
+    $self->{_drop}       = $config->returnValue("packet-loss");
+    $self->{_corrupt}    = $config->returnValue("packet-corruption");
+    $self->{_reorder}    = $config->returnValue("packet-reordering");
 
 
     return bless $self, $class;
@@ -62,8 +64,7 @@ sub commands {
         printf "qdisc add dev %s root handle 1:0 tbf rate %s burst %s\n",
           $dev, $rate, $burst;
         printf "qdisc add dev %s parent 1:1 handle 10: netem";
-    }
-    else {
+    } else {
         printf "qdisc add dev %s root netem";
     }
 
