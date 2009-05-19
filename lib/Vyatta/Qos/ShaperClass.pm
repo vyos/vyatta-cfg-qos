@@ -21,7 +21,7 @@ use warnings;
 
 require Vyatta::Config;
 use Vyatta::Qos::Match;
-use Vyatta::Qos::Util qw/getDsfield getRate/;
+use Vyatta::Qos::Util qw/getDsfield getRate RedParam/;
 
 
 sub new {

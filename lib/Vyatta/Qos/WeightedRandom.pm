@@ -21,6 +21,7 @@ use warnings;
 
 require Vyatta::Config;
 require Vyatta::Qos::ShaperClass;
+use Vyatta::Qos::Util qw/getRate getAutoRate/;
 
 my $wred = 'weighted-random-detect';
 

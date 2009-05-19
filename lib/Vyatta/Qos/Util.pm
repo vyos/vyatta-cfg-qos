@@ -21,7 +21,7 @@ use warnings;
 
 our @EXPORT =
   qw(getRate getPercent getBurstSize getProtocol getDsfield getTime getAutoRate);
-our @EXPORT_OK = qw(interfaceRate getIfIndex);
+our @EXPORT_OK = qw(getIfIndex RedParam);
 use base qw(Exporter);
 
 sub get_num {

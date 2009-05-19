@@ -24,7 +24,7 @@ use warnings;
 
 require Vyatta::Config;
 require Vyatta::Qos::ShaperClass;
-use Vyatta::Qos::Util qw/getRate interfaceRate/;
+use Vyatta::Qos::Util qw/getRate getAutoRate/;
 
 # Create a new instance based on config information
 sub new {
