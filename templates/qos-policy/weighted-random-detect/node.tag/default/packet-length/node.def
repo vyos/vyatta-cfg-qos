@@ -1,0 +1,5 @@
+type: u32
+help: Set average packet length
+default: 1460
+comp_help: Define average packet length in bytes for bandwidth calculation
+   (default 1460)

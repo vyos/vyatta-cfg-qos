@@ -1,0 +1,8 @@
+type: txt
+help: Set maximum desired latency
+default: "100ms"
+syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --time \"$VAR(@)\""
+comp_help: Define maximum desired latency in milliseconds
+  <number>         Latency in milliseconds
+  <number><suffix> Time with suffx (secs, ms, us)
+
