@@ -23,13 +23,14 @@ require Vyatta::Config;
 require Vyatta::Qos::ShaperClass;
 use Vyatta::Qos::Util qw/getRate getAutoRate/;
 
-my $wred = 'weighted-random-detect';
+my $wred = 'weighted-random';
 
 # Create a new instance based on config information
 sub new {
     my ( $that, $config, $name ) = @_;
     my $level = $config->setLevel();
     my $rate  = $config->returnValue("bandwidth");
+    die "$level bandwidth configuration missing" unless $rate;
 
     my @classes = _getClasses($level);
 
@@ -111,8 +112,8 @@ sub commands {
 
         my ( $qmin, $qmax, $burst ) = RedParam( $classbw, $latency, $avg );
 
-        print "qdisc chang dev $dev root gred ";
-        printf "limit %d min %d max %d avpkt %d", 4 * $qmax, $qmin, $qmax, $avg;
+        print "qdisc chang dev $dev root gred";
+        printf " limit %d min %d max %d avpkt %d", 4 * $qmax, $qmin, $qmax, $avg;
         printf " burst %d probability 0.02 bandwidth %d ecn\n",
           $burst, $classbw / 1000;
 
