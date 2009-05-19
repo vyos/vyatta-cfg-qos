@@ -158,24 +158,19 @@ sub fifoQdisc {
 #   burst        := (2 * min + max) / (3 * average)
 sub redQdisc {
     my ( $self, $dev, $rate ) = @_;
+    my $avg = 1000;
+    my ($qmin, $qmax, $burst) = RedParam($rate, 500, $avg);
+
     my $limit = $self->{_limit};
-    my $avg   = 1000;
     my $qlimit;
-
-    if ( defined $limit ) {
-        $qlimit = $limit * $avg;    # red limit in bytes
+    if ($limit) {
+	$qlimit = $limit * $avg;
+    } else {
+	$qlimit = 4 * $qmax;
     }
-    else {
-
-        # rate is in bits/sec so queue-limit = 8 * 500ms * rate
-        $qlimit = $rate / 2;
-    }
-    my $qmax = $qlimit / 8;
-    my $qmin = $qmax / 3;
 
     printf "red limit %d min %d max %d avpkt %d", $qlimit, $qmin, $qmax, $avg;
-    printf " burst %d probability 0.02 bandwidth %d ecn\n",
-      ( 2 * $qmin + $qmax ) / ( 3 * $avg ), $rate / 1000;
+    printf " burst %d probability 0.02 bandwidth %d ecn\n", $burst, $rate / 1000;
 }
 
 my %qdiscOptions = (
@@ -184,6 +179,12 @@ my %qdiscOptions = (
     'random-detect' => \&redQdisc,
     'drop-tail'     => \&fifoQdisc,
 );
+
+sub get_rate {
+    my ($self, $speed) = @_;
+
+    return _getPercentRate( $self->{_rate}, $speed );
+}
 
 sub gen_class {
     my ( $self, $dev, $qdisc, $parent, $speed ) = @_;
