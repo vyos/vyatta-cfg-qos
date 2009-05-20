@@ -86,7 +86,8 @@ sub filter {
         my $p = $self->{$proto};
         next unless $p;
 
-        printf "filter add dev %s parent %x: prio %d", $dev, $parent, $prio;
+        printf "filter add dev %s parent %x:", $dev, $parent;
+	printf " prio %d", $prio  if ($prio);
 	if ($proto ne 'ether') {
 	    print " protocol $proto u32";
 	    print " match $proto dsfield $$p{dsfield} 0xff"   if $$p{dsfield};
