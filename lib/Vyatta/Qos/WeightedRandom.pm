@@ -39,6 +39,7 @@ sub new {
     my $self = {};
     my $class = ref($that) || $that;
     bless $self, $class;
+    $self->{_rate}    = $rate;
     $self->{_classes} = \@classes;
 
     return $self;
