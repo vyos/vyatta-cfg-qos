@@ -21,7 +21,7 @@ use warnings;
 
 require Vyatta::Config;
 require Vyatta::Qos::ShaperClass;
-use Vyatta::Qos::Util qw/getRate getAutoRate/;
+use Vyatta::Qos::Util qw/getRate getAutoRate getTime RedParam/;
 
 my $wred = 'weighted-random';
 
@@ -40,6 +40,7 @@ sub new {
     my $class = ref($that) || $that;
     bless $self, $class;
     $self->{_rate}    = $rate;
+    $self->{_level}   = $level;
     $self->{_classes} = \@classes;
 
     return $self;
@@ -103,20 +104,23 @@ sub commands {
     $default->{id} = ++$maxid;
     unshift @$classes, $default;
 
-    print "qdisc add dev $dev root handle 1: gred";
-    print " setup DPs $maxid default $maxid";
+    print "qdisc add dev $dev handle 1: root gred";
+    printf " setup DPs %d default %d\n", $maxid+1, $maxid;
 
     foreach my $class (@$classes) {
         my $classbw = $class->get_rate($rate);
         my $avg     = $class->{_avgpkt};
-        my $latency = $class->{_latency};
+        my $latency = getTime( $class->{_latency} );
 
         my ( $qmin, $qmax, $burst ) = RedParam( $classbw, $latency, $avg );
 
-        print "qdisc chang dev $dev root gred";
-        printf " limit %d min %d max %d avpkt %d", 4 * $qmax, $qmin, $qmax, $avg;
-        printf " burst %d probability 0.02 bandwidth %d ecn\n",
-          $burst, $classbw / 1000;
+        print "qdisc change dev $dev root gred";
+        printf " limit %d min %d max %d avpkt %d", 
+		4 * $qmax, $qmin, $qmax, $avg;
+        printf " burst %d bandwidth %d DP %d",
+		$burst, $rate, $class->{id};
+	printf " prio %d", $class->{_priority} if $class->{_priority};
+	print " probability 0.02\n";
 
         foreach my $match ( $class->matchRules() ) {
             $match->filter( $dev, 1, $class->{_priority} );
