@@ -322,16 +322,16 @@ sub ethtoolRate {
 # Compute parameters for RED algorithim based on bandwidth and latency
 #
 #                       Bandwidth (bits/sec) * Latency (ms)
-# Maximum Threshold = --------------------------------------
-#                                1000 ms/sec
+# Maximum Threshold = -------------------------------------- 
+#   (bytes)                   8 bits/byte *  1000000 us/sec
 #
 # Minimum Threshold = Maximum Threshold / 3
 # Avpkt = Average Packet Length
 # Burst = ( 2 * MinThreshold + MaxThreshold) / ( 3 * Avpkt )
 # Limit = 4 * MaxThreshold
 sub RedParam {
-    my ($bandwidth, $latency, $avgpkt) = @_;
-    my $qmax = ($bandwidth * $latency) / 1000;
+    my ( $bandwidth, $latency, $avgpkt ) = @_;
+    my $qmax = ( $bandwidth * $latency ) / 8000000;
     my $qmin = $qmax / 3;
     my $burst = ( 2 * $qmin + $qmax ) / ( 3 * $avgpkt );
 

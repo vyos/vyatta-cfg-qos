@@ -159,7 +159,8 @@ sub fifoQdisc {
 sub redQdisc {
     my ( $self, $dev, $rate ) = @_;
     my $avg = 1000;
-    my ($qmin, $qmax, $burst) = RedParam($rate, 500, $avg);
+    my $latency = 100000;	# 100 ms
+    my ($qmin, $qmax, $burst) = RedParam($rate, $latency, $avg);
 
     my $limit = $self->{_limit};
     my $qlimit;
