@@ -151,16 +151,13 @@ sub fifoQdisc {
 
 # Red is has way to many configuration options
 # make some assumptions to make this sane (based on LARTC)
-#   average size := 1000 bytes
-#   limit        := queue-limit * average
-#   max          := limit / 8
-#   min          := max / 3
-#   burst        := (2 * min + max) / (3 * average)
+#   average size = 1000 bytes
+#   latency      = 100ms
 sub redQdisc {
     my ( $self, $dev, $rate ) = @_;
     my $avg = 1000;
-    my $latency = 100000;	# 100 ms
-    my ($qmin, $qmax, $burst) = RedParam($rate, $latency, $avg);
+    my $latency = 100000;
+    my ($qmin, $qmax, $burst, $maxp) = RedParam($rate, $latency, $avg);
 
     my $limit = $self->{_limit};
     my $qlimit;
@@ -171,7 +168,8 @@ sub redQdisc {
     }
 
     printf "red limit %d min %d max %d avpkt %d", $qlimit, $qmin, $qmax, $avg;
-    printf " burst %d probability 0.02 bandwidth %d ecn\n", $burst, $rate / 1000;
+    printf " burst %d probability %f bandwidth %d ecn\n", 
+    	$prob, $burst, $maxp, $rate / 1000;
 }
 
 my %qdiscOptions = (

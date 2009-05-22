@@ -102,7 +102,7 @@ sub commands {
 
     # fill in id of default
     $default->{id} = ++$maxid;
-    unshift @$classes, $default;
+    push @$classes, $default;
 
     print "qdisc add dev $dev handle 1: root gred";
     printf " setup DPs %d default %d\n", $maxid+1, $maxid;
@@ -112,15 +112,16 @@ sub commands {
         my $avg     = $class->{_avgpkt};
         my $latency = getTime( $class->{_latency} );
 
-        my ( $qmin, $qmax, $burst ) = RedParam( $classbw, $latency, $avg );
+        my ( $qmin, $qmax, $burst, $maxp )
+	    = RedParam( $classbw, $latency, $avg );
 
         print "qdisc change dev $dev root gred";
-        printf " limit %d min %d max %d avpkt %d", 
-		4 * $qmax, $qmin, $qmax, $avg;
+	printf " prio %d", $class->{_priority} if $class->{_priority};
+        printf " limit %d min %d max %d avpkt %d probability %f", 
+		4 * $qmax, $qmin, $qmax, $avg, $maxp;
         printf " burst %d bandwidth %d DP %d",
 		$burst, $rate, $class->{id};
-	printf " prio %d", $class->{_priority} if $class->{_priority};
-	print " probability 0.02\n";
+	print " probability 0.1\n";
 
         foreach my $match ( $class->matchRules() ) {
             $match->filter( $dev, 1, $class->{_priority} );

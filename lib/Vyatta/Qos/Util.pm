@@ -329,13 +329,16 @@ sub ethtoolRate {
 # Avpkt = Average Packet Length
 # Burst = ( 2 * MinThreshold + MaxThreshold) / ( 3 * Avpkt )
 # Limit = 4 * MaxThreshold
+#
+# These are based on Sally Floyd's recommendations:
+#  http://www.icir.org/floyd/REDparameters.txt
 sub RedParam {
     my ( $bandwidth, $latency, $avgpkt ) = @_;
     my $qmax = ( $bandwidth * $latency ) / 8000000;
     my $qmin = $qmax / 3;
     my $burst = ( 2 * $qmin + $qmax ) / ( 3 * $avgpkt );
 
-    return ($qmin, $qmax, $burst);
+    return ($qmin, $qmax, $burst, 0.1);
 }
 
 1;
