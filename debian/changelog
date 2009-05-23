@@ -1,3 +1,10 @@
+vyatta-cfg-qos (0.13.1) unstable; urgency=low
+
+  * Use better RED parameters
+  * Reimplementation of WRED
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Sat, 23 May 2009 15:20:47 -0700
+
 vyatta-cfg-qos (0.12.21) unstable; urgency=low
 
   * Fix RED calculation
