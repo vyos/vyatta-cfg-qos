@@ -21,7 +21,7 @@ use warnings;
 
 require Vyatta::Config;
 use Vyatta::Qos::Match;
-use Vyatta::Qos::Util qw/getDsfield getRate RedParam/;
+use Vyatta::Qos::Util qw/getDsfield getRate/;
 
 
 sub new {
@@ -153,11 +153,27 @@ sub fifoQdisc {
 # make some assumptions to make this sane (based on LARTC)
 #   average size = 1000 bytes
 #   latency      = 100ms
+#
+#                       Bandwidth (bits/sec) * Latency (ms)
+# Maximum Threshold = -------------------------------------- 
+#   (bytes)                   8 bits/byte *  1000000 us/sec
+#
+# Minimum Threshold = Maximum Threshold / 3
+# Avpkt = Average Packet Length
+# Burst = ( 2 * MinThreshold + MaxThreshold) / ( 3 * Avpkt )
+# Limit = 4 * MaxThreshold
+#
+# These are based on Sally Floyd's recommendations:
+#  http://www.icir.org/floyd/REDparameters.txt
+#
 sub redQdisc {
     my ( $self, $dev, $rate ) = @_;
     my $avg = 1000;
     my $latency = 100000;
-    my ($qmin, $qmax, $burst, $maxp) = RedParam($rate, $latency, $avg);
+    my $qmax = ( $rate * $latency ) / 8000000;
+    my $qmin = $qmax / 3;
+    my $burst = ( 2 * $qmin + $qmax ) / ( 3 * $avg );
+    my $maxp = 0.1;
 
     my $limit = $self->{_limit};
     my $qlimit;
@@ -169,7 +185,7 @@ sub redQdisc {
 
     printf "red limit %d min %d max %d avpkt %d", $qlimit, $qmin, $qmax, $avg;
     printf " burst %d probability %f bandwidth %d ecn\n", 
-    	$prob, $burst, $maxp, $rate / 1000;
+    	$burst, $maxp, $rate / 1000;
 }
 
 my %qdiscOptions = (

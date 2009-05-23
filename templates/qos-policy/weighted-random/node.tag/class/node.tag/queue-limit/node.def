@@ -1,2 +1,0 @@
-type: u32
-help: Set maximum queue size (packets)
