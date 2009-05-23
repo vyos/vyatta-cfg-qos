@@ -34,7 +34,7 @@ my %policies = (
         'network-emulator' => 'NetworkEmulator',
 	'round-robin'	   => 'RoundRobin',
 	'priority-queue'   => 'Priority',
-	'weighted-random'  => 'WeightedRandom',
+	'random-detect'    => 'RandomDetect',
     },
     'in' => { 'traffic-limiter' => 'TrafficLimiter', }
 );

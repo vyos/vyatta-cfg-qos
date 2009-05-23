@@ -21,7 +21,7 @@ use warnings;
 
 our @EXPORT =
   qw(getRate getPercent getBurstSize getProtocol getDsfield getTime getAutoRate);
-our @EXPORT_OK = qw(getIfIndex RedParam);
+our @EXPORT_OK = qw(getIfIndex);
 use base qw(Exporter);
 
 sub get_num {
@@ -317,25 +317,6 @@ sub ethtoolRate {
     }
     close $ethtool;
     return $rate;
-}
-
-# Compute parameters for RED algorithim based on bandwidth and latency
-#
-#                       Bandwidth (bits/sec) * Latency (ms)
-# Maximum Threshold = -------------------------------------- 
-#   (bytes)                   8 bits/byte *  1000000 us/sec
-#
-# Minimum Threshold = Maximum Threshold / 3
-# Avpkt = Average Packet Length
-# Burst = ( 2 * MinThreshold + MaxThreshold) / ( 3 * Avpkt )
-# Limit = 4 * MaxThreshold
-sub RedParam {
-    my ( $bandwidth, $latency, $avgpkt ) = @_;
-    my $qmax = ( $bandwidth * $latency ) / 8000000;
-    my $qmin = $qmax / 3;
-    my $burst = ( 2 * $qmin + $qmax ) / ( 3 * $avgpkt );
-
-    return ($qmin, $qmax, $burst);
 }
 
 1;

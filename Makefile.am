@@ -16,7 +16,7 @@ share_perl5_DATA += lib/Vyatta/Qos/TrafficLimiter.pm
 share_perl5_DATA += lib/Vyatta/Qos/LimiterClass.pm
 share_perl5_DATA += lib/Vyatta/Qos/RoundRobin.pm
 share_perl5_DATA += lib/Vyatta/Qos/NetworkEmulator.pm
-share_perl5_DATA += lib/Vyatta/Qos/WeightedRandom.pm
+share_perl5_DATA += lib/Vyatta/Qos/RandomDetect.pm
 
 etcdir           = /etc
 etc_SCRIPTS      =
