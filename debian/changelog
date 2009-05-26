@@ -1,3 +1,11 @@
+vyatta-cfg-qos (0.13.2) unstable; urgency=low
+
+  * Can't have RED queue with Round Robin
+  * One more pass over on RED parameters
+  * Fix WRED setup
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Tue, 26 May 2009 16:02:14 -0700
+
 vyatta-cfg-qos (0.13.1) unstable; urgency=low
 
   * Use better RED parameters
