@@ -156,7 +156,7 @@ sub fifoQdisc {
 #
 #                       Bandwidth (bits/sec) * Latency (ms)
 # Maximum Threshold = -------------------------------------- 
-#   (bytes)                   8 bits/byte *  1000000 us/sec
+#   (bytes)                   8 bits/byte *  1000 ms/sec
 #
 # Minimum Threshold = Maximum Threshold / 3
 # Avpkt = Average Packet Length
@@ -168,12 +168,10 @@ sub fifoQdisc {
 #
 sub redQdisc {
     my ( $self, $dev, $rate ) = @_;
-    my $avg = 1000;
-    my $latency = 100000;
-    my $qmax = ( $rate * $latency ) / 8000000;
+    my $qmax = ( $rate * 100 ) / 8000;
     my $qmin = $qmax / 3;
-    my $burst = ( 2 * $qmin + $qmax ) / ( 3 * $avg );
-    my $maxp = 0.1;
+    my $avg = 1024;
+    my $burst = ( 2 * $qmin + $qmax ) / (3*$avg);
 
     my $limit = $self->{_limit};
     my $qlimit;
@@ -184,8 +182,7 @@ sub redQdisc {
     }
 
     printf "red limit %d min %d max %d avpkt %d", $qlimit, $qmin, $qmax, $avg;
-    printf " burst %d probability %f bandwidth %d ecn\n", 
-    	$burst, $maxp, $rate / 1000;
+    printf " burst %d probability 0.1 bandwidth %s ecn\n", $burst, $rate;
 }
 
 my %qdiscOptions = (
