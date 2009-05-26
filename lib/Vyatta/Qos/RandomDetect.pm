@@ -94,13 +94,22 @@ sub commands {
     my $rate = getAutoRate( $self->{_rate}, $dev );
 
     # 1. setup DSMARK to convert DSCP to tc_index
-    print "qdisc add dev eth0 root handle $root: dsmark indices 1 set_tc_index\n";
+    printf "qdisc add dev %s root handle %x:0 dsmark indices 8 set_tc_index\n",
+    	$dev, $root;
 
     # 2. use tcindex filter to convert tc_index to precedence
-    print
- "filter add dev $dev parent $root: protocol ip prio 1 tcindex mask 0xe0 shift 5\n";
+    # 
+    #  Precedence Field: the three leftmost bits in the TOS octet of an IPv4
+    #   header.
 
-    print "qdisc add dev $dev parent $root: gred setup DPs 8 default 7\n";
+    printf  "filter add dev %s parent %x:0 protocol ip prio 1 ",
+	    $dev, $root;
+    print " tcindex mask 0xe0 shift 5\n";
+
+    # 3. Define GRED with unmatched traffic going to index 0
+    printf "qdisc add dev %s parent %x:0 handle %x:0 gred ",
+	    $dev, $root, $root+1;
+    print " setup DPs 8 default 0 grio\n";
 
     # set VQ parameters
     for ( my $i = 0 ; $i <= 7 ; $i++ ) {
@@ -109,10 +118,10 @@ sub commands {
 	my $qmax = $param->{'max-threshold'};
 	my $prob = $param->{'mark-probability'};
 
-        print "qdisc change dev $dev parent $root:$i gred";
+        printf "qdisc change dev %s parent %x:%x", $dev, $root+1, $i;
         printf " limit %dK min %dK max %dK avpkt 1K", 4 * $qmax, $qmin, $qmax;
-        printf " burst %d bandwidth %d DP %d probability %f\n",
-          ( 2 * $qmin + $qmax ) / 3, $rate, $i, $prob;
+        printf " burst %d bandwidth %d probability %f DP %d prio %d\n",
+          ( 2 * $qmin + $qmax ) / 3, $rate, $prob, $i, $i;
     }
 }
 
