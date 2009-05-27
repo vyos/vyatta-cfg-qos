@@ -63,9 +63,9 @@ sub commands {
 
         printf "qdisc add dev %s root handle 1:0 tbf rate %s burst %s\n",
           $dev, $rate, $burst;
-        printf "qdisc add dev %s parent 1:1 handle 10: netem";
+        printf "qdisc add dev %s parent 1:1 handle 10: netem", $dev;
     } else {
-        printf "qdisc add dev %s root netem";
+        printf "qdisc add dev %s root netem", $dev;
     }
 
     my $delay = $self->{_delay};
