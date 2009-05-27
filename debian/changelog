@@ -1,3 +1,10 @@
+vyatta-cfg-qos (0.13.3) unstable; urgency=low
+
+  * Fix missing argument in Netem
+  * Fix setup of DP Virtual Queues
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Wed, 27 May 2009 10:33:34 -0700
+
 vyatta-cfg-qos (0.13.2) unstable; urgency=low
 
   * Can't have RED queue with Round Robin
