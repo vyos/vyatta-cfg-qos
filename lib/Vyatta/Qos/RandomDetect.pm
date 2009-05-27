@@ -104,12 +104,12 @@ sub commands {
 
     printf  "filter add dev %s parent %x:0 protocol ip prio 1 ",
 	    $dev, $root;
-    print " tcindex mask 0xe0 shift 5\n";
+    print "tcindex mask 0xe0 shift 5\n";
 
     # 3. Define GRED with unmatched traffic going to index 0
     printf "qdisc add dev %s parent %x:0 handle %x:0 gred ",
 	    $dev, $root, $root+1;
-    print " setup DPs 8 default 0 grio\n";
+    print "setup DPs 8 default 0 grio\n";
 
     # set VQ parameters
     for ( my $i = 0 ; $i <= 7 ; $i++ ) {
@@ -118,10 +118,10 @@ sub commands {
 	my $qmax = $param->{'max-threshold'};
 	my $prob = $param->{'mark-probability'};
 
-        printf "qdisc change dev %s parent %x:%x", $dev, $root+1, $i;
+        printf "qdisc change dev %s handle %x:0 gred", $dev, $root+1, $i;
         printf " limit %dK min %dK max %dK avpkt 1K", 4 * $qmax, $qmin, $qmax;
         printf " burst %d bandwidth %d probability %f DP %d prio %d\n",
-          ( 2 * $qmin + $qmax ) / 3, $rate, $prob, $i, $i;
+          ( 2 * $qmin + $qmax ) / 3, $rate, $prob, $i, 8-$i;
     }
 }
 
