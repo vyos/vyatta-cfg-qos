@@ -113,18 +113,17 @@ sub getPercent {
     my $percent = shift;
     my ( $num, $suffix ) = get_num($percent);
 
-    ( $suffix eq '%' )
-      or die "$percent incorrect suffix (expect %)\n";
-    defined $num
-      or die "$percent is not a valid percent bandwidth (not a number)\n";
-    ( $num >= 0 )
-      or die
-      "$percent is not a acceptable percent bandwidth (negative value)\n";
-    ( $num <= 100 )
-      or die
-      "$percent is not a acceptable percent bandwidth (greater than 100%)\n";
-
-    return $num;
+    if (defined $suffix && $suffix ne '%' ) {
+	die "$percent incorrect suffix (expect %)\n";
+    } elsif (! defined $num) {
+	die "$percent is not a valid percent (not a number)\n";
+    } elsif ( $num < 0 ) {
+	die "$percent is not a acceptable percent (negative value)\n";
+    } elsif ( $num > 100 ) {
+	die "$percent is not a acceptable percent (greater than 100%)\n";
+    } else {
+	return $num;
+    }
 }
 
 # Default time units for tc are usec.
