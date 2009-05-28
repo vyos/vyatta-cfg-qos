@@ -23,32 +23,22 @@ use warnings;
 require Vyatta::Config;
 use Vyatta::Qos::Util;
 
-my %fields = (
-    _rate    => undef,
-    _burst   => undef,
-    _limit   => undef,
-    _delay   => undef,
-    _drop    => undef,
-    _corrupt => undef,
-    _reorder => undef,
-);
-
 sub new {
     my ( $that, $config ) = @_;
     my $level = $config->setLevel();
     my $class = ref($that) || $that;
-    my $self  = {%fields};
+    my $self  = { };
 
     my $bw = $config->returnValue("bandwidth");
     $self->{_rate} 	 = getRate( $bw ) if ($bw);
+    my $delay = $config->returnValue("network-delay");
+    $self->{_delay}      = getTime($delay) if ($delay);
 
     $self->{_burst}      = $config->returnValue("burst");
     $self->{_limit}      = $config->returnValue("queue-limit");
-    $self->{_delay}      = getTime($config->returnValue("network-delay"));
     $self->{_drop}       = $config->returnValue("packet-loss");
     $self->{_corrupt}    = $config->returnValue("packet-corruption");
     $self->{_reorder}    = $config->returnValue("packet-reordering");
-
 
     return bless $self, $class;
 }
