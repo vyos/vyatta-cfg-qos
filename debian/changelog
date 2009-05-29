@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.13.5) unstable; urgency=low
+
+  * Need to require network delay
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Fri, 29 May 2009 10:03:32 -0700
+
 vyatta-cfg-qos (0.13.4) unstable; urgency=low
 
   * Handle percent without % sign
