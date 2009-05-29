@@ -1,3 +1,10 @@
+vyatta-cfg-qos (0.13.6) unstable; urgency=low
+
+  * Mark probability must be > 0
+  * Fix handling of parameter validation
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Fri, 29 May 2009 14:36:06 -0700
+
 vyatta-cfg-qos (0.13.5) unstable; urgency=low
 
   * Need to require network delay
