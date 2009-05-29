@@ -1,6 +1,8 @@
 type: txt
 help: Set emulated packet reordering percentage
 syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --percent \"$VAR(@)\""
+commit:expression: $VAR(../network-delay) != "" ; \
+       "Must specify network-delay for packet reordering"
 comp_help: Allowed values:
  <number>%%        Percentage of packets affected
 
