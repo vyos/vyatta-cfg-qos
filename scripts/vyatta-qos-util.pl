@@ -43,13 +43,23 @@ EOF
     exit 1;
 }
 
+my ($percent, $percentrate, $rate, $burst, $protocol, $dscp, $timeval);
+
 GetOptions(
-    "percent=s"         => sub { getPercent( $_[1] ); },
-    "percent-or-rate=s" => sub { getPercentOrRate( $_[1] ); },
-    "rate=s"            => sub { getRate( $_[1] ); },
-    "burst=s"           => sub { getBurstSize( $_[1] ); },
-    "protocol=s"        => sub { getProtocol( $_[1] ); },
-    "dscp=s"            => sub { getDsfield( $_[1] ); },
-    "tos=s"             => sub { getDsfield( $_[1] ); },
-    "time=s"            => sub { getTime( $_[1] ); },
+    "percent=s"         => \$percent,
+    "percent-or-rate=s" => \$percentrate,
+    "rate=s"            => \$rate,
+    "burst=s"           => \$burst,
+    "protocol=s"        => \$protocol,
+    "dscp=s"            => \$dscp,
+    "tos=s"             => \$dscp,
+    "time=s"            => \$timeval,
 ) or usage();
+
+getPercent($percent)		if $percent;
+getPercentOrRate($percent)	if $percentrate;
+getRate($rate)			if $rate;
+getBurstSize($burst)		if $burst;
+getProtocol($protocol)		if $protocol;
+getDsfield($dscp)		if $dscp;
+getTime($timeval)		if $timeval;
