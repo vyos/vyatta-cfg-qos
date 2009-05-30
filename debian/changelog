@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.13.7) unstable; urgency=low
+
+  * UNRELEASED
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Fri, 29 May 2009 18:35:17 -0700
+
 vyatta-cfg-qos (0.13.6) unstable; urgency=low
 
   * Mark probability must be > 0
