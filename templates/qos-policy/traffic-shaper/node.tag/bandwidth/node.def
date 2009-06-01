@@ -1,8 +1,8 @@
 type: txt
 help: Set the available bandwidth for this policy
 default: "auto"
-syntax:expression: exec "[[ \"$VAR(@)\" == \"auto\" ]] || \
-	      /opt/vyatta/sbin/vyatta-qos-util.pl --rate \"$VAR(@)\""
+syntax:expression: $VAR(@) == "auto" || \
+		   exec "/opt/vyatta/sbin/vyatta-qos-util.pl --rate $VAR(@)"
 comp_help: Allowed values:
  auto              Set bandwidth based on interface speed (default)
  <number>          Bandwidth in Kbps
