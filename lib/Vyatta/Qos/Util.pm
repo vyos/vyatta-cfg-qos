@@ -27,6 +27,9 @@ use base qw(Exporter);
 sub get_num {
     use POSIX qw(strtod);
     my ($str) = @_;
+    return unless $str;
+
+    # remove leading/trailing spaces
     $str =~ s/^\s+//;
     $str =~ s/\s+$//;
 
@@ -86,6 +89,8 @@ sub getAutoRate {
 
 sub getRate {
     my $rate = shift;
+    $rate or die "Rate not defined";
+
     my ( $num, $suffix ) = get_num($rate);
 
     defined $num
