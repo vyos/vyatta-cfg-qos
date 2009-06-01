@@ -57,7 +57,7 @@ GetOptions(
 ) or usage();
 
 getPercent($percent)		if $percent;
-getPercentOrRate($percent)	if $percentrate;
+getPercentOrRate($percentrate)	if $percentrate;
 getRate($rate)			if $rate;
 getBurstSize($burst)		if $burst;
 getProtocol($protocol)		if $protocol;
