@@ -1,6 +1,6 @@
 type: txt
 help: Set the traffic-limit used for this class
-syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --rate \"$VAR(@)\""
+syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --rate $VAR(@)"
 comp_help: Allowed values:
  <number>          Bandwidth in Kbps
  <number><suffix>  Value with scaling suffix

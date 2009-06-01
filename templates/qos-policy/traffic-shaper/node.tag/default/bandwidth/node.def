@@ -1,6 +1,6 @@
 type: txt
 help: Set the bandwidth used for default traffic
-syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --percent-or-rate \"$VAR(@)\""
+syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --percent-or-rate \$VAR(@)"
 comp_help: Allowed values:
  <number>	   Bandwidth in Kbps per second
  <number>%%        Percentage of overall rate

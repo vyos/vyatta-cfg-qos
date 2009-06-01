@@ -1,6 +1,6 @@
 type: txt
 help: Match IP protocol name or number
-syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --protocol \"$VAR(@)\"" 
+syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --protocol $VAR(@)" 
 allowed: awk '
 	/^#/ { next }
 	     { printf "%s ", $1 }' </etc/protocols
