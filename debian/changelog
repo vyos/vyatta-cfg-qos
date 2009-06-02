@@ -1,3 +1,13 @@
+vyatta-cfg-qos (0.13.8) unstable; urgency=low
+
+  [ Stephen Hemminger ]
+  * Handle missing rate value more gracefully
+  * Fix problems with bandwidth template
+  * Fix more places where VAR is quoted
+  * Fix handling of qos-percent/rate values
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Mon, 01 Jun 2009 17:46:48 -0700
+
 vyatta-cfg-qos (0.13.6) unstable; urgency=low
 
   * Mark probability must be > 0
