@@ -300,7 +300,7 @@ sub ethtoolRate {
     # Get rate of real device (ignore vlan)
     $dev =~ s/\.[0-9]+$//;
 
-    open( my $ethtool, "/usr/sbin/ethtool $dev 2>/dev/null |" )
+    open( my $ethtool, "sudo /usr/sbin/ethtool $dev 2>/dev/null |" )
       or die "ethtool failed: $!\n";
 
     # ethtool produces:
