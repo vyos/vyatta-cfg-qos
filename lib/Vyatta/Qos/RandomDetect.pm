@@ -31,14 +31,14 @@ use Vyatta::Qos::Util qw/getRate getAutoRate getTime/;
 
 # default values for different precedence levels
 my @default_fields = (
-    { 'min-threshold' => 9,  'max-threshold' => 18, 'mark-probability' => 1/2 },
-    { 'min-threshold' => 10, 'max-threshold' => 18, 'mark-probability' => 5/9 },
-    { 'min-threshold' => 11, 'max-threshold' => 18, 'mark-probability' => .1 },
-    { 'min-threshold' => 12, 'max-threshold' => 18, 'mark-probability' => 2/3 },
-    { 'min-threshold' => 13, 'max-threshold' => 18, 'mark-probability' => .1 },
-    { 'min-threshold' => 14, 'max-threshold' => 18, 'mark-probability' => 7/9 },
-    { 'min-threshold' => 15, 'max-threshold' => 18, 'mark-probability' => 5/6 },
-    { 'min-threshold' => 16, 'max-threshold' => 18, 'mark-probability' => 8/9 },
+    { 'min-threshold' => 9,  'mark-probability' => 1/2 },
+    { 'min-threshold' => 10, 'mark-probability' => 5/9 },
+    { 'min-threshold' => 11, 'mark-probability' => .1 },
+    { 'min-threshold' => 12, 'mark-probability' => 2/3 },
+    { 'min-threshold' => 13, 'mark-probability' => .1 },
+    { 'min-threshold' => 14, 'mark-probability' => 7/9 },
+    { 'min-threshold' => 15, 'mark-probability' => 5/6 },
+    { 'min-threshold' => 16, 'mark-probability' => 8/9 },
 );
 
 # Create a new instance based on config information
@@ -69,8 +69,8 @@ sub getPrecedence {
 	my $defaults = $default_fields[$i];
 	my %param;
 	
-	$config->setLevel("$level precedence $i");
-	foreach my $field (keys %$defaults) {
+	foreach my $field (qw(max-threshold average-packet queue-limit),
+			   keys %$defaults) {
 	    my $val = $config->returnValue($field);
 
             if ( !defined $val ) {
@@ -116,10 +116,17 @@ sub commands {
 	my $param = $precedence->[$i];
 	my $qmin = $param->{'min-threshold'};
 	my $qmax = $param->{'max-threshold'};
+	my $qlimit = $param->{'queue-limit'};
+	my $avgpkt = $param->{'average-packet'};
 	my $prob = $param->{'mark-probability'};
 
+	$qmax = 18		unless $qmax;
+	$avgpkt = 1024		unless $avgpkt;
+	$qlimit = 4 * $qmax	unless $qlimit;
+
         printf "qdisc change dev %s handle %x:0 gred", $dev, $root+1, $i;
-        printf " limit %dK min %dK max %dK avpkt 1K", 4 * $qmax, $qmin, $qmax;
+        printf " limit %d min %d max %d avpkt %d",
+		$qlimit * $avgpkt, $qmin * $avgpkt, $qmax * $avgpkt, $avgpkt;
         printf " burst %d bandwidth %d probability %f DP %d prio %d\n",
           ( 2 * $qmin + $qmax ) / 3, $rate, $prob, $i, 8-$i;
     }
