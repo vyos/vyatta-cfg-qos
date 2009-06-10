@@ -182,6 +182,7 @@ sub update_interface {
     }
 }
 
+
 # return array of names using given qos-policy
 sub interfaces_using {
     my $policy = shift;
@@ -191,9 +192,13 @@ sub interfaces_using {
     foreach my $name ( getInterfaces() ) {
         my $intf = new Vyatta::Interface($name);
         next unless $intf;
-
-        $config->setLevel( $intf->path() );
-        push @inuse, $name if ( $config->exists("qos-policy $policy") );
+	$config->setLevel($intf->path() . ' qos-policy');
+	
+        foreach my $direction ($config->listNodes()) {
+	    my $cur = $config->returnValue($direction);
+	    next unless $cur;
+	    push @inuse, $name if ($cur eq $policy); 
+	}
     }
     return @inuse;
 }
@@ -204,7 +209,7 @@ sub delete_policy {
         my @inuse = interfaces_using($name);
 
         die "QoS policy still in use on ", join( ' ', @inuse ), "\n"
-          if (@inuse);
+	    if @inuse;
     }
 }
 
