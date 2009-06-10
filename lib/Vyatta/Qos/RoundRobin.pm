@@ -41,16 +41,9 @@ sub _getClasses {
     my @classes;
     my $config = new Vyatta::Config;
 
-    $config->setLevel($level);
-    my $default;
-    if ( $config->exists("default") ) {
-        $config->setLevel("$level default");
-        $default = new Vyatta::Qos::ShaperClass($config);
-        $config->setLevel($level);
-    }
-    else {
-        $default = new Vyatta::Qos::ShaperClass;
-    }
+    $config->setLevel("$level default");
+    my $default = new Vyatta::Qos::ShaperClass($config);
+
     push @classes, $default;
     $default->{id} = 1;
 

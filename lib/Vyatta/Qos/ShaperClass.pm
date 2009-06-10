@@ -209,11 +209,15 @@ sub gen_class {
 
 sub gen_leaf {
     my ( $self, $dev, $parent, $rate ) = @_;
+    my $qtype = $self->{_qdisc};
+    return unless $qtype;	# default is okay
+
+    my $q = $qdiscOptions{$qtype};
+    die "Unknown queue-type $qtype\n"
+	unless $q;
 
     printf "qdisc add dev %s parent %x:%x ", $dev, $parent, $self->{id};
-
-    my $q = $qdiscOptions{ $self->{_qdisc} };
-    $q->( $self, $dev, $rate ) if ($q);
+    $q->( $self, $dev, $rate );
 }
 
 sub dsmarkClass {
