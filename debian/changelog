@@ -1,3 +1,13 @@
+vyatta-cfg-qos (0.13.6+jenner3) unstable; urgency=low
+
+  * Use sudo when getting speed
+  * Allow random-detect for Qos policy types without rate
+  * Allow random-detect for round-robin subqueue
+  * Allow setting queue limit and average packet size
+  * Handle round-robin without configuration of default
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Wed, 10 Jun 2009 14:28:54 -0700
+
 vyatta-cfg-qos (0.13.6+jenner2) unstable; urgency=low
 
   * Handle missing rate value more gracefully
