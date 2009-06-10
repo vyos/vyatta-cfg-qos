@@ -46,23 +46,28 @@ sub new {
 sub commands {
     my ( $self, $dev ) = @_;
     my $rate = $self->{_rate};
+    my $limit = $self->{_limit};
+    my $delay = $self->{_delay};
 
     if ($rate) {
         my $burst = $self->{_burst};
         $burst or $burst = "15K";
 
-        printf "qdisc add dev %s root handle 1:0 tbf rate %s burst %s\n",
+        printf "qdisc add dev %s root handle 1:0 tbf rate %s burst %s",
           $dev, $rate, $burst;
-        printf "qdisc add dev %s parent 1:1 handle 10: netem", $dev;
+	if ($limit) {
+	    print " limit $limit";
+	} elsif ($delay) {
+	    print " latency $delay";
+	} else {
+	    print " latency 50ms";
+	}
+	printf "\nqdisc add dev %s parent 1:1 handle 10: netem", $dev;
     } else {
         printf "qdisc add dev %s root netem", $dev;
     }
-
-    my $delay = $self->{_delay};
-    print " delay $delay" if ($delay);
-
-    my $limit = $self->{_limit};
     print " limit $limit" if ($limit);
+    print " delay $delay" if ($delay);
 
     my $drop = $self->{_drop};
     print " drop $drop" if ($drop);
