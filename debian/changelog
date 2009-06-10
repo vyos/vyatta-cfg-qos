@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.13.6+jenner4) unstable; urgency=low
+
+  * Fix management of delete of policy in use
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Wed, 10 Jun 2009 16:00:02 -0700
+
 vyatta-cfg-qos (0.13.6+jenner3) unstable; urgency=low
 
   * Use sudo when getting speed
