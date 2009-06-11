@@ -81,16 +81,4 @@ sub commands {
     print "\n";
 }
 
-sub isChanged {
-    my ( $self, $name ) = @_;
-    my $config = new Vyatta::Config;
-
-    $config->setLevel("qos-policy network-emulator $name");
-    foreach my $attr ( "bandwidth", "burst", "queue-limit", "network-delay", 
-		       "packet-loss", "packet-corruption", "packet-reordering", ) {
-        return $attr if ( $config->isChanged($attr) );
-    }
-    return;
-}
-
 1;

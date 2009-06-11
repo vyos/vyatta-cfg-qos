@@ -130,28 +130,4 @@ sub commands {
     }
 }
 
-# Walk configuration tree and look for changed nodes
-# The configuration system should do this but doesn't do it right
-sub isChanged {
-    my ( $self, $name ) = @_;
-    my $config = new Vyatta::Config;
-
-    $config->setLevel("qos-policy random-detect $name");
-
-    return 'bandwidth' if ( $config->isChanged('bandwidth') );
-
-    my %precedenceNodes = $config->listNodeStatus('precedence');
-    while ( my ( $pred, $status ) = each %precedenceNodes ) {
-        return "precedence $pred" if ( $status ne 'static' );
-
-        foreach my $attr qw(average-packet min-threshold mark-probability
-			    max-threshold queue-limit) {
-            return "precedence $pred $attr"
-              if ( $config->isChanged("precedence $pred $attr") );
-        }
-    }
-
-    return;    # false
-}
-
 1;
