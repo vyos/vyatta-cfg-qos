@@ -29,18 +29,6 @@ use warnings;
 require Vyatta::Config;
 use Vyatta::Qos::Util qw/getRate getAutoRate getTime/;
 
-# default values for different precedence levels
-my @default_fields = (
-    { 'min-threshold' => 9,  'mark-probability' => 1/2 },
-    { 'min-threshold' => 10, 'mark-probability' => 5/9 },
-    { 'min-threshold' => 11, 'mark-probability' => .1 },
-    { 'min-threshold' => 12, 'mark-probability' => 2/3 },
-    { 'min-threshold' => 13, 'mark-probability' => .1 },
-    { 'min-threshold' => 14, 'mark-probability' => 7/9 },
-    { 'min-threshold' => 15, 'mark-probability' => 5/6 },
-    { 'min-threshold' => 16, 'mark-probability' => 8/9 },
-);
-
 # Create a new instance based on config information
 sub new {
     my ( $that, $config, $name ) = @_;
@@ -66,22 +54,37 @@ sub getPrecedence {
     my @precedence;
 
     for ( my $i = 0 ; $i <= 7 ; $i++ ) {
-	my $defaults = $default_fields[$i];
-	my %param;
-	
-	foreach my $field (qw(max-threshold average-packet queue-limit),
-			   keys %$defaults) {
-	    my $val = $config->returnValue($field);
+	my %pred;
 
-            if ( !defined $val ) {
-		$param{$field} = $defaults->{$field};
-            } elsif ( $field eq 'mark-probability' ) {
-		$param{$field} = 1 / $val;
-            }  else {
-		$param{$field} = $val;
-            }
-        }
-	$precedence[$i] = \%param;
+	$config->setLevel("$level precedence $i");
+
+	# Compute some sane defaults based on predence and max-threshold
+	$pred{qmax} = $config->returnValue('maximum-threshold');
+	$pred{qmax} = 18 unless $pred{qmax};
+	
+	$pred{qmin} = $config->returnValue('minimum-threshold');
+	if ($pred{qmin}) {
+	    die "min-threshold: $pred{qmin} > max-threshold: $pred{qmax}\n"
+		if ($pred{qmin} > $pred{qmax});
+	} else {
+	    $pred{qmin} = ((9 + $i) * $pred{qmax})/ 18;
+	}
+
+	$pred{qlim} = $config->returnValue('queue-limit');
+	if ($pred{qlim}) {
+	    die "queue-limit: $pred{qlim} < max-threshold: $pred{qmax}\n"
+		if ($pred{qlim} < $pred{qmax});
+	} else {
+	    $pred{qlim} = 4 * $pred{qmax};
+	}
+
+	my $mp = $config->returnValue('mark-probablilty');
+	$pred{prob} = (defined $mp) ? (1 / $mp) : (1 / 10);
+
+	my $avgpkt = $config->returnValue('average-packet');
+	$pred{avpkt} = (defined $avgpkt) ? $avgpkt : 1024;
+
+	$precedence[$i] = \%pred;
     }
 
     return @precedence;
@@ -98,7 +101,7 @@ sub commands {
     	$dev, $root;
 
     # 2. use tcindex filter to convert tc_index to precedence
-    # 
+    #
     #  Precedence Field: the three leftmost bits in the TOS octet of an IPv4
     #   header.
 
@@ -113,22 +116,17 @@ sub commands {
 
     # set VQ parameters
     for ( my $i = 0 ; $i <= 7 ; $i++ ) {
-	my $param = $precedence->[$i];
-	my $qmin = $param->{'min-threshold'};
-	my $qmax = $param->{'max-threshold'};
-	my $qlimit = $param->{'queue-limit'};
-	my $avgpkt = $param->{'average-packet'};
-	my $prob = $param->{'mark-probability'};
-
-	$qmax = 18		unless $qmax;
-	$avgpkt = 1024		unless $avgpkt;
-	$qlimit = 4 * $qmax	unless $qlimit;
+	my $pred = $precedence->[$i];
+	my $avg  = $pred->{avpkt};
+	my $burst = ( 2 * $pred->{qmin} + $pred->{qmax} ) / 3;
 
         printf "qdisc change dev %s handle %x:0 gred", $dev, $root+1, $i;
         printf " limit %d min %d max %d avpkt %d",
-		$qlimit * $avgpkt, $qmin * $avgpkt, $qmax * $avgpkt, $avgpkt;
+		$pred->{qlim} * $avg, $pred->{qmin} * $avg,
+		$pred->{qmax} * $avg, $avg;
+
         printf " burst %d bandwidth %d probability %f DP %d prio %d\n",
-          ( 2 * $qmin + $qmax ) / 3, $rate, $prob, $i, 8-$i;
+		$burst, $rate, $pred->{prob}, $i, 8-$i;
     }
 }
 
@@ -146,8 +144,8 @@ sub isChanged {
     while ( my ( $pred, $status ) = each %precedenceNodes ) {
         return "precedence $pred" if ( $status ne 'static' );
 
-	my $defaults = $default_fields[0];
-        foreach my $attr (keys %$defaults) {
+        foreach my $attr qw(average-packet min-threshold mark-probability
+			    max-threshold queue-limit) {
             return "precedence $pred $attr"
               if ( $config->isChanged("precedence $pred $attr") );
         }
