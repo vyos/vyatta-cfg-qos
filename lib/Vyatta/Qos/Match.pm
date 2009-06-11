@@ -88,6 +88,7 @@ sub filter {
 
         printf "filter add dev %s parent %x:", $dev, $parent;
 	printf " prio %d", $prio  if ($prio);
+
 	if ($proto ne 'ether') {
 	    print " protocol $proto u32";
 	    print " match $proto dsfield $$p{dsfield} 0xff"   if $$p{dsfield};
@@ -98,6 +99,10 @@ sub filter {
 
 	    print " protocol $type u32";
 	}
+
+	# workaround inconsistent usage in tc u32 match
+	$proto = 'ip6' if ($proto eq 'ipv6');
+
         print " match $proto src $$p{src}"                if $$p{src};
         print " match $proto sport $$p{sport} 0xffff"     if $$p{sport};
         print " match $proto dst $$p{dst}"                if $$p{dst};
