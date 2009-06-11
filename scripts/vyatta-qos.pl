@@ -192,12 +192,16 @@ sub interfaces_using {
     foreach my $name ( getInterfaces() ) {
         my $intf = new Vyatta::Interface($name);
         next unless $intf;
-	$config->setLevel($intf->path() . ' qos-policy');
+	my $level = $intf->path() . ' qos-policy';
+	$config->setLevel($level);
 	
         foreach my $direction ($config->listNodes()) {
 	    my $cur = $config->returnValue($direction);
 	    next unless $cur;
-	    push @inuse, $name if ($cur eq $policy); 
+
+	    # these are arguments to update_interface()
+	    push @inuse, [ $name, $direction, $name ]
+		if ($cur eq $policy); 
 	}
     }
     return @inuse;
@@ -224,19 +228,17 @@ sub create_policy {
 
 # Configuration changed, reapply to all interfaces.
 sub apply_policy {
-    my $config = new Vyatta::Config;
+    my ( $policy, $name ) = @_;
+    my @usedby = interfaces_using($name);
 
-    while ( my $name = shift ) {
-        foreach my $device ( interfaces_using($name) ) {
-            my $intf = new Vyatta::Interface($device);
-
-            $config->setLevel( $intf->path() );
-            foreach my $direction ( $config->listNodes('qos-policy') ) {
-                next unless $config->exists("qos-policy $direction $name");
-
-                update_interface( $device, $direction, $name );
-            }
-        }
+    if (@usedby) {
+	foreach my $args (@usedby) {
+	    update_interface( @$args );
+	}
+    } else {
+	# Recheck the policy, might have new errors.
+	my $shaper = make_policy( $policy, $name );
+	exit 1 unless $shaper;
     }
 }
 
@@ -245,7 +247,7 @@ sub usage {
 usage: vyatta-qos.pl --list-policy direction
        vyatta-qos.pl --create-policy policy-type policy-name
        vyatta-qos.pl --delete-policy policy-name
-       vyatta-qos.pl --apply-policy policy-name
+       vyatta-qos.pl --apply-policy policy-type policy-name
 
        vyatta-qos.pl --update-interface interface direction policy-name
        vyatta-qos.pl --delete-interface interface direction
@@ -270,7 +272,7 @@ GetOptions(
     "list-policy=s"      => \@listPolicy,
     "delete-policy=s"    => \@deletePolicy,
     "create-policy=s{2}" => \@createPolicy,
-    "apply-policy=s"     => \@applyPolicy,
+    "apply-policy=s{2}"  => \@applyPolicy,
 ) or usage();
 
 delete_interface(@deleteInterface) if ( $#deleteInterface == 1 );

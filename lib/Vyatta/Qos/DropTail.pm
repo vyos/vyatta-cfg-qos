@@ -47,12 +47,4 @@ sub commands {
     printf "%s\n", $cmd;
 }
 
-sub isChanged {
-    my ($self, $name) = @_;
-    my $config = new Vyatta::Config;
-
-    $config->setLevel("qos-policy drop-tail $name");
-    return $config->isChanged('queue-limit');
-}
-
 1;
