@@ -37,7 +37,7 @@ my %interface_hash = (
     'bonding/node.tag'                              => '$VAR(@)',
     'bonding/node.tag/vif/node.tag'                 => '$VAR(../@).$VAR(@)',
     'pseudo-ethernet/node.tag'                      => '$VAR(@)',
-    'pseudo-ethernet/node.tag/vif/node.tag'         => '$VAR(../@).$VAR(@)',
+#   'pseudo-ethernet/node.tag/vif/node.tag'         => '$VAR(../@).$VAR(@)',
 
     'tunnel/node.tag'                               => '$VAR(@)',
     'bridge/node.tag'                               => '$VAR(@)',
