@@ -1,3 +1,11 @@
+vyatta-cfg-qos (0.13.6+jenner9) unstable; urgency=low
+
+  * Fix update (apply-policy) at end
+  * Fix issues with vif match
+  * Ignore deleted policy on end test
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Mon, 15 Jun 2009 13:22:35 -0700
+
 vyatta-cfg-qos (0.13.6+jenner8) unstable; urgency=low
 
   * Cleanup how qos-policy change detection works
