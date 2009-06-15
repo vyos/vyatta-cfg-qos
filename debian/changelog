@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.13.6+jenner7) unstable; urgency=low
+
+  * IPV6 match fix
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Sun, 14 Jun 2009 20:33:00 -0700
+
 vyatta-cfg-qos (0.13.6+jenner6) unstable; urgency=low
 
   * Change initialization of WRED parameters
