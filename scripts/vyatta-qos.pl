@@ -228,17 +228,20 @@ sub create_policy {
 
 # Configuration changed, reapply to all interfaces.
 sub apply_policy {
-    my ( $policy, $name ) = @_;
-    my @usedby = interfaces_using($name);
+    while (my $name = shift) {
+	my @usedby = interfaces_using($name);
+	if (@usedby) {
+	    foreach my $args (@usedby) {
+		update_interface( @$args );
+	    }
+	} else {
+	    # Recheck the policy, might have new errors.
+	    my $policy = find_policy($name);
+	    die "Unknown policy name $name\n" unless $policy;
 
-    if (@usedby) {
-	foreach my $args (@usedby) {
-	    update_interface( @$args );
+	    my $shaper = make_policy( $policy, $name );
+	    exit 1 unless $shaper;
 	}
-    } else {
-	# Recheck the policy, might have new errors.
-	my $shaper = make_policy( $policy, $name );
-	exit 1 unless $shaper;
     }
 }
 
@@ -272,7 +275,7 @@ GetOptions(
     "list-policy=s"      => \@listPolicy,
     "delete-policy=s"    => \@deletePolicy,
     "create-policy=s{2}" => \@createPolicy,
-    "apply-policy=s{2}"  => \@applyPolicy,
+    "apply-policy=s"     => \@applyPolicy,
 ) or usage();
 
 delete_interface(@deleteInterface) if ( $#deleteInterface == 1 );
