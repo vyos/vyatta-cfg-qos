@@ -75,9 +75,9 @@ sub filter {
             my $ip = $self->{$ipver};
             next unless $ip && $$ip{dsfield};
 
-            printf "filter add dev %s parent %x: protocol $ipver prio 1",
-              $dev, $parent;
-            printf " handle %d tcindex", $$ip{dsfield};
+            printf "filter add dev %s parent %x: protocol %s prio 1", 
+	    	$dev, $parent, $ipver;
+            print " handle $$ip{dsfield} tcindex", 
         }
         return;
     }
