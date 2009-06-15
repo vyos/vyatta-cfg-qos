@@ -200,7 +200,7 @@ sub interfaces_using {
 	    next unless $cur;
 
 	    # these are arguments to update_interface()
-	    push @inuse, [ $name, $direction, $name ]
+	    push @inuse, [ $name, $direction, $policy ]
 		if ($cur eq $policy); 
 	}
     }
