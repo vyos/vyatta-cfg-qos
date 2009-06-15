@@ -75,11 +75,13 @@ sub filter {
             my $ip = $self->{$ipver};
             next unless $ip && $$ip{dsfield};
 
-            printf "filter add dev %s parent %x: protocol %s prio 1", 
+            printf "filter add dev %s parent %x: protocol %s prio $prio", 
 	    	$dev, $parent, $ipver;
             printf " handle %s tcindex classid %x:%x\n", 
 		$$ip{dsfield},  $parent, $classid;
-    }
+
+	    $prio += 1;
+	}
         return;
     }
 
@@ -88,7 +90,10 @@ sub filter {
         next unless $p;
 
         printf "filter add dev %s parent %x:", $dev, $parent;
-	printf " prio %d", $prio  if ($prio);
+	if ($prio) {
+	    printf " prio %d", $prio;
+	    $prio += 1;
+	}
 
 	if ($proto eq 'ether') {
 	    my $type = $$p{protocol};
@@ -106,8 +111,14 @@ sub filter {
 	    print " protocol $proto u32";
 
 	    # workaround inconsistent usage in tc u32 match
-	    my $sel = ($proto eq 'ipv6') ? 'ip6' : $proto;
-	    print " match $sel dsfield $$p{dsfield} 0xff"   if $$p{dsfield};
+	    my $sel = $proto;
+	    if ($proto eq 'ipv6') {
+		$sel = 'ip6';
+		printf " match u16 0x%x 0x0ff0 at 0", hex($$p{dsfield}) << 4,
+		    if $$p{dsfield};
+	    } else {
+		print " match $sel dsfield $$p{dsfield} 0xff" if $$p{dsfield};
+	    }
 	    print " match $sel protocol $$p{protocol} 0xff" if $$p{protocol};
 	    
 	    print " match $sel src $$p{src}"                if $$p{src};
