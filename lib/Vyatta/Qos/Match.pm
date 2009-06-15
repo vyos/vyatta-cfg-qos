@@ -63,7 +63,7 @@ sub new {
 }
 
 sub filter {
-    my ( $self, $dev, $parent, $prio, $dsmark ) = @_;
+    my ( $self, $dev, $parent, $classid, $prio, $dsmark ) = @_;
 
     # empty match
     return unless %{$self};
@@ -77,8 +77,9 @@ sub filter {
 
             printf "filter add dev %s parent %x: protocol %s prio 1", 
 	    	$dev, $parent, $ipver;
-            print " handle $$ip{dsfield} tcindex", 
-        }
+            printf " handle %s tcindex classid %x:%x\n", 
+		$$ip{dsfield},  $parent, $classid;
+    }
         return;
     }
 
@@ -114,6 +115,8 @@ sub filter {
 	    print " match $sel dst $$p{dst}"                if $$p{dst};
 	    print " match $sel dport $$p{dport} 0xffff"     if $$p{dport};
 	}
+
+	printf " classid %x:%x\n", $parent, $classid;
     }
 
     my $indev = $self->{_indev};
@@ -123,5 +126,6 @@ sub filter {
         print " protocol all basic";
         print " match meta\(rt_iif eq $indev\)"        if $indev;
         print " match meta\(vlan mask 0xfff eq $vif\)" if $vif;
+	printf " classid %x:%x\n", $parent, $classid;
     }
 }
