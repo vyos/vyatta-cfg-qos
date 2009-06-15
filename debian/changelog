@@ -1,3 +1,12 @@
+vyatta-cfg-qos (0.13.6+jenner8) unstable; urgency=low
+
+  * Cleanup how qos-policy change detection works
+  * remove pseudo-ethernet vif
+  * Address issues in traffic-shaper match
+  * Require bandwidth setting for default class
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Mon, 15 Jun 2009 11:16:01 -0700
+
 vyatta-cfg-qos (0.13.6+jenner7) unstable; urgency=low
 
   * IPV6 match fix
