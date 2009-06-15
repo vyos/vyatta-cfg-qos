@@ -72,8 +72,10 @@ sub _checkClasses {
     my $rate = shift;
     my $default = shift;
     
-    # if auto, can't check at create must wait for policy to be applied
+    # if auto, can't check for constraints until later
     $rate = ( $rate eq "auto") ? undef : getRate($rate);
+    die "Bandwidth not defined for default traffic\n"
+	unless $default->{_rate};
     $default->rateCheck( $rate, "$level default" ) if $rate;
 
     foreach my $class (@_) {
