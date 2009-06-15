@@ -89,24 +89,31 @@ sub filter {
         printf "filter add dev %s parent %x:", $dev, $parent;
 	printf " prio %d", $prio  if ($prio);
 
-	if ($proto ne 'ether') {
-	    print " protocol $proto u32";
-	    print " match $proto dsfield $$p{dsfield} 0xff"   if $$p{dsfield};
-	    print " match $proto protocol $$p{protocol} 0xff" if $$p{protocol};
-	} else {
+	if ($proto eq 'ether') {
 	    my $type = $$p{protocol};
 	    $type = 'all' unless $type;
 
-	    print " protocol $type u32";
+	    if (defined($$p{src}) || defined($$p{dest})) {
+		print " protocol $type u32";
+		print " match ether src $$p{src}"                if $$p{src};
+		print " match ether dst $$p{dst}"                if $$p{dst};
+	    } else {
+		# u32 requires some options to work but basic works
+		print " protocol $type basic";
+	    }
+	} else {
+	    print " protocol $proto u32";
+
+	    # workaround inconsistent usage in tc u32 match
+	    my $sel = ($proto eq 'ipv6') ? 'ip6' : $proto;
+	    print " match $sel dsfield $$p{dsfield} 0xff"   if $$p{dsfield};
+	    print " match $sel protocol $$p{protocol} 0xff" if $$p{protocol};
+	    
+	    print " match $sel src $$p{src}"                if $$p{src};
+	    print " match $sel sport $$p{sport} 0xffff"     if $$p{sport};
+	    print " match $sel dst $$p{dst}"                if $$p{dst};
+	    print " match $sel dport $$p{dport} 0xffff"     if $$p{dport};
 	}
-
-	# workaround inconsistent usage in tc u32 match
-	$proto = 'ip6' if ($proto eq 'ipv6');
-
-        print " match $proto src $$p{src}"                if $$p{src};
-        print " match $proto sport $$p{sport} 0xffff"     if $$p{sport};
-        print " match $proto dst $$p{dst}"                if $$p{dst};
-        print " match $proto dport $$p{dport} 0xffff"     if $$p{dport};
     }
 
     my $indev = $self->{indev};
