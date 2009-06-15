@@ -134,8 +134,7 @@ sub commands {
         foreach my $class (@$classes) {
             $class->dsmarkClass( 1, $dev );
             foreach my $match ( $class->matchRules() ) {
-                $match->filter( $dev, 1, 1 );
-                printf " classid %x:%x\n", $parent, $class->{id};
+                $match->filter( $dev, $parent, $class->{id}, 1 );
             }
         }
 
@@ -153,8 +152,7 @@ sub commands {
         $class->gen_leaf( $dev, $parent, $rate );
 
         foreach my $match ( $class->matchRules() ) {
-            $match->filter( $dev, $parent, 1, $class->{dsmark} );
-            printf " classid %x:%x\n", $parent, $class->{id};
+            $match->filter( $dev, $parent, $class->{id}, 1, $class->{dsmark} );
         }
     }
 }
