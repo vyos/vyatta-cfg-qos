@@ -1,3 +1,10 @@
+vyatta-cfg-qos (0.13.6+jenner11) unstable; urgency=low
+
+  * Fix mixed protocol matches
+  * Fix IPV6 traffic-class match
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Mon, 15 Jun 2009 15:34:36 -0700
+
 vyatta-cfg-qos (0.13.6+jenner10) unstable; urgency=low
 
   * Fix DSCP field match with set-dscp
