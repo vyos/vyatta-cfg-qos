@@ -1,3 +1,10 @@
+vyatta-cfg-qos (0.13.6+jenner10) unstable; urgency=low
+
+  * Fix DSCP field match with set-dscp
+  * Fix policy update
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Mon, 15 Jun 2009 14:15:54 -0700
+
 vyatta-cfg-qos (0.13.6+jenner9) unstable; urgency=low
 
   * Fix update (apply-policy) at end
