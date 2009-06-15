@@ -234,11 +234,8 @@ sub apply_policy {
 	    foreach my $args (@usedby) {
 		update_interface( @$args );
 	    }
-	} else {
+	} elsif (my $policy = find_policy($name)) {
 	    # Recheck the policy, might have new errors.
-	    my $policy = find_policy($name);
-	    die "Unknown policy name $name\n" unless $policy;
-
 	    my $shaper = make_policy( $policy, $name );
 	    exit 1 unless $shaper;
 	}
