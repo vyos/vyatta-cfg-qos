@@ -116,9 +116,9 @@ sub filter {
 	}
     }
 
-    my $indev = $self->{indev};
-    my $vif   = $self->{vif};
-    if ( $vif || $indev ) {
+    my $indev = $self->{_indev};
+    my $vif   = $self->{_vif};
+    if ( defined($vif) || defined($indev) ) {
         printf "filter add dev %s parent %x: prio %d", $dev, $parent, $prio;
         print " protocol all basic";
         print " match meta\(rt_iif eq $indev\)"        if $indev;
