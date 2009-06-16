@@ -64,8 +64,8 @@ sub getPrecedence {
 	
 	$pred{qmin} = $config->returnValue('minimum-threshold');
 	if ($pred{qmin}) {
-	    die "min-threshold: $pred{qmin} > max-threshold: $pred{qmax}\n"
-		if ($pred{qmin} > $pred{qmax});
+	    die "min-threshold: $pred{qmin} >= max-threshold: $pred{qmax}\n"
+		if ($pred{qmin} >= $pred{qmax});
 	} else {
 	    $pred{qmin} = ((9 + $i) * $pred{qmax})/ 18;
 	}
