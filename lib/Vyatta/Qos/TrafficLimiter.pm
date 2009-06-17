@@ -83,9 +83,11 @@ sub commands {
     printf "qdisc add dev %s handle %x: ingress\n", $dev, $parent;
     foreach my $class (@$classes) {
         foreach my $match ( $class->matchRules() ) {
-	    $match->filter( $dev, $parent, $class->{priority} );
-	    printf " police rate %s burst %s drop flowid :%x\n", 
-	        $class->{rate}, $class->{burst}, $class->{id};
+	    my $police = " police rate " . $class->{rate}
+	    . " burst " . $class->{burst};
+
+	    $match->filter( $dev, $parent, $class->{id}, $class->{priority},
+			    undef, $police );
         }
     }
 }
