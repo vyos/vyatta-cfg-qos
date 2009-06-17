@@ -68,8 +68,7 @@ sub commands {
         $class->gen_class( $dev, 'drr', $parent );
         $class->gen_leaf( $dev, $parent );
         foreach my $match ( $class->matchRules() ) {
-            $match->filter( $dev, $parent, 1 );
-            printf " classid %x:%x\n", $parent, $class->{id};
+            $match->filter( $dev, $parent, $class->{id}, 1);
         }
     }
 }
