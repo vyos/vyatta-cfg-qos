@@ -1,3 +1,11 @@
+vyatta-cfg-qos (0.13.6+jenner13) unstable; urgency=low
+
+  * Don't allow random-detect type for round-robin queue type
+  * random-detect needs qmax > qmin
+  * Fix match rules for traffic limiter
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Tue, 16 Jun 2009 17:57:19 -0700
+
 vyatta-cfg-qos (0.13.6+jenner12) unstable; urgency=low
 
   * Remove extra quote that caused shell error in fair-queue
