@@ -183,7 +183,7 @@ sub update_interface {
 }
 
 
-# return array of names using given qos-policy
+# return array of references to (name, direction, policy)
 sub interfaces_using {
     my $policy = shift;
     my $config = new Vyatta::Config;
@@ -210,9 +210,11 @@ sub interfaces_using {
 # check if policy name(s) are still in use
 sub delete_policy {
     while ( my $name = shift ) {
-        my @inuse = interfaces_using($name);
+	# interfaces_using returns array of array and only want name
+	my @inuse = map { @$_[0] } interfaces_using($name);
 
-        die "QoS policy still in use on ", join( ' ', @inuse ), "\n"
+	die "Can not delete qos-policy $name, still applied"
+	    . " to interface ", join(' ', @inuse), "\n"
 	    if @inuse;
     }
 }
