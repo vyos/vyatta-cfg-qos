@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.13.6+jenner14) unstable; urgency=low
+
+  * Fix perl error when attempting to delete qos policy
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Mon, 13 Jul 2009 12:31:38 -0700
+
 vyatta-cfg-qos (0.13.6+jenner13) unstable; urgency=low
 
   * Don't allow random-detect type for round-robin queue type
