@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.13.6+jenner15) unstable; urgency=low
+
+  * Allow update to interface if not present yet
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Mon, 27 Jul 2009 14:50:55 -0700
+
 vyatta-cfg-qos (0.13.6+jenner14) unstable; urgency=low
 
   * Fix perl error when attempting to delete qos policy
