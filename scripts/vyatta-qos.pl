@@ -155,6 +155,12 @@ sub update_interface {
     my $shaper = make_policy( $policy, $name, $direction );
     exit 1 unless $shaper;
 
+    if ( ! -d "/sys/class/net/$device" ) {
+	warn "$device not present yet, qos-policy will be applied later\n";
+	return;
+    }
+
+
     # Remove old policy
     delete_interface( $device, $direction );
 
