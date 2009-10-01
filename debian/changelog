@@ -1,3 +1,34 @@
+vyatta-cfg-qos (0.13.10) unstable; urgency=low
+
+  * Use sudo when getting speed
+  * Allow random-detect for Qos policy types without rate
+  * Allow random-detect for round-robin subqueue
+  * Allow setting queue limit and average packet size
+  * Handle round-robin without configuration of default
+  * Fix management of delete of policy in use
+  * Fix netem bandwidth (TBF) setup
+  * Change initialization of WRED parameters
+  * IPV6 match fix
+  * Cleanup how qos-policy change detection works
+  * remove pseudo-ethernet vif
+  * Address issues in traffic-shaper match
+  * Require bandwidth setting for default class
+  * Fix update (apply-policy) at end
+  * Fix issues with vif match
+  * Ignore deleted policy on end test
+  * Fix DSCP field match with set-dscp
+  * Fix policy update
+  * Fix mixed protocol matches
+  * Fix IPV6 traffic-class match
+  * Remove extra quote that caused shell error in fair-queue
+  * Don't allow random-detect type for round-robin queue type
+  * random-detect needs qmax > qmin
+  * Fix match rules for traffic limiter
+  * Fix perl error when attempting to delete qos policy
+  * Allow update to interface if not present yet
+
+ -- Stephen Hemminger <shemminger@lenny.localdomain>  Thu, 01 Oct 2009 13:52:13 -0700
+
 vyatta-cfg-qos (0.13.9) unstable; urgency=low
 
   * Add wireless config
