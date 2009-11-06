@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.13.12) unstable; urgency=low
+
+  * Fix parse error found by check_tmpl script.
+
+ -- Stig Thormodsrud <stig@vyatta.com>  Thu, 05 Nov 2009 16:47:32 -0800
+
 vyatta-cfg-qos (0.13.11) unstable; urgency=low
 
   * add support for priority in project
