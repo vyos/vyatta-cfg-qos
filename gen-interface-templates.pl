@@ -36,12 +36,14 @@ my %interface_hash = (
     'bonding/node.tag'                              => '$VAR(@)',
     'bonding/node.tag/vif/node.tag'                 => '$VAR(../@).$VAR(@)',
     'pseudo-ethernet/node.tag'                      => '$VAR(@)',
-    'pseudo-ethernet/node.tag/vif/node.tag'         => '$VAR(../@).$VAR(@)',
+#   'pseudo-ethernet/node.tag/vif/node.tag'         => '$VAR(../@).$VAR(@)',
 
     'tunnel/node.tag'                               => '$VAR(@)',
     'bridge/node.tag'                               => '$VAR(@)',
     'openvpn/node.tag'                              => '$VAR(@)',
     'wirelessmodem/node.tag'                        => '$VAR(@)',
+    'wireless/node.tag'  	                    => '$VAR(@)',
+    'wireless/node.tag/vif/node.tag'                => '$VAR(../@).$VAR(@)',
     'multilink/node.tag/vif/node.tag'               => '$VAR(../@)',
 
     'adsl/node.tag/pvc/node.tag/bridged-ethernet' => '$VAR(../../@)',
