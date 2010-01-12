@@ -72,8 +72,10 @@ sub _checkClasses {
     my $rate = shift;
     my $default = shift;
     
-    # if auto, can't check at create must wait for policy to be applied
+    # if auto, can't check for constraints until later
     $rate = ( $rate eq "auto") ? undef : getRate($rate);
+    die "Bandwidth not defined for default traffic\n"
+	unless $default->{_rate};
     $default->rateCheck( $rate, "$level default" ) if $rate;
 
     foreach my $class (@_) {
@@ -132,8 +134,7 @@ sub commands {
         foreach my $class (@$classes) {
             $class->dsmarkClass( 1, $dev );
             foreach my $match ( $class->matchRules() ) {
-                $match->filter( $dev, 1, 1 );
-                printf " classid %x:%x\n", $parent, $class->{id};
+                $match->filter( $dev, $parent, $class->{id}, 1 );
             }
         }
 
@@ -151,72 +152,9 @@ sub commands {
         $class->gen_leaf( $dev, $parent, $rate );
 
         foreach my $match ( $class->matchRules() ) {
-            $match->filter( $dev, $parent, 1, $class->{dsmark} );
-            printf " classid %x:%x\n", $parent, $class->{id};
+            $match->filter( $dev, $parent, $class->{id}, 1, $class->{dsmark} );
         }
     }
-}
-
-# Walk configuration tree and look for changed nodes
-# The configuration system should do this but doesn't do it right
-sub isChanged {
-    my ( $self, $name ) = @_;
-    my $config = new Vyatta::Config;
-    my @attributes = qw(bandwidth burst ceiling priority queue-limit queue-type);
-
-    $config->setLevel("qos-policy traffic-shaper $name");
-
-    if ( $config->isChanged('bandwidth') ) {
-        return 'bandwidth';
-    }
-
-    foreach my $attr (@attributes)  {
-        if ( $config->isChanged("default $attr") ) {
-            return "default $attr";
-        }
-    }
-
-    my %classNodes = $config->listNodeStatus('class');
-    while ( my ( $class, $status ) = each %classNodes ) {
-        if ( $status ne 'static' ) {
-            return "class $class";
-        }
-
-        foreach my $attr (@attributes) {
-            if ( $config->isChanged("class $class $attr") ) {
-                return "class $class $attr";
-            }
-        }
-
-        my %matchNodes = $config->listNodeStatus("class $class match");
-        while ( my ( $match, $status ) = each %matchNodes ) {
-            my $level = "class $class match $match";
-            if ( $status ne 'static' ) {
-                return $level;
-            }
-
-            foreach my $parm (
-                'vif',
-		'ether destination',
-		'ether source',
-		'ether protocol',
-                'interface',
-                'ip dscp',
-                'ip protocol',
-                'ip source address',
-                'ip destination address',
-                'ip source port',
-                'ip destination port'
-              )
-            {
-                if ( $config->isChanged("$level $parm") ) {
-                    return "$level $parm";
-                }
-            }
-        }
-    }
-
-    return;    # false
 }
 
 1;

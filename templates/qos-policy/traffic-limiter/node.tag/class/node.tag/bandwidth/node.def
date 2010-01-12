@@ -1,5 +1,5 @@
 type: txt
-help: Set the traffic-limit used for this class
+help: Set the traffic-limit used for this class [REQUIRED]
 syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --rate $VAR(@)"
 comp_help: Allowed values:
  <number>          Bandwidth in Kbps

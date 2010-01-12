@@ -29,18 +29,6 @@ use warnings;
 require Vyatta::Config;
 use Vyatta::Qos::Util qw/getRate getAutoRate getTime/;
 
-# default values for different precedence levels
-my @default_fields = (
-    { 'min-threshold' => 9,  'max-threshold' => 18, 'mark-probability' => 1/2 },
-    { 'min-threshold' => 10, 'max-threshold' => 18, 'mark-probability' => 5/9 },
-    { 'min-threshold' => 11, 'max-threshold' => 18, 'mark-probability' => .1 },
-    { 'min-threshold' => 12, 'max-threshold' => 18, 'mark-probability' => 2/3 },
-    { 'min-threshold' => 13, 'max-threshold' => 18, 'mark-probability' => .1 },
-    { 'min-threshold' => 14, 'max-threshold' => 18, 'mark-probability' => 7/9 },
-    { 'min-threshold' => 15, 'max-threshold' => 18, 'mark-probability' => 5/6 },
-    { 'min-threshold' => 16, 'max-threshold' => 18, 'mark-probability' => 8/9 },
-);
-
 # Create a new instance based on config information
 sub new {
     my ( $that, $config, $name ) = @_;
@@ -66,22 +54,37 @@ sub getPrecedence {
     my @precedence;
 
     for ( my $i = 0 ; $i <= 7 ; $i++ ) {
-	my $defaults = $default_fields[$i];
-	my %param;
-	
-	$config->setLevel("$level precedence $i");
-	foreach my $field (keys %$defaults) {
-	    my $val = $config->returnValue($field);
+	my %pred;
 
-            if ( !defined $val ) {
-		$param{$field} = $defaults->{$field};
-            } elsif ( $field eq 'mark-probability' ) {
-		$param{$field} = 1 / $val;
-            }  else {
-		$param{$field} = $val;
-            }
-        }
-	$precedence[$i] = \%param;
+	$config->setLevel("$level precedence $i");
+
+	# Compute some sane defaults based on predence and max-threshold
+	$pred{qmax} = $config->returnValue('maximum-threshold');
+	$pred{qmax} = 18 unless $pred{qmax};
+	
+	$pred{qmin} = $config->returnValue('minimum-threshold');
+	if ($pred{qmin}) {
+	    die "min-threshold: $pred{qmin} >= max-threshold: $pred{qmax}\n"
+		if ($pred{qmin} >= $pred{qmax});
+	} else {
+	    $pred{qmin} = ((9 + $i) * $pred{qmax})/ 18;
+	}
+
+	$pred{qlim} = $config->returnValue('queue-limit');
+	if ($pred{qlim}) {
+	    die "queue-limit: $pred{qlim} < max-threshold: $pred{qmax}\n"
+		if ($pred{qlim} < $pred{qmax});
+	} else {
+	    $pred{qlim} = 4 * $pred{qmax};
+	}
+
+	my $mp = $config->returnValue('mark-probablilty');
+	$pred{prob} = (defined $mp) ? (1 / $mp) : (1 / 10);
+
+	my $avgpkt = $config->returnValue('average-packet');
+	$pred{avpkt} = (defined $avgpkt) ? $avgpkt : 1024;
+
+	$precedence[$i] = \%pred;
     }
 
     return @precedence;
@@ -98,7 +101,7 @@ sub commands {
     	$dev, $root;
 
     # 2. use tcindex filter to convert tc_index to precedence
-    # 
+    #
     #  Precedence Field: the three leftmost bits in the TOS octet of an IPv4
     #   header.
 
@@ -113,40 +116,18 @@ sub commands {
 
     # set VQ parameters
     for ( my $i = 0 ; $i <= 7 ; $i++ ) {
-	my $param = $precedence->[$i];
-	my $qmin = $param->{'min-threshold'};
-	my $qmax = $param->{'max-threshold'};
-	my $prob = $param->{'mark-probability'};
+	my $pred = $precedence->[$i];
+	my $avg  = $pred->{avpkt};
+	my $burst = ( 2 * $pred->{qmin} + $pred->{qmax} ) / 3;
 
         printf "qdisc change dev %s handle %x:0 gred", $dev, $root+1, $i;
-        printf " limit %dK min %dK max %dK avpkt 1K", 4 * $qmax, $qmin, $qmax;
+        printf " limit %d min %d max %d avpkt %d",
+		$pred->{qlim} * $avg, $pred->{qmin} * $avg,
+		$pred->{qmax} * $avg, $avg;
+
         printf " burst %d bandwidth %d probability %f DP %d prio %d\n",
-          ( 2 * $qmin + $qmax ) / 3, $rate, $prob, $i, 8-$i;
+		$burst, $rate, $pred->{prob}, $i, 8-$i;
     }
-}
-
-# Walk configuration tree and look for changed nodes
-# The configuration system should do this but doesn't do it right
-sub isChanged {
-    my ( $self, $name ) = @_;
-    my $config = new Vyatta::Config;
-
-    $config->setLevel("qos-policy random-detect $name");
-
-    return 'bandwidth' if ( $config->isChanged('bandwidth') );
-
-    my %precedenceNodes = $config->listNodeStatus('precedence');
-    while ( my ( $pred, $status ) = each %precedenceNodes ) {
-        return "precedence $pred" if ( $status ne 'static' );
-
-	my $defaults = $default_fields[0];
-        foreach my $attr (keys %$defaults) {
-            return "precedence $pred $attr"
-              if ( $config->isChanged("precedence $pred $attr") );
-        }
-    }
-
-    return;    # false
 }
 
 1;

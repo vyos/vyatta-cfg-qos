@@ -155,6 +155,12 @@ sub update_interface {
     my $shaper = make_policy( $policy, $name, $direction );
     exit 1 unless $shaper;
 
+    if ( ! -d "/sys/class/net/$device" ) {
+	warn "$device not present yet, qos-policy will be applied later\n";
+	return;
+    }
+
+
     # Remove old policy
     delete_interface( $device, $direction );
 
@@ -182,7 +188,8 @@ sub update_interface {
     }
 }
 
-# return array of names using given qos-policy
+
+# return array of references to (name, direction, policy)
 sub interfaces_using {
     my $policy = shift;
     my $config = new Vyatta::Config;
@@ -191,9 +198,17 @@ sub interfaces_using {
     foreach my $name ( getInterfaces() ) {
         my $intf = new Vyatta::Interface($name);
         next unless $intf;
+	my $level = $intf->path() . ' qos-policy';
+	$config->setLevel($level);
+	
+        foreach my $direction ($config->listNodes()) {
+	    my $cur = $config->returnValue($direction);
+	    next unless $cur;
 
-        $config->setLevel( $intf->path() );
-        push @inuse, $name if ( $config->exists("qos-policy $policy") );
+	    # these are arguments to update_interface()
+	    push @inuse, [ $name, $direction, $policy ]
+		if ($cur eq $policy); 
+	}
     }
     return @inuse;
 }
@@ -201,10 +216,12 @@ sub interfaces_using {
 # check if policy name(s) are still in use
 sub delete_policy {
     while ( my $name = shift ) {
-        my @inuse = interfaces_using($name);
+	# interfaces_using returns array of array and only want name
+	my @inuse = map { @$_[0] } interfaces_using($name);
 
-        die "QoS policy still in use on ", join( ' ', @inuse ), "\n"
-          if (@inuse);
+	die "Can not delete qos-policy $name, still applied"
+	    . " to interface ", join(' ', @inuse), "\n"
+	    if @inuse;
     }
 }
 
@@ -219,19 +236,17 @@ sub create_policy {
 
 # Configuration changed, reapply to all interfaces.
 sub apply_policy {
-    my $config = new Vyatta::Config;
-
-    while ( my $name = shift ) {
-        foreach my $device ( interfaces_using($name) ) {
-            my $intf = new Vyatta::Interface($device);
-
-            $config->setLevel( $intf->path() );
-            foreach my $direction ( $config->listNodes('qos-policy') ) {
-                next unless $config->exists("qos-policy $direction $name");
-
-                update_interface( $device, $direction, $name );
-            }
-        }
+    while (my $name = shift) {
+	my @usedby = interfaces_using($name);
+	if (@usedby) {
+	    foreach my $args (@usedby) {
+		update_interface( @$args );
+	    }
+	} elsif (my $policy = find_policy($name)) {
+	    # Recheck the policy, might have new errors.
+	    my $shaper = make_policy( $policy, $name );
+	    exit 1 unless $shaper;
+	}
     }
 }
 
@@ -240,7 +255,7 @@ sub usage {
 usage: vyatta-qos.pl --list-policy direction
        vyatta-qos.pl --create-policy policy-type policy-name
        vyatta-qos.pl --delete-policy policy-name
-       vyatta-qos.pl --apply-policy policy-name
+       vyatta-qos.pl --apply-policy policy-type policy-name
 
        vyatta-qos.pl --update-interface interface direction policy-name
        vyatta-qos.pl --delete-interface interface direction

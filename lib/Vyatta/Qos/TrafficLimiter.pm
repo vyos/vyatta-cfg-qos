@@ -83,56 +83,13 @@ sub commands {
     printf "qdisc add dev %s handle %x: ingress\n", $dev, $parent;
     foreach my $class (@$classes) {
         foreach my $match ( $class->matchRules() ) {
-	    $match->filter( $dev, $parent, $class->{priority} );
-	    printf " police rate %s burst %s drop flowid :%x\n", 
-	        $class->{rate}, $class->{burst}, $class->{id};
+	    my $police = " police rate " . $class->{rate}
+	    . " burst " . $class->{burst};
+
+	    $match->filter( $dev, $parent, $class->{id}, $class->{priority},
+			    undef, $police );
         }
     }
-}
-
-# Walk configuration tree and look for changed nodes
-# The configuration system should do this but doesn't do it right
-sub isChanged {
-    my ( $self, $name ) = @_;
-    my $config = new Vyatta::Config;
-
-    $config->setLevel("qos-policy traffic-limiter $name");
-    my %classNodes = $config->listNodeStatus('class');
-    while ( my ( $class, $status ) = each %classNodes ) {
-        if ( $status ne 'static' ) {
-            return "class $class";
-        }
-
-        foreach my $attr ( 'bandwidth', 'burst', 'priority' ) {
-            if ( $config->isChanged("class $class $attr") ) {
-                return "class $class $attr";
-            }
-        }
-
-        my %matchNodes = $config->listNodeStatus("class $class match");
-        while ( my ( $match, $status ) = each %matchNodes ) {
-            my $level = "class $class match $match";
-            if ( $status ne 'static' ) {
-                return $level;
-            }
-
-            foreach my $parm (
-                'vif',
-                'interface',
-                'ip dscp',
-                'ip protocol',
-                'ip source address',
-                'ip destination address',
-                'ip source port',
-                'ip destination port'
-              )
-            {
-		return "$level $parm" if ( $config->isChanged("$level $parm") );
-            }
-        }
-    }
-
-    return;    # false
 }
 
 1;

@@ -168,18 +168,12 @@ sub fifoQdisc {
 #
 sub redQdisc {
     my ( $self, $dev, $rate ) = @_;
-    my $qmax = ( $rate * 100 ) / 8000;
-    my $qmin = $qmax / 3;
     my $avg = 1024;
-    my $burst = ( 2 * $qmin + $qmax ) / (3*$avg);
-
+    my $qmax = (defined $rate) ? (( $rate * 100 ) / 8000) : (18 * $avg);
+    my $qmin = $qmax / 3;
+    my $burst = ( 2 * $qmin + $qmax ) / (3 * $avg);
     my $limit = $self->{_limit};
-    my $qlimit;
-    if ($limit) {
-	$qlimit = $limit * $avg;
-    } else {
-	$qlimit = 4 * $qmax;
-    }
+    my $qlimit = (defined $limit) ? ($limit * $avg) : (4 * $qmax);
 
     printf "red limit %d min %d max %d avpkt %d", $qlimit, $qmin, $qmax, $avg;
     printf " burst %d probability 0.1 bandwidth %s ecn\n", $burst, $rate;
@@ -215,11 +209,15 @@ sub gen_class {
 
 sub gen_leaf {
     my ( $self, $dev, $parent, $rate ) = @_;
+    my $qtype = $self->{_qdisc};
+    return unless $qtype;	# default is okay
+
+    my $q = $qdiscOptions{$qtype};
+    die "Unknown queue-type $qtype\n"
+	unless $q;
 
     printf "qdisc add dev %s parent %x:%x ", $dev, $parent, $self->{id};
-
-    my $q = $qdiscOptions{ $self->{_qdisc} };
-    $q->( $self, $dev, $rate ) if ($q);
+    $q->( $self, $dev, $rate );
 }
 
 sub dsmarkClass {

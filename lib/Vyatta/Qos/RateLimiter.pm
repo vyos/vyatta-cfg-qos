@@ -55,15 +55,4 @@ sub commands {
 	    $dev, $self->{_rate}, $self->{_latency}, $self->{_burst};
 }
 
-sub isChanged {
-    my ($self, $name) = @_;
-    my $config = new Vyatta::Config;
-
-    $config->setLevel("qos-policy rate-limit $name");
-    foreach my $attr ('bandwidth', 'burst', 'latency') {
-	return $attr if ($config->isChanged($attr));
-    }
-    return; # false
-}
-
 1;

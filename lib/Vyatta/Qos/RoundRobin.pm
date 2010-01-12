@@ -41,16 +41,9 @@ sub _getClasses {
     my @classes;
     my $config = new Vyatta::Config;
 
-    $config->setLevel($level);
-    my $default;
-    if ( $config->exists("default") ) {
-        $config->setLevel("$level default");
-        $default = new Vyatta::Qos::ShaperClass($config);
-        $config->setLevel($level);
-    }
-    else {
-        $default = new Vyatta::Qos::ShaperClass;
-    }
+    $config->setLevel("$level default");
+    my $default = new Vyatta::Qos::ShaperClass($config);
+
     push @classes, $default;
     $default->{id} = 1;
 
@@ -75,61 +68,9 @@ sub commands {
         $class->gen_class( $dev, 'drr', $parent );
         $class->gen_leaf( $dev, $parent );
         foreach my $match ( $class->matchRules() ) {
-            $match->filter( $dev, $parent, 1 );
-            printf " classid %x:%x\n", $parent, $class->{id};
+            $match->filter( $dev, $parent, $class->{id}, 1);
         }
     }
-}
-
-# Walk configuration tree and look for changed nodes
-# The configuration system should do this but doesn't do it right
-sub isChanged {
-    my ( $self, $name ) = @_;
-    my $config = new Vyatta::Config;
-
-    $config->setLevel("qos-policy round-robin $name");
-
-    return 'quantum' if ( $config->isChanged('quantum') );
-
-    foreach my $attr (qw(queue-limit queue-type)) {
-        return "default $attr" if ( $config->isChanged("default $attr") );
-    }
-
-    my %classNodes = $config->listNodeStatus('class');
-    while ( my ( $class, $status ) = each %classNodes ) {
-        return "class $class" if ( $status ne 'static' );
-
-        foreach my $attr (qw(queue-limit queue-type)) {
-            return "class $class $attr"
-              if ( $config->isChanged("class $class $attr") );
-        }
-
-        my %matchNodes = $config->listNodeStatus("class $class match");
-        while ( my ( $match, $status ) = each %matchNodes ) {
-            my $level = "class $class match $match";
-            if ( $status ne 'static' ) {
-                return $level;
-            }
-
-            foreach my $parm (
-                (
-                    'vif',
-                    'interface',
-                    'ip protocol',
-                    'ip source address',
-                    'ip destination address',
-                    'ip source port',
-                    'ip destination port'
-                )
-              )
-            {
-                return "$level $parm"
-                  if ( $config->isChanged("$level $parm") );
-            }
-        }
-    }
-
-    return;    # false
 }
 
 1;

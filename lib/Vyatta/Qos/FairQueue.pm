@@ -52,15 +52,4 @@ sub commands {
     print "\n";
 }
 
-sub isChanged {
-    my ( $self, $name ) = @_;
-    my $config = new Vyatta::Config;
-
-    $config->setLevel("qos-policy fair-queue $name");
-    foreach my $attr ('hash-interval', 'queue-limit') {
-	return $attr if ($config->isChanged($attr));
-    }
-    return; # false
-}
-
 1;

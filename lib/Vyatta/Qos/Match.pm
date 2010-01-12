@@ -63,7 +63,7 @@ sub new {
 }
 
 sub filter {
-    my ( $self, $dev, $parent, $prio, $dsmark ) = @_;
+    my ( $self, $dev, $parent, $classid, $prio, $dsmark, $police ) = @_;
 
     # empty match
     return unless %{$self};
@@ -75,10 +75,13 @@ sub filter {
             my $ip = $self->{$ipver};
             next unless $ip && $$ip{dsfield};
 
-            printf "filter add dev %s parent %x: protocol $ipver prio 1",
-              $dev, $parent;
-            printf " handle %d tcindex", $$ip{dsfield};
-        }
+            printf "filter add dev %s parent %x: protocol %s prio $prio", 
+	    	$dev, $parent, $ipver;
+            printf " handle %s tcindex classid %x:%x\n", 
+		$$ip{dsfield},  $parent, $classid;
+
+	    $prio += 1;
+	}
         return;
     }
 
@@ -87,29 +90,54 @@ sub filter {
         next unless $p;
 
         printf "filter add dev %s parent %x:", $dev, $parent;
-	printf " prio %d", $prio  if ($prio);
-	if ($proto ne 'ether') {
-	    print " protocol $proto u32";
-	    print " match $proto dsfield $$p{dsfield} 0xff"   if $$p{dsfield};
-	    print " match $proto protocol $$p{protocol} 0xff" if $$p{protocol};
-	} else {
+	if ($prio) {
+	    printf " prio %d", $prio;
+	    $prio += 1;
+	}
+
+	if ($proto eq 'ether') {
 	    my $type = $$p{protocol};
 	    $type = 'all' unless $type;
 
-	    print " protocol $type u32";
+	    if (defined($$p{src}) || defined($$p{dest})) {
+		print " protocol $type u32";
+		print " match ether src $$p{src}"                if $$p{src};
+		print " match ether dst $$p{dst}"                if $$p{dst};
+	    } else {
+		# u32 requires some options to work but basic works
+		print " protocol $type basic";
+	    }
+	} else {
+	    print " protocol $proto u32";
+
+	    # workaround inconsistent usage in tc u32 match
+	    my $sel = $proto;
+	    if ($proto eq 'ipv6') {
+		$sel = 'ip6';
+		printf " match u16 0x%x 0x0ff0 at 0", hex($$p{dsfield}) << 4,
+		    if $$p{dsfield};
+	    } else {
+		print " match $sel dsfield $$p{dsfield} 0xff" if $$p{dsfield};
+	    }
+	    print " match $sel protocol $$p{protocol} 0xff" if $$p{protocol};
+	    
+	    print " match $sel src $$p{src}"                if $$p{src};
+	    print " match $sel sport $$p{sport} 0xffff"     if $$p{sport};
+	    print " match $sel dst $$p{dst}"                if $$p{dst};
+	    print " match $sel dport $$p{dport} 0xffff"     if $$p{dport};
 	}
-        print " match $proto src $$p{src}"                if $$p{src};
-        print " match $proto sport $$p{sport} 0xffff"     if $$p{sport};
-        print " match $proto dst $$p{dst}"                if $$p{dst};
-        print " match $proto dport $$p{dport} 0xffff"     if $$p{dport};
+	print " $police" if $police;
+	printf " flowid %x:%x\n", $parent, $classid;
     }
 
-    my $indev = $self->{indev};
-    my $vif   = $self->{vif};
-    if ( $vif || $indev ) {
+    my $indev = $self->{_indev};
+    my $vif   = $self->{_vif};
+    if ( defined($vif) || defined($indev) ) {
         printf "filter add dev %s parent %x: prio %d", $dev, $parent, $prio;
         print " protocol all basic";
         print " match meta\(rt_iif eq $indev\)"        if $indev;
         print " match meta\(vlan mask 0xfff eq $vif\)" if $vif;
+	print " $police" if $police;
+	printf " flowid %x:%x\n", $parent, $classid;
     }
 }
