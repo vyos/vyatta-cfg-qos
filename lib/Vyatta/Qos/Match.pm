@@ -108,7 +108,7 @@ sub filter {
 		print " protocol $type basic";
 	    }
 	} else {
-	    print " protocol $proto u32";
+	    print "protocol all u32";
 
 	    # workaround inconsistent usage in tc u32 match
 	    my $sel = $proto;
