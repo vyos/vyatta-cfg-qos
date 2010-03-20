@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.13.16+kenwood2) unstable; urgency=low
+
+  * Set environment so ppp script can find variables
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Fri, 19 Mar 2010 17:17:45 -0700
+
 vyatta-cfg-qos (0.13.16+kenwood1) unstable; urgency=low
 
   * UNRELEASED
