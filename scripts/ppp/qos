@@ -1,3 +1,6 @@
 #! /bin/sh
 
+# Pretend we are inside CLI to find configuration varaibles
+export VYATTA_ACTIVE_CONFIGURATION_DIR=/opt/vyatta/config/active;
+
 /opt/vyatta/sbin/vyatta-qos.pl --start-interface $1
