@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.13.19) unstable; urgency=low
+
+  * Remove configure step depending on unused install
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Fri, 19 Mar 2010 17:23:57 -0700
+
 vyatta-cfg-qos (0.13.18) unstable; urgency=low
 
   * remove unused post install hook
