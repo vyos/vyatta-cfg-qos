@@ -20,9 +20,7 @@ AC_ARG_ENABLE([nostrip],
 	[include -nostrip option during packaging]),
 	[NOSTRIP=-nostrip], [NOSTRIP=])
 
-AC_CONFIG_FILES(
-  [Makefile]
-  [debian/vyatta-cfg-qos.postinst])
+AC_CONFIG_FILES([Makefile])
 
 AC_SUBST(NOSTRIP)
 
