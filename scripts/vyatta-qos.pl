@@ -35,8 +35,11 @@ my %policies = (
 	'round-robin'	   => 'RoundRobin',
 	'priority-queue'   => 'Priority',
 	'random-detect'    => 'RandomDetect',
+	'traffic-limiter'  => 'TrafficLimiter',
     },
-    'in' => { 'traffic-limiter' => 'TrafficLimiter', }
+    'in' => {
+	'traffic-limiter' => 'TrafficLimiter',
+    }
 );
 
 # find policy for name - also check for duplicates
@@ -119,7 +122,7 @@ sub delete_interface {
     my $arg = $delcmd{$direction};
 
     die "bad direction $direction\n" unless $arg;
-    
+
     my $cmd = "sudo tc qdisc del dev $interface ". $arg . " 2>/dev/null";
 
     # ignore errors (may have no qdisc)
@@ -207,7 +210,7 @@ sub interfaces_using {
 
 	    # these are arguments to update_interface()
 	    push @inuse, [ $name, $direction, $policy ]
-		if ($cur eq $policy); 
+		if ($cur eq $policy);
 	}
     }
     return @inuse;

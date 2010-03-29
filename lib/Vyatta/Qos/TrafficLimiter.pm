@@ -76,11 +76,18 @@ sub _define {
 }
 
 sub commands {
-    my ( $self, $dev ) = @_;
+    my ( $self, $dev, $direction ) = @_;
     my $classes = $self->{_classes};
-    my $parent  = 0xffff;
+    my $parent;
 
-    printf "qdisc add dev %s handle %x: ingress\n", $dev, $parent;
+    if ($direction eq 'in') {
+	$parent  = 0xffff;
+	printf "qdisc add dev %s handle %x: ingress\n", $dev, $parent;
+    } else {
+	$parent = 1;
+	printf "qdisc add dev %s handle $x: prio\n", $dev, $parent;
+    }
+
     foreach my $class (@$classes) {
         foreach my $match ( $class->matchRules() ) {
 	    my $police = " police rate " . $class->{rate}
