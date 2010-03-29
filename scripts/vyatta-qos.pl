@@ -179,7 +179,7 @@ sub update_interface {
 	system("sudo ip link add dev $ifb type ifb") == 0
 	    or die "Can't create $ifb: $!";
 	
-	system("sudo ip link set dev $ifb up")
+	system("sudo ip link set dev $ifb up") == 0
 	    or die "Can't bring $ifb up: $!";
 
 	print "qdisc add dev $device ingress\n";
