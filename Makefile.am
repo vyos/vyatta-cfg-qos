@@ -21,6 +21,8 @@ share_perl5_DATA += lib/Vyatta/Qos/RandomDetect.pm
 etcdir           = /etc
 etc_SCRIPTS      =
 
+curver_DATA      = cfg-version/qos@1
+
 cpiop = find  . ! -regex '\(.*~\|.*\.bak\|.*\.swp\|.*\#.*\#\)' -print0 | \
   cpio -0pd
 
