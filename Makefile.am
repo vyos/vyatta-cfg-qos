@@ -1,6 +1,7 @@
 cfgdir = $(datadir)/vyatta-cfg/templates
 gentmpdir = generated-templates
 share_perl5dir = /opt/vyatta/share/perl5/Vyatta/Qos
+curverdir = $(sysconfdir)/config-migrate/current
 
 sbin_SCRIPTS = scripts/vyatta-qos.pl
 sbin_SCRIPTS += scripts/vyatta-qos-util.pl
