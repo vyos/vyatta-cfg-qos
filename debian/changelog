@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.14.1) unstable; urgency=low
+
+  * Fix traffic-limiter qdisc for root
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Mon, 29 Mar 2010 20:10:43 -0700
+
 vyatta-cfg-qos (0.14.0) unstable; urgency=low
 
   * Label Qos config version
