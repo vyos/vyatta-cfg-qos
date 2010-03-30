@@ -170,7 +170,7 @@ sub update_interface {
 	    $parent  = 0xffff;
 	    print "qdisc add dev $device ingress\n";
 	} else {
-	    print "qdisc add dev $device handle 1: prio\n";
+	    print "qdisc add dev $device root handle 1: prio\n";
 	}
     }
 
