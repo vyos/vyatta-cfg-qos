@@ -109,8 +109,9 @@ sub delete_interface {
     system($cmd);
 
     # remove IFB device if any
-    if ($direction eq 'in') {
-	$cmd = "sudo ip link delete dev $interface-in";
+    my $ifb = "ifb.$interface";
+    if ( -d "/sys/class/net/$ifb") {
+	$cmd = "sudo ip link delete dev $ifb";
 	system ($cmd);
     }
 }
@@ -175,16 +176,25 @@ sub update_interface {
 
     # For non-ingress Qos use ifb device
     elsif ($direction eq 'in') {
-	my $ifb = $device . "-in";
+	# load module but don't make any ifb's
+	system("sudo modprobe ifb numifbs=0") unless ( -d '/sys/module/ifb' );
+
+	# create new ifb device
+	my $ifb = "ifb.$device";
 	system("sudo ip link add dev $ifb type ifb") == 0
 	    or die "Can't create $ifb: $!";
-	
 	system("sudo ip link set dev $ifb up") == 0
 	    or die "Can't bring $ifb up: $!";
 
+	# create ingress queue discipline
 	print "qdisc add dev $device ingress\n";
+
+	# redirect incoming packets to ifb
 	print "filter add dev $device parent ffff: protocol all prio 10";
+	print " u32 match u32 0 0 flowid 1:1";
 	print " action mirred egress redirect dev $ifb\n";
+
+	# tell shaper to use ifb device
 	$device = $ifb;
     }
 
