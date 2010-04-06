@@ -34,7 +34,6 @@ my %policies = (
     'round-robin'      => 'RoundRobin',
     'priority-queue'   => 'Priority',
     'random-detect'    => 'RandomDetect',
-    'traffic-limiter'  => 'TrafficLimiter',
 );
 
 # find policy for name - also check for duplicates
@@ -107,13 +106,6 @@ sub delete_interface {
 
     # ignore errors (may have no qdisc)
     system($cmd);
-
-    # remove IFB device if any
-    my $ifb = "ifb.$interface";
-    if ( -d "/sys/class/net/$ifb") {
-	$cmd = "sudo ip link delete dev $ifb";
-	system ($cmd);
-    }
 }
 
 ## start_interface('ppp0')
@@ -164,40 +156,6 @@ sub update_interface {
     }
 
     my $parent = 1;
-    # Special case for traffic-limiter (not a real qdisc)
-    if ($policy eq 'traffic-limiter') {
-	if ($direction eq 'in') {
-	    $parent  = 0xffff;
-	    print "qdisc add dev $device ingress\n";
-	} else {
-	    print "qdisc add dev $device root handle 1: prio\n";
-	}
-    }
-
-    # For non-ingress Qos use ifb device
-    elsif ($direction eq 'in') {
-	# load module but don't make any ifb's
-	system("sudo modprobe ifb numifbs=0") unless ( -d '/sys/module/ifb' );
-
-	# create new ifb device
-	my $ifb = "ifb.$device";
-	system("sudo ip link add dev $ifb type ifb") == 0
-	    or die "Can't create $ifb: $!";
-	system("sudo ip link set dev $ifb up") == 0
-	    or die "Can't bring $ifb up: $!";
-
-	# create ingress queue discipline
-	print "qdisc add dev $device ingress\n";
-
-	# redirect incoming packets to ifb
-	print "filter add dev $device parent ffff: protocol all prio 10";
-	print " u32 match u32 0 0 flowid 1:1";
-	print " action mirred egress redirect dev $ifb\n";
-
-	# tell shaper to use ifb device
-	$device = $ifb;
-    }
-
     $shaper->commands( $device, $parent );
     return if ($debug);
 
@@ -274,6 +232,68 @@ sub apply_policy {
     }
 }
 
+# ingress policy factory
+sub ingress_policy {
+    my ($ifname) = @_;
+    my $intf = new Vyatta::Interface($ifname);
+    die "Unknown interface name $ifname\n" unless $intf;
+
+    my $path = $intf->path();
+    die "Can't find $ifname in configuration\n" unless $path;
+
+    my $config = new Vyatta::Config;
+    $config->setLevel( "$path input-policy" );
+
+    my @names = $config->listNodes( );
+    return if $#names < 0;
+    die "Only one incoming policy is allowed\n" if ($#names > 0);
+
+    $config->setLevel( "$path input-policy " . $names[0] );
+    my $type     = ucfirst($names[0]);
+    my $location = "Vyatta/Qos/Ingress$type.pm";
+    require $location;
+
+    my $class    = "Vyatta::Qos::Ingress$type";
+    return $class->new( $config, $ifname );
+}
+
+# sets up input filtering
+sub update_ingress {
+    my $device = shift;
+
+    die "$device not present\n" unless (-d "/sys/class/net/$device");
+
+    my $ingress = ingress_policy( $device );
+    return unless $ingress;
+
+    # Drop existing ingress filters
+    system("sudo tc filter dev $device root 2>/dev/null");
+
+    # When doing debugging just echo the commands
+    my $out;
+    unless ($debug) {
+        open $out, "|-"
+          or exec qw:sudo /sbin/tc -batch -:
+          or die "Tc setup failed: $!\n";
+
+	select $out;
+    }
+
+    my $parent = 0xffff;
+    $ingress->commands( $device, $parent );
+    return if ($debug);
+
+    select STDOUT;
+    unless (close $out) {
+        # cleanup any partial commands
+	system("sudo tc del dev $device ingress 2>/dev/null");
+
+        # replay commands to stdout
+        $ingress->commands($device, $parent );
+        die "TC command failed.";
+    }
+}
+
 sub usage {
     print <<EOF;
 usage: vyatta-qos.pl --list-policy direction
@@ -284,6 +304,7 @@ usage: vyatta-qos.pl --list-policy direction
        vyatta-qos.pl --update-interface interface direction policy-name
        vyatta-qos.pl --delete-interface interface direction
 
+       vyatta-qos.pl --update-ingress interface
 EOF
     exit 1;
 }
@@ -296,22 +317,27 @@ my @applyPolicy     = ();
 my @deletePolicy    = ();
 my @startList       = ();
 
+my $updateIngress;
+
 GetOptions(
     "start-interface=s"     => \@startList,
     "update-interface=s{3}" => \@updateInterface,
     "delete-interface=s{2}" => \@deleteInterface,
-
-    "list-policy=s"      => \@listPolicy,
-    "delete-policy=s"    => \@deletePolicy,
-    "create-policy=s{2}" => \@createPolicy,
-    "apply-policy=s"     => \@applyPolicy,
+    "list-policy=s"         => \@listPolicy,
+    "delete-policy=s"       => \@deletePolicy,
+    "create-policy=s{2}"    => \@createPolicy,
+    "apply-policy=s"        => \@applyPolicy,
+    "update-ingress=s"	    => \$updateIngress
 ) or usage();
 
 delete_interface(@deleteInterface) if ( $#deleteInterface == 1 );
 update_interface(@updateInterface) if ( $#updateInterface == 2 );
 start_interface(@startList)        if (@startList);
+
 list_policy(@listPolicy)           if (@listPolicy);
 create_policy(@createPolicy)       if ( $#createPolicy == 1 );
 delete_policy(@deletePolicy)       if (@deletePolicy);
 apply_policy(@applyPolicy)         if (@applyPolicy);
+
+update_ingress($updateIngress)	   if ($updateIngress);
 

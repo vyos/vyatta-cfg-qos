@@ -13,11 +13,12 @@ share_perl5_DATA += lib/Vyatta/Qos/ShaperClass.pm
 share_perl5_DATA += lib/Vyatta/Qos/Match.pm
 share_perl5_DATA += lib/Vyatta/Qos/RateLimiter.pm
 share_perl5_DATA += lib/Vyatta/Qos/DropTail.pm
-share_perl5_DATA += lib/Vyatta/Qos/TrafficLimiter.pm
 share_perl5_DATA += lib/Vyatta/Qos/LimiterClass.pm
 share_perl5_DATA += lib/Vyatta/Qos/RoundRobin.pm
 share_perl5_DATA += lib/Vyatta/Qos/NetworkEmulator.pm
 share_perl5_DATA += lib/Vyatta/Qos/RandomDetect.pm
+share_perl5_DATA += lib/Vyatta/Qos/IngressRedirect.pm
+share_perl5_DATA += lib/Vyatta/Qos/IngressMirror.pm
 
 etcdir           = /etc
 etc_SCRIPTS      =
