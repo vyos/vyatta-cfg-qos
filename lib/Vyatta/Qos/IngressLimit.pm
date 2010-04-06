@@ -1,5 +1,4 @@
-# Traffic limiter
-# This is a rate limiter based on ingress qdisc
+# Ingress traffic limit
 #
 # **** License ****
 # This program is free software; you can redistribute it and/or modify
@@ -12,26 +11,22 @@
 # General Public License for more details.
 #
 # This code was originally developed by Vyatta, Inc.
-# Portions created by Vyatta are Copyright (C) 2008 Vyatta, Inc.
+# Portions created by Vyatta are Copyright (C) 2010 Vyatta, Inc.
 # All Rights Reserved.
 # **** End License ****
 
-package Vyatta::Qos::TrafficLimiter;
+package Vyatta::Qos::IngressLimit;
 use strict;
 use warnings;
 
 require Vyatta::Config;
 require Vyatta::Qos::LimiterClass;
 
-my %fields = (
-    _level   => undef,
-    _classes => undef,
-);
 
 # Create a new instance based on config information
 sub new {
     my ( $that, $config, $name ) = @_;
-    my $self = {%fields};
+    my $self = {};
     my $class = ref($that) || $that;
 
     bless $self, $class;
@@ -41,7 +36,6 @@ sub new {
 }
 
 # Setup new instance.
-# Assumes caller has done $config->setLevel to "traffic-limiter $name"
 sub _define {
     my ( $self, $config ) = @_;
     my $level   = $config->setLevel();
