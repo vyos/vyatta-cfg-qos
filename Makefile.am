@@ -23,7 +23,7 @@ share_perl5_DATA += lib/Vyatta/Qos/IngressMirror.pm
 etcdir           = /etc
 etc_SCRIPTS      =
 
-curver_DATA      = cfg-version/qos@1
+curver_DATA      = cfg-version/qos@2
 
 cpiop = find  . ! -regex '\(.*~\|.*\.bak\|.*\.swp\|.*\#.*\#\)' -print0 | \
   cpio -0pd
