@@ -1,3 +1,12 @@
+vyatta-cfg-qos (0.14.3) unstable; urgency=low
+
+  * Move traffic-limiter to input-policy
+  * Update ignore list
+  * Get rid of out in command syntax
+  * Change config version
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Wed, 07 Apr 2010 09:14:23 -0700
+
 vyatta-cfg-qos (0.14.2) unstable; urgency=low
 
   * Add input interface template
