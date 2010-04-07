@@ -73,39 +73,28 @@ sub make_policy {
     return $class->new( $config, $name );
 }
 
-## list defined qos policy names for a direction
+## list defined qos policy names
 sub list_policy {
     my $config = new Vyatta::Config;
     $config->setLevel('qos-policy');
 
-    while ( my $direction = shift ) {
-        my @qos = grep { $policies{$_} } $config->listNodes();
-        my @names = ();
-        foreach my $type (@qos) {
+    # list all nodes under qos-policy and match those we know about
+    my @qos = grep { $policies{$_} } $config->listNodes();
+
+    my @names = ();
+    foreach my $type (@qos) {
             my @n = $config->listNodes($type);
             push @names, @n;
-        }
-        print join( ' ', @names ), "\n";
     }
+    print join( ' ', sort ( @names )), "\n";
 }
 
-my %delcmd = (
-    'out' => 'root',
-    'in'  => 'parent ffff:',
-);
-
-## delete_interface('eth0', 'out')
+## delete_interface('eth0')
 # remove all filters and qdisc's
 sub delete_interface {
-    my ( $interface, $direction ) = @_;
-    my $arg = $delcmd{$direction};
+    my ( $interface ) = @_;
 
-    die "bad direction $direction\n" unless $arg;
-
-    my $cmd = "sudo tc qdisc del dev $interface ". $arg . " 2>/dev/null";
-
-    # ignore errors (may have no qdisc)
-    system($cmd);
+    system("sudo tc qdisc del dev $interface root 2>/dev/null");
 }
 
 ## start_interface('ppp0')
@@ -115,22 +104,22 @@ sub start_interface {
         my $interface = new Vyatta::Interface($ifname);
         die "Unknown interface type: $ifname" unless $interface;
 
+	my $path = $interface->path();
+	next unless $path;
+
         my $config = new Vyatta::Config;
-        $config->setLevel( $interface->path() . ' qos-policy' );
+        $config->setLevel( $path );
+	my $policy = $config->returnValue('qos-policy');
+	next unless $policy;
 
-        foreach my $direction ( $config->listNodes() ) {
-            my $policy = $config->returnValue($direction);
-            next unless $policy;
-
-            update_interface( $ifname, $direction, $policy );
-        }
+	update_interface( $ifname, $policy );
     }
 }
 
-## update_interface('eth0', 'out', 'my-shaper')
+## update_interface('eth0', 'my-shaper')
 # update policy to interface
 sub update_interface {
-    my ( $device, $direction, $name ) = @_;
+    my ( $device, $name ) = @_;
     my $policy = find_policy($name);
     die "Unknown qos-policy $name\n" unless $policy;
 
@@ -143,7 +132,7 @@ sub update_interface {
     }
 
     # Remove old policy
-    delete_interface( $device, $direction );
+    delete_interface( $device );
 
     # When doing debugging just echo the commands
     my $out;
@@ -162,7 +151,7 @@ sub update_interface {
     select STDOUT;
     unless (close $out) {
         # cleanup any partial commands
-        delete_interface( $device, $direction );
+        delete_interface( $device );
 
         # replay commands to stdout
         $shaper->commands($device, $parent );
@@ -171,7 +160,7 @@ sub update_interface {
 }
 
 
-# return array of references to (name, direction, policy)
+# return array of references to (name, policy)
 sub interfaces_using {
     my $policy = shift;
     my $config = new Vyatta::Config;
@@ -180,17 +169,15 @@ sub interfaces_using {
     foreach my $name ( getInterfaces() ) {
         my $intf = new Vyatta::Interface($name);
         next unless $intf;
-	my $level = $intf->path() . ' qos-policy';
-	$config->setLevel($level);
-	
-        foreach my $direction ($config->listNodes()) {
-	    my $cur = $config->returnValue($direction);
-	    next unless $cur;
+	my $path = $intf->path();
+	next unless $path;
 
-	    # these are arguments to update_interface()
-	    push @inuse, [ $name, $direction, $policy ]
-		if ($cur eq $policy);
-	}
+	$config->setLevel($path);
+	my $cur = $config->returnValue('qos-policy');
+	next unless $cur;
+
+	# these are arguments to update_interface()
+	push @inuse, [ $name, $policy ] if ($cur eq $policy);
     }
     return @inuse;
 }
@@ -239,7 +226,10 @@ sub ingress_policy {
     die "Unknown interface name $ifname\n" unless $intf;
 
     my $path = $intf->path();
-    die "Can't find $ifname in configuration\n" unless $path;
+    unless ($path) {
+	warn "Can't find $ifname in configuration\n";
+	exit 0;
+    }
 
     my $config = new Vyatta::Config;
     $config->setLevel( "$path input-policy" );
@@ -261,7 +251,8 @@ sub ingress_policy {
 sub update_ingress {
     my $device = shift;
 
-    die "$device not present\n" unless (-d "/sys/class/net/$device");
+    die "$device not present\n"
+	unless (-d "/sys/class/net/$device");
 
     my $ingress = ingress_policy( $device );
     return unless $ingress;
@@ -296,13 +287,13 @@ sub update_ingress {
 
 sub usage {
     print <<EOF;
-usage: vyatta-qos.pl --list-policy direction
+usage: vyatta-qos.pl --list-policy
        vyatta-qos.pl --create-policy policy-type policy-name
        vyatta-qos.pl --delete-policy policy-name
        vyatta-qos.pl --apply-policy policy-type policy-name
 
-       vyatta-qos.pl --update-interface interface direction policy-name
-       vyatta-qos.pl --delete-interface interface direction
+       vyatta-qos.pl --update-interface interface policy-name
+       vyatta-qos.pl --delete-interface interface
 
        vyatta-qos.pl --update-ingress interface
 EOF
@@ -310,8 +301,9 @@ EOF
 }
 
 my @updateInterface = ();
-my @deleteInterface = ();
-my @listPolicy      = ();
+my $deleteInterface;
+
+my $listPolicy;
 my @createPolicy    = ();
 my @applyPolicy     = ();
 my @deletePolicy    = ();
@@ -321,20 +313,20 @@ my $updateIngress;
 
 GetOptions(
     "start-interface=s"     => \@startList,
-    "update-interface=s{3}" => \@updateInterface,
-    "delete-interface=s{2}" => \@deleteInterface,
-    "list-policy=s"         => \@listPolicy,
+    "update-interface=s{2}" => \@updateInterface,
+    "delete-interface=s"    => \$deleteInterface,
+    "list-policy"           => \$listPolicy,
     "delete-policy=s"       => \@deletePolicy,
     "create-policy=s{2}"    => \@createPolicy,
     "apply-policy=s"        => \@applyPolicy,
     "update-ingress=s"	    => \$updateIngress
 ) or usage();
 
-delete_interface(@deleteInterface) if ( $#deleteInterface == 1 );
-update_interface(@updateInterface) if ( $#updateInterface == 2 );
+delete_interface($deleteInterface) if ( $deleteInterface );
+update_interface(@updateInterface) if ( $#updateInterface == 1 );
 start_interface(@startList)        if (@startList);
 
-list_policy(@listPolicy)           if (@listPolicy);
+list_policy()                      if ( $listPolicy );
 create_policy(@createPolicy)       if ( $#createPolicy == 1 );
 delete_policy(@deletePolicy)       if (@deletePolicy);
 apply_policy(@applyPolicy)         if (@applyPolicy);
