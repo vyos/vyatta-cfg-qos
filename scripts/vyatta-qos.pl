@@ -254,11 +254,12 @@ sub update_ingress {
     die "$device not present\n"
 	unless (-d "/sys/class/net/$device");
 
-    my $ingress = ingress_policy( $device );
-    return unless $ingress;
-
     # Drop existing ingress and recreate
     system("sudo tc qdisc del dev $device ingress 2>/dev/null");
+
+   my $ingress = ingress_policy( $device );
+    return unless $ingress;
+
     system("sudo tc qdisc add dev $device ingress") == 0
 	or die "Can not set ingress qdisc";
 
