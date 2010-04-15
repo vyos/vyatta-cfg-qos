@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.14.4) unstable; urgency=low
+
+  * Fix setup of ingress qdisc
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Thu, 15 Apr 2010 13:43:18 -0700
+
 vyatta-cfg-qos (0.14.3) unstable; urgency=low
 
   * Move traffic-limiter to input-policy
