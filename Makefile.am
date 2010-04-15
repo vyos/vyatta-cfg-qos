@@ -17,6 +17,7 @@ share_perl5_DATA += lib/Vyatta/Qos/LimiterClass.pm
 share_perl5_DATA += lib/Vyatta/Qos/RoundRobin.pm
 share_perl5_DATA += lib/Vyatta/Qos/NetworkEmulator.pm
 share_perl5_DATA += lib/Vyatta/Qos/RandomDetect.pm
+share_perl5_DATA += lib/Vyatta/Qos/IngressLimit.pm
 share_perl5_DATA += lib/Vyatta/Qos/IngressRedirect.pm
 share_perl5_DATA += lib/Vyatta/Qos/IngressMirror.pm
 
