@@ -1,2 +1,4 @@
 help: Set incoming packet policy
+commit:expression:exec "/opt/vyatta/sbin/vyatta-qos.pl --check-ingress $IFNAME"
 end: /opt/vyatta/sbin/vyatta-qos.pl --update-ingress $IFNAME
+

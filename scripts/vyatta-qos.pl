@@ -234,8 +234,9 @@ sub ingress_policy {
     my $config = new Vyatta::Config;
     $config->setLevel( "$path input-policy" );
 
-    my @names = $config->listNodes( );
-    return if $#names < 0;
+    my @names = $config->listNodes();
+    return if ($#names < 0);
+
     die "Only one incoming policy is allowed\n" if ($#names > 0);
 
     $config->setLevel( "$path input-policy " . $names[0] );
@@ -247,11 +248,19 @@ sub ingress_policy {
     return $class->new( $config, $ifname );
 }
 
+# check definition of input filtering
+sub check_ingress {
+    my $device = shift;
+
+    my $ingress = ingress_policy( $device );
+    return unless $ingress;
+}
+
 # sets up input filtering
 sub update_ingress {
     my $device = shift;
 
-    die "$device not present\n"
+    die "Interface $device not present\n"
 	unless (-d "/sys/class/net/$device");
 
     # Drop existing ingress and recreate
@@ -298,6 +307,7 @@ usage: vyatta-qos.pl --list-policy
        vyatta-qos.pl --update-interface interface policy-name
        vyatta-qos.pl --delete-interface interface
 
+       vyatta-qos.pl --check-ingress interface
        vyatta-qos.pl --update-ingress interface
 EOF
     exit 1;
@@ -312,16 +322,19 @@ my @applyPolicy     = ();
 my @deletePolicy    = ();
 my @startList       = ();
 
-my $updateIngress;
+my ($checkIngress, $updateIngress);
 
 GetOptions(
     "start-interface=s"     => \@startList,
     "update-interface=s{2}" => \@updateInterface,
     "delete-interface=s"    => \$deleteInterface,
+
     "list-policy"           => \$listPolicy,
     "delete-policy=s"       => \@deletePolicy,
     "create-policy=s{2}"    => \@createPolicy,
     "apply-policy=s"        => \@applyPolicy,
+
+    "check-ingress=s"	    => \$checkIngress,
     "update-ingress=s"	    => \$updateIngress
 ) or usage();
 
@@ -334,5 +347,6 @@ create_policy(@createPolicy)       if ( $#createPolicy == 1 );
 delete_policy(@deletePolicy)       if (@deletePolicy);
 apply_policy(@applyPolicy)         if (@applyPolicy);
 
+check_ingress($checkIngress)	   if ($checkIngress);
 update_ingress($updateIngress)	   if ($updateIngress);
 
