@@ -257,8 +257,10 @@ sub update_ingress {
     my $ingress = ingress_policy( $device );
     return unless $ingress;
 
-    # Drop existing ingress filters
-    system("sudo tc filter dev $device root 2>/dev/null");
+    # Drop existing ingress and recreate
+    system("sudo tc qdisc del dev $device ingress 2>/dev/null");
+    system("sudo tc qdisc add dev $device ingress") == 0
+	or die "Can not set ingress qdisc";
 
     # When doing debugging just echo the commands
     my $out;
