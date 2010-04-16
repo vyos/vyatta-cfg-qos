@@ -1,3 +1,11 @@
+vyatta-cfg-qos (0.14.5) unstable; urgency=low
+
+  * Add missing IngressLimit module
+  * Fix modification of input-policy
+  * Add checking at commit for input policy
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Thu, 15 Apr 2010 17:07:57 -0700
+
 vyatta-cfg-qos (0.14.4) unstable; urgency=low
 
   * Fix setup of ingress qdisc
