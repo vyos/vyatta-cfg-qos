@@ -141,3 +141,5 @@ sub filter {
 	printf " flowid %x:%x\n", $parent, $classid;
     }
 }
+
+1;
