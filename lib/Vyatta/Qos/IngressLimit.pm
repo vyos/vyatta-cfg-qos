@@ -76,7 +76,7 @@ sub commands {
     foreach my $class (@$classes) {
         foreach my $match ( $class->matchRules() ) {
 	    my $police = " police rate " . $class->{rate}
-	    . " burst " . $class->{burst};
+	    	. " action drop burst " . $class->{burst};
 
 	    $match->filter( $dev, $parent, $class->{id}, $class->{priority},
 			    undef, $police );
