@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.14.7) unstable; urgency=low
+
+  * add a few missing templates
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Tue, 01 Jun 2010 16:34:39 -0700
+
 vyatta-cfg-qos (0.14.6) unstable; urgency=low
 
   * Make sure perl modules end with 1;
