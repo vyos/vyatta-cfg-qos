@@ -1,5 +1,0 @@
-type: txt
-help: Set outbound QOS policy for interface
-allowed: /opt/vyatta/sbin/vyatta-qos.pl --list-policy
-update: /opt/vyatta/sbin/vyatta-qos.pl --update-interface $IFNAME $VAR(@)
-delete: /opt/vyatta/sbin/vyatta-qos.pl --delete-interface $IFNAME

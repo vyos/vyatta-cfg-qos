@@ -27,17 +27,17 @@ my $debug = $ENV{'QOS_DEBUG'};
 
 my %policies = (
     'out' => {
-        'traffic-shaper'   => 'TrafficShaper',
-        'fair-queue'       => 'FairQueue',
-        'rate-limit'       => 'RateLimiter',
-        'drop-tail'        => 'DropTail',
-        'network-emulator' => 'NetworkEmulator',
-	'round-robin'	   => 'RoundRobin',
+	'shaper'           => 'TrafficShaper',
+	'limiter'	   => 'TrafficLimiter',
+	'fair-queue'       => 'FairQueue',
+	'rate-control'     => 'RateLimiter',
+	'drop-tail'        => 'DropTail',
+	'network-emulator' => 'NetworkEmulator',
+	'round-robin'      => 'RoundRobin',
 	'priority-queue'   => 'Priority',
 	'random-detect'    => 'RandomDetect',
-	'traffic-limiter'  => 'TrafficLimiter',
     },
-    'in' => {
+    'in' => { 
 	'traffic-limiter' => 'TrafficLimiter',
     }
 );
@@ -48,7 +48,7 @@ sub find_policy {
     my $name   = shift;
     my $config = new Vyatta::Config;
 
-    $config->setLevel('qos-policy');
+    $config->setLevel('traffic-policy');
     my @policy = grep { $config->exists("$_ $name") } $config->listNodes();
 
     die "Policy name \"$name\" conflict, used by: ", join( ' ', @policy ), "\n"
@@ -65,8 +65,7 @@ sub make_policy {
 
     if ($direction) {
         $policy_type = $policies{$direction}{$type};
-    }
-    else {
+    } else {
         foreach my $direction ( keys %policies ) {
             $policy_type = $policies{$direction}{$type};
             last if defined $policy_type;
@@ -84,7 +83,7 @@ sub make_policy {
     }
 
     my $config = new Vyatta::Config;
-    $config->setLevel("qos-policy $type $name");
+    $config->setLevel("traffic-policy $type $name");
 
     my $location = "Vyatta/Qos/$policy_type.pm";
     my $class    = "Vyatta::Qos::$policy_type";
@@ -97,7 +96,7 @@ sub make_policy {
 ## list defined qos policy names
 sub list_policy {
     my $config = new Vyatta::Config;
-    $config->setLevel('qos-policy');
+    $config->setLevel('traffic-policy');
 
     while ( my $direction = shift ) {
         my @qos = grep { $policies{$direction}{$_} } $config->listNodes();
@@ -118,7 +117,7 @@ my %delcmd = (
 ## delete_interface('eth0')
 # remove all filters and qdisc's
 sub delete_interface {
-    my ( $interface ) = @_;
+    my ( $interface, $direction ) = @_;
     my $arg = $delcmd{$direction};
 
     die "bad direction $direction\n" unless $arg;
@@ -141,36 +140,35 @@ sub start_interface {
 
         my $config = new Vyatta::Config;
         $config->setLevel( $path );
-	my $policy = $config->returnValue('qos-policy');
-	next unless $policy;
+	my $policy = $config->returnValue('traffic-policy');
 
-	update_interface( $ifname, $policy );
+	update_interface( $ifname, $policy ) if ($policy);
+	update_action( $ifname );
     }
 }
 
 ## update_interface('eth0', 'my-shaper')
 # update policy to interface
 sub update_interface {
-    my ( $device, $name ) = @_;
+    my ( $device, $direction, $name ) = @_;
     my $policy = find_policy($name);
-    die "Unknown qos-policy $name\n" unless $policy;
+    die "Unknown traffic-policy $name\n" unless $policy;
 
     my $shaper = make_policy( $policy, $name, $direction );
     exit 1 unless $shaper;
 
     if ( ! -d "/sys/class/net/$device" ) {
-	warn "$device not present yet, qos-policy will be applied later\n";
+	warn "$device not present yet, traffic-policy will be applied later\n";
 	return;
     }
 
-
     # Remove old policy
-    delete_interface( $device );
+    delete_interface( $device, $direction );
 
     # When doing debugging just echo the commands
     my $out;
     unless ($debug) {
-        open $out, "|-"
+        open $out, '|-'
           or exec qw:sudo /sbin/tc -batch -:
           or die "Tc setup failed: $!\n";
 
@@ -178,12 +176,14 @@ sub update_interface {
     }
 
     $shaper->commands( $device, $direction );
+    
     return if ($debug);
 
     select STDOUT;
-    unless (close $out) {
+
+    unless(close($out)) {
         # cleanup any partial commands
-        delete_interface( $device );
+        delete_interface( $device, $direction );
 
         # replay commands to stdout
         $shaper->commands($device, $direction );
@@ -191,8 +191,7 @@ sub update_interface {
     }
 }
 
-
-# return array of references to (name, policy)
+# return array of references to (name, direction, policy)
 sub interfaces_using {
     my $policy = shift;
     my $config = new Vyatta::Config;
@@ -201,15 +200,17 @@ sub interfaces_using {
     foreach my $name ( getInterfaces() ) {
         my $intf = new Vyatta::Interface($name);
         next unless $intf;
-	my $path = $intf->path();
-	next unless $path;
+	my $level = $intf->path() . ' traffic-policy';
+	$config->setLevel($level);
+	
+        foreach my $direction ($config->listNodes()) {
+	    my $cur = $config->returnValue($direction);
+	    next unless $cur;
 
-	$config->setLevel($path);
-	my $cur = $config->returnValue('qos-policy');
-	next unless $cur;
-
-	# these are arguments to update_interface()
-	push @inuse, [ $name, $policy ] if ($cur eq $policy);
+	    # these are arguments to update_interface()
+	    push @inuse, [ $name, $direction, $policy ]
+		if ($cur eq $policy); 
+	}
     }
     return @inuse;
 }
@@ -220,7 +221,7 @@ sub delete_policy {
 	# interfaces_using returns array of array and only want name
 	my @inuse = map { @$_[0] } interfaces_using($name);
 
-	die "Can not delete qos-policy $name, still applied"
+	die "Can not delete traffic-policy $name, still applied"
 	    . " to interface ", join(' ', @inuse), "\n"
 	    if @inuse;
     }
@@ -251,82 +252,57 @@ sub apply_policy {
     }
 }
 
-# ingress policy factory
-sub ingress_policy {
-    my ($ifname) = @_;
-    my $intf = new Vyatta::Interface($ifname);
-    die "Unknown interface name $ifname\n" unless $intf;
-
-    my $path = $intf->path();
-    unless ($path) {
-	warn "Can't find $ifname in configuration\n";
-	exit 0;
+#
+# This is used for actions mirror and redirect
+sub update_action {
+    while ( my $dev = shift ) {
+	apply_action($dev);
     }
+}
+	
+sub apply_action{
+    my $dev = shift;
+    my $interface = new Vyatta::Interface($dev);
+    die "Unknown interface type: $dev" unless $interface;
+
+    my $path = $interface->path();
+    next unless $path;
 
     my $config = new Vyatta::Config;
-    $config->setLevel( "$path input-policy" );
+    $config->setLevel( $path );
 
-    my @names = $config->listNodes();
-    return if ($#names < 0);
+    my $ingress =  $config->returnValue('traffic-policy in');
 
-    die "Only one incoming policy is allowed\n" if ($#names > 0);
+    foreach my $action (qw(mirror redirect)) {
+	my $target = $config->returnValue($action);
+	next unless $target;
+	    
+	# TODO support combination of limiting and redirect/mirror
+	die "interface $dev: combination of $action"
+	    . " and traffic-policy $ingress not supported\n"
+	    if ($ingress);
 
-    $config->setLevel( "$path input-policy " . $names[0] );
-    my $type     = ucfirst($names[0]);
-    my $location = "Vyatta/Qos/Ingress$type.pm";
-    require $location;
+	# Clear existing ingress
+	system("sudo tc qdisc del dev $dev parent ffff: 2>/dev/null");
+	
+	system("sudo tc qdisc add dev $dev handle ffff: ingress") == 0
+	    or die "tc qdisc ingress failed";
 
-    my $class    = "Vyatta::Qos::Ingress$type";
-    return $class->new( $config, $ifname );
-}
+	my $cmd = 
+	    "tc filter add dev $dev parent ffff:"
+	    . " protocol all prio 10 u32" 
+	    . " match u32 0 0 flowid 1:1"
+	    . " action mirred egress $action dev $target";
 
-# check definition of input filtering
-sub check_ingress {
-    my $device = shift;
-
-    my $ingress = ingress_policy( $device );
-    return unless $ingress;
-}
-
-# sets up input filtering
-sub update_ingress {
-    my $device = shift;
-
-    die "Interface $device not present\n"
-	unless (-d "/sys/class/net/$device");
-
-    # Drop existing ingress and recreate
-    system("sudo tc qdisc del dev $device ingress 2>/dev/null");
-
-   my $ingress = ingress_policy( $device );
-    return unless $ingress;
-
-    system("sudo tc qdisc add dev $device ingress") == 0
-	or die "Can not set ingress qdisc";
-
-    # When doing debugging just echo the commands
-    my $out;
-    unless ($debug) {
-        open $out, "|-"
-          or exec qw:sudo /sbin/tc -batch -:
-          or die "Tc setup failed: $!\n";
-
-	select $out;
+	system($cmd) == 0
+	    or die "tc action $action command failed";
+	    
+	return;
     }
 
-    my $parent = 0xffff;
-    $ingress->commands( $device, $parent );
-    return if ($debug);
-
-    select STDOUT;
-    unless (close $out) {
-        # cleanup any partial commands
-	system("sudo tc del dev $device ingress 2>/dev/null");
-
-        # replay commands to stdout
-        $ingress->commands($device, $parent );
-        die "TC command failed.";
-    }
+    # Drop what ever was there before...
+    system("sudo tc qdisc del dev $dev parent ffff: 2>/dev/null")
+	unless($ingress);
 }
 
 sub usage {
@@ -339,22 +315,13 @@ usage: vyatta-qos.pl --list-policy
        vyatta-qos.pl --update-interface interface policy-name
        vyatta-qos.pl --delete-interface interface
 
-       vyatta-qos.pl --check-ingress interface
-       vyatta-qos.pl --update-ingress interface
+       vyatta-qos.pl --start-interface interface
 EOF
     exit 1;
 }
 
-my @updateInterface = ();
-my $deleteInterface;
-
-my $listPolicy;
-my @createPolicy    = ();
-my @applyPolicy     = ();
-my @deletePolicy    = ();
-my @startList       = ();
-
-my ($checkIngress, $updateIngress);
+my (@startList, @updateInterface, $deleteInterface, $updateAction);
+my ($listPolicy, @createPolicy, @applyPolicy, @deletePolicy);
 
 GetOptions(
     "start-interface=s"     => \@startList,
@@ -366,8 +333,8 @@ GetOptions(
     "create-policy=s{2}"    => \@createPolicy,
     "apply-policy=s"        => \@applyPolicy,
 
-    "check-ingress=s"	    => \$checkIngress,
-    "update-ingress=s"	    => \$updateIngress
+    "update-action=s"	    => \$updateAction,
+
 ) or usage();
 
 delete_interface($deleteInterface) if ( $deleteInterface );
@@ -379,6 +346,4 @@ create_policy(@createPolicy)       if ( $#createPolicy == 1 );
 delete_policy(@deletePolicy)       if (@deletePolicy);
 apply_policy(@applyPolicy)         if (@applyPolicy);
 
-check_ingress($checkIngress)	   if ($checkIngress);
-update_ingress($updateIngress)	   if ($updateIngress);
-
+update_action($updateAction)	   if ($updateAction);
