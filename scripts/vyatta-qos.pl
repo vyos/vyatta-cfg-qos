@@ -26,14 +26,20 @@ use Getopt::Long;
 my $debug = $ENV{'QOS_DEBUG'};
 
 my %policies = (
-    'traffic-shaper'   => 'TrafficShaper',
-    'fair-queue'       => 'FairQueue',
-    'rate-control'     => 'RateLimiter',
-    'drop-tail'        => 'DropTail',
-    'network-emulator' => 'NetworkEmulator',
-    'round-robin'      => 'RoundRobin',
-    'priority-queue'   => 'Priority',
-    'random-detect'    => 'RandomDetect',
+    'out' => {
+        'traffic-shaper'   => 'TrafficShaper',
+        'fair-queue'       => 'FairQueue',
+        'rate-limit'       => 'RateLimiter',
+        'drop-tail'        => 'DropTail',
+        'network-emulator' => 'NetworkEmulator',
+	'round-robin'	   => 'RoundRobin',
+	'priority-queue'   => 'Priority',
+	'random-detect'    => 'RandomDetect',
+	'traffic-limiter'  => 'TrafficLimiter',
+    },
+    'in' => {
+	'traffic-limiter' => 'TrafficLimiter',
+    }
 );
 
 # find policy for name - also check for duplicates
@@ -54,13 +60,28 @@ sub find_policy {
 # class factory for policies
 ## make_policy('traffic-shaper', 'limited', 'out')
 sub make_policy {
-    my ( $type, $name ) = @_;
+    my ( $type, $name, $direction ) = @_;
     my $policy_type;
 
-    $policy_type = $policies{$type};
+    if ($direction) {
+        $policy_type = $policies{$direction}{$type};
+    }
+    else {
+        foreach my $direction ( keys %policies ) {
+            $policy_type = $policies{$direction}{$type};
+            last if defined $policy_type;
+        }
+    }
 
     # This means template exists but we don't know what it is.
-    return unless ($policy_type);
+    unless ($policy_type) {
+        foreach my $direction ( keys %policies ) {
+            die
+"QoS policy $name is type $type and is only valid for $direction\n"
+              if $policies{$direction}{$type};
+        }
+        die "QoS policy $name has not been created\n";
+    }
 
     my $config = new Vyatta::Config;
     $config->setLevel("qos-policy $type $name");
@@ -70,7 +91,7 @@ sub make_policy {
 
     require $location;
 
-    return $class->new( $config, $name );
+    return $class->new( $config, $name, $direction );
 }
 
 ## list defined qos policy names
@@ -78,23 +99,34 @@ sub list_policy {
     my $config = new Vyatta::Config;
     $config->setLevel('qos-policy');
 
-    # list all nodes under qos-policy and match those we know about
-    my @qos = grep { $policies{$_} } $config->listNodes();
-
-    my @names = ();
-    foreach my $type (@qos) {
+    while ( my $direction = shift ) {
+        my @qos = grep { $policies{$direction}{$_} } $config->listNodes();
+        my @names = ();
+        foreach my $type (@qos) {
             my @n = $config->listNodes($type);
             push @names, @n;
+        }
+        print join( ' ', @names ), "\n";
     }
-    print join( ' ', sort ( @names )), "\n";
 }
+
+my %delcmd = (
+    'out' => 'root',
+    'in'  => 'parent ffff:',
+);
 
 ## delete_interface('eth0')
 # remove all filters and qdisc's
 sub delete_interface {
     my ( $interface ) = @_;
+    my $arg = $delcmd{$direction};
 
-    system("sudo tc qdisc del dev $interface root 2>/dev/null");
+    die "bad direction $direction\n" unless $arg;
+    
+    my $cmd = "sudo tc qdisc del dev $interface ". $arg . " 2>/dev/null";
+
+    # ignore errors (may have no qdisc)
+    system($cmd);
 }
 
 ## start_interface('ppp0')
@@ -123,13 +155,14 @@ sub update_interface {
     my $policy = find_policy($name);
     die "Unknown qos-policy $name\n" unless $policy;
 
-    my $shaper = make_policy( $policy, $name );
+    my $shaper = make_policy( $policy, $name, $direction );
     exit 1 unless $shaper;
 
     if ( ! -d "/sys/class/net/$device" ) {
 	warn "$device not present yet, qos-policy will be applied later\n";
 	return;
     }
+
 
     # Remove old policy
     delete_interface( $device );
@@ -144,8 +177,7 @@ sub update_interface {
 	select $out;
     }
 
-    my $parent = 1;
-    $shaper->commands( $device, $parent );
+    $shaper->commands( $device, $direction );
     return if ($debug);
 
     select STDOUT;
@@ -154,7 +186,7 @@ sub update_interface {
         delete_interface( $device );
 
         # replay commands to stdout
-        $shaper->commands($device, $parent );
+        $shaper->commands($device, $direction );
         die "TC command failed.";
     }
 }
@@ -200,7 +232,7 @@ sub create_policy {
 
     # Check policy for validity
     my $shaper = make_policy( $policy, $name );
-    die "QoS policy $name has not been created\n" unless $shaper;
+    exit 1 unless $shaper;
 }
 
 # Configuration changed, reapply to all interfaces.
