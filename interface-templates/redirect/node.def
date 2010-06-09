@@ -2,7 +2,11 @@ type: txt
 help: Set incoming packet redirection destination
 allowed: /opt/vyatta/sbin/vyatta-interfaces.pl --skip=$IFNAME --show=all
 
+syntax: $VAR(@) != $VAR(../@) ;\
+	 "interface $VAR(../@): redirect to same interface not allowed"
+
 syntax: /opt/vyatta/sbin/vyatta-interfaces.pl --dev=$IFNAME --check=all
+
 commit:expression: $VAR(../mirror) == "";\
 		   "interface $VAR(../@) : can not redirect and mirror on $IFNAME"
 

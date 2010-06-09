@@ -2,6 +2,9 @@ type: txt
 help: Set incoming packet mirroring destination
 allowed: ${vyatta_sbindir}/vyatta-interfaces.pl --skip=$IFNAME --show=all
 
+syntax: $VAR(@) != $VAR(../@) ;\
+	 "interface $VAR(../@): mirroring to same interface not allowed"
+
 syntax: /opt/vyatta/sbin/vyatta-interfaces.pl --dev=$IFNAME --check=all
 
 commit:expression: $VAR(../redirect) == ""; \
