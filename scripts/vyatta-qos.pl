@@ -289,7 +289,7 @@ sub apply_action{
 	    or die "tc qdisc ingress failed";
 
 	my $cmd = 
-	    "tc filter add dev $dev parent ffff:"
+	    "sudo tc filter add dev $dev parent ffff:"
 	    . " protocol all prio 10 u32" 
 	    . " match u32 0 0 flowid 1:1"
 	    . " action mirred egress $action dev $target";
@@ -307,7 +307,7 @@ sub apply_action{
 
 sub usage {
     print <<EOF;
-usage: vyatta-qos.pl --list-policy
+usage: vyatta-qos.pl --list-policy direction
        vyatta-qos.pl --create-policy policy-type policy-name
        vyatta-qos.pl --delete-policy policy-name
        vyatta-qos.pl --apply-policy policy-type policy-name
@@ -328,7 +328,7 @@ GetOptions(
     "update-interface=s{3}" => \@updateInterface,
     "delete-interface=s{2}" => \@deleteInterface,
 
-    "list-policy"           => \$listPolicy,
+    "list-policy=s"         => \$listPolicy,
     "delete-policy=s"       => \@deletePolicy,
     "create-policy=s{2}"    => \@createPolicy,
     "apply-policy=s"        => \@applyPolicy,
