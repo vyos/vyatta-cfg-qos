@@ -339,11 +339,11 @@ GetOptions(
 
 delete_interface($deleteInterface) if ( $deleteInterface );
 update_interface(@updateInterface) if ( $#updateInterface == 1 );
-start_interface(@startList)        if (@startList);
+start_interface(@startList)        if ( @startList );
 
-list_policy()                      if ( $listPolicy );
+list_policy($listPolicy)           if ( $listPolicy );
 create_policy(@createPolicy)       if ( $#createPolicy == 1 );
-delete_policy(@deletePolicy)       if (@deletePolicy);
-apply_policy(@applyPolicy)         if (@applyPolicy);
+delete_policy(@deletePolicy)       if ( @deletePolicy );
+apply_policy(@applyPolicy)         if ( @applyPolicy );
 
-update_action($updateAction)	   if ($updateAction);
+update_action($updateAction)	   if ( $updateAction );
