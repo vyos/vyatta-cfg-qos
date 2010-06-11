@@ -1,3 +1,19 @@
+vyatta-cfg-qos (0.14.8) unstable; urgency=low
+
+  * Revert "Move traffic-limiter to input-policy"
+  * Revert "Allow any Qos policy to be used for input"
+  * Rearrange Qos commands for Larkspur
+  * Block attempts to mirror/redirect to self
+  * cleanup input-policy leftover
+  * Mark Qos config as version 1
+  * Fix syntax checks for mirror/redirect
+  * Fix typo in traffic limiter
+  * Fix list policy
+  * Fix update/delete interface
+  * Fix mirror and redirect action
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Fri, 11 Jun 2010 14:54:18 -0700
+
 vyatta-cfg-qos (0.14.7) unstable; urgency=low
 
   * add a few missing templates
