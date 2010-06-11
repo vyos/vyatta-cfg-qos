@@ -312,21 +312,21 @@ usage: vyatta-qos.pl --list-policy
        vyatta-qos.pl --delete-policy policy-name
        vyatta-qos.pl --apply-policy policy-type policy-name
 
-       vyatta-qos.pl --update-interface interface policy-name
-       vyatta-qos.pl --delete-interface interface
+       vyatta-qos.pl --update-interface interface direction policy-name
+       vyatta-qos.pl --delete-interface interface direction
 
        vyatta-qos.pl --start-interface interface
 EOF
     exit 1;
 }
 
-my (@startList, @updateInterface, $deleteInterface, $updateAction);
+my (@startList, @updateInterface, @deleteInterface, $updateAction);
 my ($listPolicy, @createPolicy, @applyPolicy, @deletePolicy);
 
 GetOptions(
     "start-interface=s"     => \@startList,
-    "update-interface=s{2}" => \@updateInterface,
-    "delete-interface=s"    => \$deleteInterface,
+    "update-interface=s{3}" => \@updateInterface,
+    "delete-interface=s{2}" => \@deleteInterface,
 
     "list-policy"           => \$listPolicy,
     "delete-policy=s"       => \@deletePolicy,
@@ -337,8 +337,8 @@ GetOptions(
 
 ) or usage();
 
-delete_interface($deleteInterface) if ( $deleteInterface );
-update_interface(@updateInterface) if ( $#updateInterface == 1 );
+delete_interface(@deleteInterface) if ( @deleteInterface == 1);
+update_interface(@updateInterface) if ( $#updateInterface == 2 );
 start_interface(@startList)        if ( @startList );
 
 list_policy($listPolicy)           if ( $listPolicy );
