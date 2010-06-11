@@ -85,7 +85,7 @@ sub commands {
 	printf "qdisc add dev %s handle %x: ingress\n", $dev, $parent;
     } else {
 	$parent = 1;
-	printf "qdisc add dev %s handle $x: prio\n", $dev, $parent;
+	printf "qdisc add dev %s handle %x: prio\n", $dev, $parent;
     }
 
     foreach my $class (@$classes) {
