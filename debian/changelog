@@ -1,3 +1,10 @@
+vyatta-cfg-qos (0.14.9) unstable; urgency=low
+
+  * Add default for traffic limiter
+  * Reject ip as a IP protocol value
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Mon, 14 Jun 2010 16:44:12 -0700
+
 vyatta-cfg-qos (0.14.8) unstable; urgency=low
 
   * Revert "Move traffic-limiter to input-policy"
