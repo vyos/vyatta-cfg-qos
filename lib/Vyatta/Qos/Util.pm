@@ -206,14 +206,18 @@ sub getProtocol {
 
     defined $str or return;
     if ( $str =~ /^([0-9]+)|(0x[0-9a-fA-F]+)$/ ) {
-        if ( $str < 0 || $str > 255 ) {
+        if ( $str <= 0 || $str > 255 ) {
             die "$str is not a valid protocol number\n";
         }
         return $str;
     }
 
     my ( $name, $aliases, $proto ) = getprotobyname($str);
-    ( defined $proto ) or die "\"$str\" unknown protocol\n";
+    die "\"$str\" unknown protocol\n"
+	unless $proto;
+    die "$name is not usable as an IP protocol match\n"
+	if ($proto == 0);
+
     return $proto;
 }
 

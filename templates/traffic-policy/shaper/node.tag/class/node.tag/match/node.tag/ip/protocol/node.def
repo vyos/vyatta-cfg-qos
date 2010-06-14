@@ -3,7 +3,7 @@ help: Match IP protocol name or number
 syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --protocol $VAR(@)" 
 allowed: awk '
 	/^#/ { next }
-	     { printf "%s ", $1 }' </etc/protocols
+	     { if($1 != "ip") printf "%s ", $1 }' </etc/protocols
 comp_help: <0-255> IP protocol value or name
 Common names:
 	icmp	 Internet Control Message Protocol
