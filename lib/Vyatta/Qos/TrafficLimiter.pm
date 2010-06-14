@@ -68,7 +68,12 @@ sub _define {
         die "$level can not match on both ip and other types\n";
     }
 
-    foreach my $id ( $config->listNodes("class") ) {
+    if ($config->exists('default')) {
+	$config->setLevel("$level default");
+        push @classes, new Vyatta::Qos::LimiterClass( $config, 0 );
+    }
+
+    foreach my $id ( $config->listNodes('class') ) {
         $config->setLevel("$level class $id");
         push @classes, new Vyatta::Qos::LimiterClass( $config, $id );
     }
@@ -88,15 +93,25 @@ sub commands {
 	printf "qdisc add dev %s handle %x: prio\n", $dev, $parent;
     }
 
+    # find largest class id (to use for default)
+    my $maxid = 0;
+    foreach my $class (@$classes) {
+	my $id = $class->{id};
+	$maxid = $id if ($id > $maxid);
+    }
+
     foreach my $class (@$classes) {
         foreach my $match ( $class->matchRules() ) {
+	    my $id = $class->{id};
+	    $id = $maxid + 1 if ($id == 0);
+
 	    my $police = " police rate " . $class->{rate}
 	    	. " action drop burst " . $class->{burst};
 
-	    $match->filter( $dev, $parent, $class->{id}, $class->{priority},
-			    undef, $police );
+	    $match->filter( $dev, $parent, $id, $class->{priority}, undef, $police );
         }
     }
+    
 }
 
 1;
