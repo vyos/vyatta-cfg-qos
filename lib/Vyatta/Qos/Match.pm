@@ -57,7 +57,7 @@ sub new {
     }
 
     $self->{_vif} = $config->returnValue("vif");
-    $self->{_dev} = getIfIndex( $config->returnValue("interface") );
+    $self->{_indev} = getIfIndex( $config->returnValue("interface") );
 
     return $self;
 }
