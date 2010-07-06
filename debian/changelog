@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.14.11) unstable; urgency=low
+
+  * Add help text for intermediate nodes in match
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Tue, 06 Jul 2010 16:13:52 -0700
+
 vyatta-cfg-qos (0.14.10) unstable; urgency=low
 
   * Fix match rule on incoming interface
