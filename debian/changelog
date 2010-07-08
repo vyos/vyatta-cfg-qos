@@ -1,3 +1,11 @@
+vyatta-cfg-qos (0.14.12) unstable; urgency=low
+
+  * Fix error handling for rate limiter
+  * Add ability to match on firewall mark
+  * Cleanup error message on conflicting match
+
+ -- Stephen Hemminger <shemminger@lenny.localdomain>  Thu, 08 Jul 2010 10:45:46 -0700
+
 vyatta-cfg-qos (0.14.11) unstable; urgency=low
 
   * Add help text for intermediate nodes in match
