@@ -36,8 +36,9 @@ sub new {
     my $class = ref($that) || $that;
     my $self = {%fields};
 
-    $self->{_rate} = getRate($config->returnValue("bandwidth"));
-    defined $self->{_rate}  or die "$level bandwidth not defined\n";
+    my $bw = config->returnValue("bandwidth");
+    defined $bw  or die "$level bandwidth not defined\n";
+    $self->{_rate} = getRate($bw);
 
     $self->{_burst}     = $config->returnValue("burst");
     defined $self->{_burst}  or die "$level burst not defined\n";
