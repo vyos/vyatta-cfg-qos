@@ -76,7 +76,7 @@ sub new {
     # Firewall mark, packet contents, and meta data use different
     # tc filters
     my @filters = (keys %filter);
-    die "Can not combine matchs ", join(' and  ',@filters), "\n"
+    die "Can not combine match on both ", join(' and ',@filters), "\n"
 	if $#filters > 0;
 
     return $self;
