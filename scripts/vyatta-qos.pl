@@ -58,7 +58,6 @@ sub find_policy {
 }
 
 # class factory for policies
-## make_policy('traffic-shaper', 'limited', 'out')
 sub make_policy {
     my ( $type, $name, $direction ) = @_;
     my $policy_type;

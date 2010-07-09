@@ -41,7 +41,7 @@ sub new {
 }
 
 # Setup new instance.
-# Assumes caller has done $config->setLevel to "traffic-limiter $name"
+# Assumes caller has done $config->setLevel to "limiter $name"
 sub _define {
     my ( $self, $config ) = @_;
     my $level   = $config->setLevel();
