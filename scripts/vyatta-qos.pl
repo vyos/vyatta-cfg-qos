@@ -38,7 +38,7 @@ my %policies = (
 	'random-detect'    => 'RandomDetect',
     },
     'in' => { 
-	'traffic-limiter' => 'TrafficLimiter',
+	'limiter' => 'TrafficLimiter',
     }
 );
 
