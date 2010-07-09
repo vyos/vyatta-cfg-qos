@@ -85,13 +85,11 @@ sub commands {
     my $classes = $self->{_classes};
     my $parent;
 
-    if ($direction eq 'in') {
-	$parent  = 0xffff;
-	printf "qdisc add dev %s handle %x: ingress\n", $dev, $parent;
-    } else {
-	$parent = 1;
-	printf "qdisc add dev %s handle %x: prio\n", $dev, $parent;
-    }
+    die "traffic-policy limiter only applies for incoming traffic\n"
+	unless ($direction eq 'in');
+
+    $parent  = 0xffff;
+    printf "qdisc add dev %s handle %x: ingress\n", $dev, $parent;
 
     # find largest class id (to use for default)
     my $maxid = 0;

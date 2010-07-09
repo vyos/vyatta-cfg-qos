@@ -28,7 +28,6 @@ my $debug = $ENV{'QOS_DEBUG'};
 my %policies = (
     'out' => {
 	'shaper'           => 'TrafficShaper',
-	'limiter'	   => 'TrafficLimiter',
 	'fair-queue'       => 'FairQueue',
 	'rate-control'     => 'RateLimiter',
 	'drop-tail'        => 'DropTail',
