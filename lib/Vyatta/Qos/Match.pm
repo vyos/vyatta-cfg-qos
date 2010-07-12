@@ -151,7 +151,7 @@ sub filter {
         print " protocol all basic";
         print " match meta\(rt_iif eq $indev\)"        if $indev;
         print " match meta\(vlan mask 0xfff eq $vif\)" if $vif;
-	print " match meta\(fw_mark eq $fwmark\)"      if $fwmark;
+	print " match meta\(fwmark eq $fwmark\)"      if $fwmark;
 
 	print " $police" if $police;
 	printf " flowid %x:%x\n", $parent, $classid;
