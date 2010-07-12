@@ -1,3 +1,10 @@
+vyatta-cfg-qos (0.14.15) unstable; urgency=low
+
+  * Remove limiter firewall mark match template
+  * Allow firewall mark combined with interface match
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Mon, 12 Jul 2010 11:05:24 -0700
+
 vyatta-cfg-qos (0.14.14) unstable; urgency=low
 
   * Rename limiter class priority field to precedence
