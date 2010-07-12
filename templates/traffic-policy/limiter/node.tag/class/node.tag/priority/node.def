@@ -1,8 +1,0 @@
-type: u32
-help: Set priority for rule evaluation
-default: 20
-syntax:expression: $VAR(@) >= 0 && $VAR(@) <= 20 ; \
-		   "priority must be between 0 and 20"
-help: Priority value
-comp_help: Priority for traffic limiting evaluation
- <0-20> (default 20)

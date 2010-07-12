@@ -56,7 +56,7 @@ sub _define {
     $self->{burst} = $config->returnValue("burst");
     defined $self->{burst} or die "burst must be defined for $level\n";
 
-    $self->{priority} = $config->returnValue("priority");
+    $self->{priority} = $config->returnValue("precedence");
 
     foreach my $match ( $config->listNodes("match") ) {
         $config->setLevel("$level match $match");
