@@ -1,2 +1,3 @@
 type: u32
 help: Set maximum queue size (packets)
+syntax:expression: $VAR(@) > 0;  "Queue limit must be greater than zero"
