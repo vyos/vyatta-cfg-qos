@@ -24,15 +24,12 @@ sub new {
     my ( $that, $config ) = @_;
     my $self = {};
     my $class = ref($that) || $that;
+    my $ptype;
 
     bless $self, $class;
 
     foreach my $proto (qw(ip ipv6 ether)) {
         next unless $config->exists($proto);
-
-        foreach my $t (qw(vif dev)) {
-            die "can not match on $proto and $t\n" if $config->exists($t);
-        }
 
         my %fields;
 
@@ -54,10 +51,29 @@ sub new {
         }
 
         $self->{$proto} = \%fields;
+	my $other = $ptype;
+	die "Can not match on both $proto and $other protocol in same match\n"
+	    if $other;
+	$ptype = $other;
     }
 
-    $self->{_vif} = $config->returnValue("vif");
-    $self->{_indev} = getIfIndex( $config->returnValue("interface") );
+    my $vif = $config->returnValue("vif");
+    $self->{_vif} = $vif;
+
+    my $iif = $config->returnValue("interface");
+    $self->{_indev} = getIfIndex($iif);
+
+    my $fwmark = $config->returnValue("mark");
+    $self->{_fwmark} = $fwmark;
+
+    if ($ptype) {
+	die "Can not combine protocol and firewall mark match\n"
+	    if ($fwmark);
+	die "Can not combine protocol and vlan tag match\n"
+	    if ($vif);
+	die "Can not combine protocol and interface match\n"
+	    if ($iif);
+    }
 
     return $self;
 }
@@ -128,8 +144,10 @@ sub filter {
 	}
 	print " $police" if $police;
 	printf " flowid %x:%x\n", $parent, $classid;
+	return;
     }
 
+    my $fwmark = $self->{_fwmark};
     my $indev = $self->{_indev};
     my $vif   = $self->{_vif};
     if ( defined($vif) || defined($indev) ) {
@@ -137,7 +155,16 @@ sub filter {
         print " protocol all basic";
         print " match meta\(rt_iif eq $indev\)"        if $indev;
         print " match meta\(vlan mask 0xfff eq $vif\)" if $vif;
+	print " match meta\(fwmark eq $fwmark\)"      if $fwmark;
+
+	print " $police" if $police;
+	printf " flowid %x:%x\n", $parent, $classid;
+    } elsif ( $fwmark ) {
+	printf "filter add dev %s parent %x: prio %d", $dev, $parent, $prio;
+	printf  " protocol all handle %d fw", $fwmark;
 	print " $police" if $police;
 	printf " flowid %x:%x\n", $parent, $classid;
     }
 }
+
+1;
