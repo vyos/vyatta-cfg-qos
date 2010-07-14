@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.14.17) unstable; urgency=low
+
+  * Require queue limit to be greater than zero
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Tue, 13 Jul 2010 14:32:12 -0700
+
 vyatta-cfg-qos (0.14.16) unstable; urgency=low
 
   * Fix typo in ematch/fwmark filter
