@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.14.18) unstable; urgency=low
+
+  * Limit queues using fair-queue to <= 127
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Wed, 14 Jul 2010 15:59:49 -0700
+
 vyatta-cfg-qos (0.14.17) unstable; urgency=low
 
   * Require queue limit to be greater than zero
