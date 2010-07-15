@@ -66,8 +66,6 @@ sub new {
     $self->{_fwmark} = $fwmark;
 
     if ($ptype) {
-	die "Can not combine protocol and firewall mark match\n"
-	    if ($fwmark);
 	die "Can not combine protocol and vlan tag match\n"
 	    if ($vif);
 	die "Can not combine protocol and interface match\n"
@@ -100,6 +98,7 @@ sub filter {
         return;
     }
 
+    my $fwmark = $self->{_fwmark};
     foreach my $proto (qw(ip ipv6 ether)) {
         my $p = $self->{$proto};
         next unless $p;
@@ -137,12 +136,12 @@ sub filter {
 	    print " match $sel dport $$p{dport} 0xffff"     if $$p{dport};
 	}
 
-	print " $police" if $police;
+	print " match mark $fwmark 0xff"	if $fwmark;
+	print " $police"		if $police;
 	printf " flowid %x:%x\n", $parent, $classid;
 	return;
     }
 
-    my $fwmark = $self->{_fwmark};
     my $indev = $self->{_indev};
     my $vif   = $self->{_vif};
     if ( defined($vif) || defined($indev) ) {
