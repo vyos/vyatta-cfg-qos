@@ -34,8 +34,7 @@ sub new {
         my %fields;
 
         if ( $proto eq 'ether' ) {
-            $fields{protocol} =
-              getProtocol( $config->returnValue("ether protocol") );
+            $fields{protocol} = $config->returnValue("ether protocol");
             $fields{src} = $config->returnValue("ether source");
             $fields{dst} = $config->returnValue("ether destination");
         } else {
