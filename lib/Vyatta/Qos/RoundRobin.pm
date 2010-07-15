@@ -67,8 +67,10 @@ sub commands {
     foreach my $class (@$classes) {
         $class->gen_class( $dev, 'drr', $parent );
         $class->gen_leaf( $dev, $parent );
+	my $prio = 1;
+
         foreach my $match ( $class->matchRules() ) {
-            $match->filter( $dev, $parent, $class->{id}, 1);
+            $match->filter( $dev, $parent, $class->{id}, $prio++);
         }
     }
 }

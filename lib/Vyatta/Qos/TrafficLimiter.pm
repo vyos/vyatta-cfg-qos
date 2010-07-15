@@ -106,7 +106,8 @@ sub commands {
 	    my $police = " police rate " . $class->{rate}
 	    	. " action drop burst " . $class->{burst};
 
-	    $match->filter( $dev, $parent, $id, $class->{priority}, undef, $police );
+	    $match->filter( $dev, $parent, $id, $class->{priority}, 
+			    undef, $police );
         }
     }
     

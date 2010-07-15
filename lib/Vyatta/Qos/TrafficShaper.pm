@@ -151,8 +151,10 @@ sub commands {
         $class->gen_class( $dev, 'htb', $parent, $rate );
         $class->gen_leaf( $dev, $parent, $rate );
 
+	my $prio = 1;
         foreach my $match ( $class->matchRules() ) {
-            $match->filter( $dev, $parent, $class->{id}, 1, $class->{dsmark} );
+            $match->filter( $dev, $parent, $class->{id}, 
+			    $prio++, $class->{dsmark} );
         }
     }
 }
