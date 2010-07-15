@@ -1,3 +1,10 @@
+vyatta-cfg-qos (0.15.0) unstable; urgency=low
+
+  * Fix problems when combining match rules
+  * Allow match on firewall mark and protocol
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Thu, 15 Jul 2010 13:38:54 -0700
+
 vyatta-cfg-qos (0.14.19) unstable; urgency=low
 
   * Fix rate limiter
