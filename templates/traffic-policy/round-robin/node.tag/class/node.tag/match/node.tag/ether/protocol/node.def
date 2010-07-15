@@ -1,3 +1,15 @@
-type: u32
+type: txt
 help: Set Ethernet protocol for this match
-syntax:expression: ($VAR(@) >= 0 && $VAR(@) < 65536) ; "protocol must be between 0 and 65535"
+allowed: echo \
+    all 802.1Q 802_2 802_3 aarp aoe arp atalk \
+    dec ip ipv6 ipx lat localtalk rarp snap x25
+
+comp_help: <0-65536> Ethernet protocol value or name
+Common names:
+	all	Any protocol
+	ip      Internet IP (IPv4)
+	ipv6    Internet IP (IPv6)
+	arp	Address Resolution Protocol
+	atalk	Appletalk
+	ipx	Novell Internet Packet Exchange
+	802.1Q	802.1Q VLAN tag
