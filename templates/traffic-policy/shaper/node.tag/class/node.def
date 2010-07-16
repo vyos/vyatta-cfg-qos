@@ -1,6 +1,6 @@
 tag:
 type: u32
 help: Class handle
-syntax:expression: $VAR(@) > 1 && $VAR(@) < 4096; "Class identifier must be between 2 and 4095"
-comp_help: possible completions
- <2-4095>	Class ID
+syntax:expression: $VAR(@) > 1 && $VAR(@) <= 4095; \
+                  "Class identifier must be between 2 and 4095"
+val_help:<1-4095>; Class identifier

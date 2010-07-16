@@ -2,3 +2,4 @@ type: u32
 help: Average packet size (bytes)
 default: 1024
 syntax:expression: $VAR(@) >= 16 && $VAR(@) <= 10240 ; "Average packet size must be between 16 and 10240"
+val_help:<16-10240>; Average packet size in bytes

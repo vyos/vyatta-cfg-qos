@@ -1,6 +1,5 @@
 type: txt
 syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --time $VAR(@)"
-help: Setup network delay
-comp_help: Additional network delay in milliseconds
-  <number>         Latency in milliseconds
-  <number><suffix> Time with suffx (secs, ms, us)
+help: Additional network delay
+val_help:<number>; Time in milliseconds
+val_help:<number><suffix>; Time with suffix (secs, ms, us)

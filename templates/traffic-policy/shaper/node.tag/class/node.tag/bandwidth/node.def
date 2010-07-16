@@ -2,9 +2,6 @@ type: txt
 default: "100%"
 help: Bandwidth used for this class
 syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --percent-or-rate $VAR(@)"
-comp_help: Allowed values:
- <number>          Bandwidth in Kbps
- <number>%%        Percentage of overall rate (default 100%%)
- <number><suffix>  Value with scaling suffix
-                   bits per sec (kbit, mbit, gbit)
-                   bytes per sec (kbps, mbps, gbps)
+val_help:<number>; Bandwidth in Kbps
+val_help:<number>%%; Percentage of overall rate (default 100%%)
+val_help:<number><suffix>;  Value with scaling suffix (kbit, kbps, ...)

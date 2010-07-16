@@ -1,10 +1,9 @@
 type: txt
 default: "fair-queue"
-syntax:expression: $VAR(@) in "fair-queue", "priority", "drop-tail", "random-detect"; "Unknown queue-type"
+syntax:expression: $VAR(@) in "fair-queue", "priority", "drop-tail", "random-detect";\
+                   "Unknown queue-type"
 help: Queue type for default traffic
-comp_help:Possible completions
-  fair-queue\tStochastic Fair Queue (SFQ)
-  drop-tail\tFirst-In-First-Out (FIFO)
-  priority\tPriority queueing based on DSCP
-  random-detect\tRandom Early Detection (RED)
-
+val_help:fair-queue; Stochastic Fair Queue (SFQ)
+val_help:drop-tail; First-In-First-Out (FIFO)
+val_help:priority; Priority queueing based on DSCP
+val_help:random-detect; Random Early Detection (RED)

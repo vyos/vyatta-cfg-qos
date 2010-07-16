@@ -1,6 +1,5 @@
 type: txt
 help: Emulated packet data corruption rate
 syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --percent $VAR(@)"
-comp_help: Allowed values:
- <number>%%        Percentage of packets affected
+val_help:<number>%%; Percentage of packets affected
 

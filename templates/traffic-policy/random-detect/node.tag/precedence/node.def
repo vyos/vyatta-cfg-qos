@@ -1,6 +1,6 @@
 tag:
 type: u32
-help: Precedence values
-syntax:expression: $VAR(@) >= 0 && $VAR(@) < 8; "IP precedence value must be between 0 and 7"
-comp_help: possible completions
- <0-7> IP precedence number
+help: IP precedence
+syntax:expression: $VAR(@) >= 0 && $VAR(@) <= 7; \
+	           "IP precedence value must be between 0 and 7"
+val_help:<0-7>; IP precedence value
