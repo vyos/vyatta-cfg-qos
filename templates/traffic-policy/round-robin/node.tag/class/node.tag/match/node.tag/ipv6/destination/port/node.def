@@ -1,4 +1,5 @@
-type: u32
-help: IP destination port for this match
-syntax:expression: ($VAR(@) > 0 && $VAR(@) < 65536) ; "port must be between 1 and 65535"
-val_help:<1-65535>; IP port
+type: txt
+help: IPv6 destination port for this match
+
+val_help: u32:1-65535>; Numeric IP port
+val_help: txt; Assigned IP port name

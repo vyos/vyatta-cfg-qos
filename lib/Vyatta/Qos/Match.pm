@@ -20,40 +20,56 @@ use Vyatta::Qos::Util qw(getIfIndex getDsfield getProtocol);
 use strict;
 use warnings;
 
+sub getPort {
+    my ($str, $proto) = @_;
+    return unless defined($str);
+
+    if ( $str =~ /^([0-9]+)|(0x[0-9a-fA-F]+)$/ ) {
+	die "$str is not a valid port number\n"
+	    if ( $str <= 0 || $str > 65535 );
+        return $str;
+    }
+  
+    $proto = "tcp" unless $proto;
+    my $port = getservbyname($str, $proto);
+    die "$str unknown $proto port name\n" unless $port;
+
+    return $port;
+}
+
 sub new {
     my ( $that, $config ) = @_;
     my $self = {};
     my $class = ref($that) || $that;
-    my $ptype;
+    my $lastaf;
 
     bless $self, $class;
 
-    foreach my $proto (qw(ip ipv6 ether)) {
-        next unless $config->exists($proto);
+    foreach my $af (qw(ip ipv6 ether)) {
+        next unless $config->exists($af);
 
         my %fields;
 
-        if ( $proto eq 'ether' ) {
+        if ( $af eq 'ether' ) {
             $fields{protocol} = $config->returnValue("ether protocol");
             $fields{src} = $config->returnValue("ether source");
             $fields{dst} = $config->returnValue("ether destination");
         } else {
             $fields{dsfield} =
-              getDsfield( $config->returnValue("$proto dscp") );
-            $fields{protocol} =
-              getProtocol( $config->returnValue("$proto protocol") );
-            $fields{src}   = $config->returnValue("$proto source address");
-            $fields{dst}   = $config->returnValue("$proto destination address");
-            $fields{sport} = $config->returnValue("$proto source port");
-            $fields{dport} = $config->returnValue("$proto destination port");
+              getDsfield( $config->returnValue("$af dscp") );
+	    my $ipprot = $config->returnValue("$af protocol");
+            $fields{protocol} = getProtocol($ipprot);
+            $fields{src}   = $config->returnValue("$af source address");
+            $fields{dst}   = $config->returnValue("$af destination address");
+            $fields{sport} = getPort($config->returnValue("$af source port"), $ipprot);
+            $fields{dport} = getPort($config->returnValue("$af destination port"), $ipprot);
         }
 
-        $self->{$proto} = \%fields;
+        $self->{$af} = \%fields;
 
-	my $other = $ptype;
-	die "Can not match on both $proto and $other protocol in same match\n"
-	    if $other;
-	$ptype = $other;
+	die "Can not match on both $af and $lastaf protocol in same match\n"
+	    if $lastaf;
+	$lastaf = $af;
     }
 
     my $vif = $config->returnValue("vif");
@@ -65,7 +81,7 @@ sub new {
     my $fwmark = $config->returnValue("mark");
     $self->{_fwmark} = $fwmark;
 
-    if ($ptype) {
+    if ($lastaf) {
 	die "Can not combine protocol and vlan tag match\n"
 	    if ($vif);
 	die "Can not combine protocol and interface match\n"
