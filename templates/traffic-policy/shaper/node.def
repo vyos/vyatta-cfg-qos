@@ -1,6 +1,6 @@
 tag:
 type: txt
-help: Set traffic shaping based policy
+help: Traffic shaping based policy
 syntax:expression: pattern $VAR(@) "^[[:alnum:]][-_[:alnum:]]*$"
                    ; "only alpha-numeric policy name allowed"
 create: /opt/vyatta/sbin/vyatta-qos.pl --create-policy $VAR(.) $VAR(@)

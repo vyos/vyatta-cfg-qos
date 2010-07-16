@@ -1,6 +1,6 @@
 type: txt
 default: "100%"
-help: Set the bandwidth used for this class
+help: Bandwidth used for this class
 syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --percent-or-rate $VAR(@)"
 comp_help: Allowed values:
  <number>          Bandwidth in Kbps

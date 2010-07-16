@@ -1,5 +1,5 @@
 type: txt
-help: Set emulated packet loss rate
+help: Emulated packet loss rate
 syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --percent $VAR(@)"
 comp_help: Allowed values:
  <number>%%        Percentage of packets affected

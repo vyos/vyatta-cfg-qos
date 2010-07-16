@@ -1,2 +1,2 @@
 type: u32
-help: Set the packet scheduling quantum (bytes)
+help: Packet scheduling quantum (bytes)

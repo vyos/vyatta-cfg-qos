@@ -1,5 +1,5 @@
 type: txt
-help: Set the bandwidth limit for this class
+help: Bandwidth limit for this class
 syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --percent-or-rate $VAR(@)"
 comp_help: Allowed values:
  <number>          Limit in Kbps

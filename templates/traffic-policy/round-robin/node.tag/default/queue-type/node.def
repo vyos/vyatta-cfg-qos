@@ -1,7 +1,7 @@
 type: txt
 default: "fair-queue"
 syntax:expression: $VAR(@) in "fair-queue", "priority", "drop-tail"; "Unknown queue-type"
-help: Set the queue type for this class
+help: Queue type for this class
 comp_help:Possible completions
   fair-queue\tStochastic Fair Queue (SFQ)
   drop-tail\tFirst-In-First-Out (FIFO)

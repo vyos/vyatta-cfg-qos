@@ -1,2 +1,2 @@
 type: macaddr
-help: Set the Ethernet source address for this match
+help: Ethernet source address for this match

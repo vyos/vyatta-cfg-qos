@@ -1,5 +1,5 @@
 type: txt
-help: Set the available bandwidth for this policy
+help: Available bandwidth for this policy
 default: "auto"
 syntax:expression: $VAR(@) == "auto" || \
 		   exec "/opt/vyatta/sbin/vyatta-qos-util.pl --rate $VAR(@)"

@@ -1,2 +1,2 @@
 type: ipv6net
-help: Set IP source address for this match
+help: IP source address for this match

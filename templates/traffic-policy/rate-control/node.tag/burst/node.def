@@ -1,5 +1,5 @@
 type: txt
-help: Set the burst size
+help: Burst size
 default: "15k"
 syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --burst $VAR(@)"
 comp_help: Allowed values:

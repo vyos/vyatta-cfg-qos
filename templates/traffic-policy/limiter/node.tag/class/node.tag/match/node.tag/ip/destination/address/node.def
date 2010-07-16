@@ -1,2 +1,2 @@
 type: ipv4net
-help: Set IP destination address for this match
+help: IP destination address for this match
