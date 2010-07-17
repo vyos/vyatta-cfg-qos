@@ -1,3 +1,11 @@
+vyatta-cfg-qos (0.15.1) unstable; urgency=low
+
+  * Remove verb from help string text
+  * Use val_help: to show command options
+  * Allow text string for IP port match
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Fri, 16 Jul 2010 17:01:38 -0700
+
 vyatta-cfg-qos (0.15.0) unstable; urgency=low
 
   * Fix problems when combining match rules
