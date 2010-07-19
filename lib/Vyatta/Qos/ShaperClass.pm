@@ -117,16 +117,27 @@ sub rateCheck {
         exit 1;
     }
 
-    my $qlimit = $self->{_limit};
-    if (defined($qlimit) && $self->{_qdisc} eq 'random-detect') {
+    if ($self->{_qdisc} eq 'random-detect') {
 	my $avg = 1024;
 	my $qmax = ( $rate * 100 ) / 8000;
-	if ($qlimit * $avg < $qmax) {
+	my $qlimit = $self->{_limit};
+	if (defined($qlimit) && $qlimit * $avg < $qmax) {
 	    print STDERR "Configuration error in: $level\n";
 	    printf STDERR
 "The queue limit (%d) is too small, must be greater than %d when using random-detect\n",
 		$level, $qmax / $avg;
 	    exit 1;
+	}
+
+	# The assumptions about average packet size and allowable latency
+	# result in limit on available bandwidth
+	#
+	# 2 * Avg pkt = (BW * Latency) / 8 bit/byte
+	# 16K bits = BW * .1 sec
+	if ($qmax < $avg) {
+	    print STDERR "Configuration error in: $level\n";
+	    die 
+"Random-detect queue type requires effective bandwidth of 160 Kbit/sec or greater\n";
 	}
     }
 }
