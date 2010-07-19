@@ -3,4 +3,4 @@ help: Ordering for rule evaluation
 default: 20
 syntax:expression: $VAR(@) >= 0 && $VAR(@) <= 255 ; \
 		   "precedence must be between 0 and 255"
-val_help:<0-255>; Rule evaluation order
+val_help: u32:0-255; Rule evaluation order

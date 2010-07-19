@@ -3,4 +3,4 @@ type: u32
 help: IP precedence
 syntax:expression: $VAR(@) >= 0 && $VAR(@) <= 7; \
 	           "IP precedence value must be between 0 and 7"
-val_help:<0-7>; IP precedence value
+val_help: u32:0-7; IP precedence value

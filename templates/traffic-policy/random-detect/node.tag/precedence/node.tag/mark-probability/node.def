@@ -1,4 +1,4 @@
 type: u32
 help: Mark probability for this precedence
 syntax:expression: $VAR(@) > 0 ; "Mark probability must be greater than 0"
-val_help:<number>; Numeric value ( 1 / N )
+val_help: <number>; Numeric value ( 1 / N )

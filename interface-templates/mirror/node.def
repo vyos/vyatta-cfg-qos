@@ -1,9 +1,10 @@
 type: txt
-help: Set incoming packet mirroring destination
+help: Incoming packet mirroring destination
 allowed: ${vyatta_sbindir}/vyatta-interfaces.pl --show=ethernet
 
 syntax:expression: $VAR(@) != $VAR(../@) ;\
 	 "interface $VAR(../@): mirroring to same interface not allowed"
+val_help: Interface for packet mirroring
 
 syntax:expression: exec "/opt/vyatta/sbin/vyatta-interfaces.pl --dev $VAR(@) --check=all"
 

@@ -3,6 +3,6 @@ default: "drop-tail"
 syntax:expression: $VAR(@) in "fair-queue", "priority", "drop-tail"; \
                    "Unknown queue-type"
 help: Queue type for this class
-val_help:fair-queue; Stochastic Fair Queue (SFQ)
-val_help:drop-tail; First-In-First-Out (FIFO)
-val_help:priority; Priority queueing based on DSCP
+val_help: fair-queue; Stochastic Fair Queue (SFQ)
+val_help: drop-tail; First-In-First-Out (FIFO)
+val_help: priority; Priority queueing based on DSCP

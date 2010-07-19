@@ -1,5 +1,6 @@
 type: txt
 help: Traffic-limit used for this class [REQUIRED]
 syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --rate $VAR(@)"
-val_help:<number>; Rate in k (1000) bytes per second 
-val_help:<number><suffix>;  Rate with scaling suffix (mbit, mbps, ...)
+
+val_help: <number>; Rate in k (1000) bytes per second 
+val_help: <number><suffix>;  Rate with scaling suffix (mbit, mbps, ...)

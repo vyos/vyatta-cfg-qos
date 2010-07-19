@@ -3,6 +3,6 @@ help: Available bandwidth for this policy
 default: "auto"
 syntax:expression: $VAR(@) == "auto" || \
 		   exec "/opt/vyatta/sbin/vyatta-qos-util.pl --rate $VAR(@)"
-val_help:auto; Rate based on interface speed (default)
-val_help:<number>; Rate in k (1000) bytes per second 
-val_help:<number><suffix>;  Rate with scaling suffix (mbit, mbps, ...)
+val_help: auto; Rate based on interface speed (default)
+val_help: <number>; Rate in k (1000) bytes per second 
+val_help: <number><suffix>;  Rate with scaling suffix (mbit, mbps, ...)
