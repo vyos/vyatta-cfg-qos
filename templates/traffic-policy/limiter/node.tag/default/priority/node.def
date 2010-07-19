@@ -4,4 +4,5 @@ default: 20
 syntax:expression: $VAR(@) >= 0 && $VAR(@) <= 20 ; \
 		   "priority must be between 0 and 20"
 help: Priority for rule evaluation
-val_help:<0-20>; Rule evaluation order
+
+val_help: u32:0-20; Rule evaluation order

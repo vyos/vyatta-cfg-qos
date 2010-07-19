@@ -1,6 +1,6 @@
 type: txt
 help: IPv6 source port for this match
 
-val_help: u32:1-65535>; Numeric IP port
+val_help: u32:1-65535; Numeric IP port
 val_help: txt; Assigned IP port name
 

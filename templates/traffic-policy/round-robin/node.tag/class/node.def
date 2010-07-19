@@ -3,4 +3,4 @@ type: u32
 help: Class handle
 syntax:expression: $VAR(@) > 1 && $VAR(@) <= 4095; \
                   "Class identifier must be between 3 and 4095"
-val_help:<1-4095>; Class identifier
+val_help: u32:1-4095; Class identifier
