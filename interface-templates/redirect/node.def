@@ -1,9 +1,10 @@
 type: txt
-help: Set incoming packet redirection destination
+help: Incoming packet redirection destination
 allowed: /opt/vyatta/sbin/vyatta-interfaces.pl --show=input
 
 syntax:expression: $VAR(@) != $VAR(../@) ;\
 	 "interface $VAR(../@): redirect to same interface not allowed"
+val_help: Interface for packet redirection
 
 syntax:expression: exec "/opt/vyatta/sbin/vyatta-interfaces.pl --dev $VAR(@) --check=all"
 
