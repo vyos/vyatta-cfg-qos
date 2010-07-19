@@ -116,6 +116,19 @@ sub rateCheck {
           $rate / 1000;
         exit 1;
     }
+
+    my $qlimit = $self->{_limit};
+    if (defined($qlimit) && $self->{_qdisc} eq 'random-detect') {
+	my $avg = 1024;
+	my $qmax = ( $rate * 100 ) / 8000;
+	if ($qlimit * $avg < $qmax) {
+	    print STDERR "Configuration error in: $level\n";
+	    printf STDERR
+"The queue limit (%d) is too small, must be greater than %d when using random-detect\n",
+		$level, $qmax / $avg;
+	    exit 1;
+	}
+    }
 }
 
 sub prioQdisc {
@@ -171,6 +184,8 @@ sub redQdisc {
     my $avg = 1024;
     my $qmax = (defined $rate) ? (( $rate * 100 ) / 8000) : (18 * $avg);
     my $qmin = $qmax / 3;
+    $qmin = $avg if $qmin < $avg;
+
     my $burst = ( 2 * $qmin + $qmax ) / (3 * $avg);
     my $limit = $self->{_limit};
     my $qlimit = (defined $limit) ? ($limit * $avg) : (4 * $qmax);
