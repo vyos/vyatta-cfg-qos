@@ -1,3 +1,12 @@
+vyatta-cfg-qos (0.15.2) unstable; urgency=low
+
+  * Eliminate verb from genereated interface template
+  * Cleanup usage of val_help:
+  * Add sanity checks for shaper random-detect queue type
+  * Add check for random-detect on slow speed class
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Mon, 19 Jul 2010 16:15:03 -0700
+
 vyatta-cfg-qos (0.15.1) unstable; urgency=low
 
   * Remove verb from help string text
