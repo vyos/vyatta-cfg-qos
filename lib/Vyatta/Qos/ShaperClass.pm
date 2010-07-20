@@ -78,7 +78,7 @@ sub matchRules {
 
 sub _getPercentRate {
     my ( $rate, $speed ) = @_;
-    return unless $rate;    # no rate defined;
+    return unless defined $rate;
 
     # Rate might be a percentage of speed
     if ( $rate =~ /%$/ ) {
@@ -87,13 +87,10 @@ sub _getPercentRate {
             die "Invalid percentage bandwidth: $percent\n";
         }
 
-        $rate = ( $percent * $speed ) / 100.;
-    }
-    else {
-        $rate = getRate($rate);
-    }
+        return ( $percent * $speed ) / 100.;
+    } 
 
-    return $rate;
+    return getRate($rate);
 }
 
 sub prioQdisc {
@@ -223,7 +220,7 @@ sub rateCheck {
     }
 
     my $ceil = _getPercentRate( $self->{_ceiling}, $ifspeed );
-    if ( defined $ceil && $ceil < $rate ) {
+    if ( defined($ceil) && $ceil < $rate ) {
         print STDERR "Configuration error in: $level\n";
         printf STDERR
 "The bandwidth ceiling for this class (%dKbps) must be greater or equal to\n",

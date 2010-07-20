@@ -14,7 +14,6 @@
 # Portions created by Vyatta are Copyright (C) 2008 Vyatta, Inc.
 # All Rights Reserved.
 # **** End License ****
-
 package Vyatta::Qos::Util;
 use strict;
 use warnings;
@@ -27,7 +26,7 @@ use base qw(Exporter);
 sub get_num {
     use POSIX qw(strtod);
     my ($str) = @_;
-    return unless $str;
+    return unless defined($str);
 
     # remove leading/trailing spaces
     $str =~ s/^\s+//;
@@ -88,10 +87,10 @@ sub getAutoRate {
 
 sub getRate {
     my $rate = shift;
-    $rate or die "Rate not defined";
+    defined $rate
+      or die "Rate not defined";
 
     my ( $num, $suffix ) = get_num($rate);
-
     defined $num
       or die "$rate is not a valid bandwidth (not a number)\n";
     ( $num >= 0 )
