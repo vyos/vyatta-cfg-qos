@@ -23,6 +23,10 @@ require Vyatta::Config;
 use Vyatta::Qos::Match;
 use Vyatta::Qos::Util qw/getDsfield getRate/;
 
+use constant {
+    AVGPKT	=> 1024,  # Average packet size for RED calculations
+    LATENCY	=>  250,  # Worstcase latency for RED (ms)
+};
 
 sub new {
     my ( $that, $config, $id ) = @_;
@@ -117,27 +121,24 @@ sub rateCheck {
         exit 1;
     }
 
+    my $qlimit = $self->{_limit};
     if ($self->{_qdisc} eq 'random-detect') {
-	my $avg = 1024;
-	my $qmax = ( $rate * 100 ) / 8000;
-	my $qlimit = $self->{_limit};
-	if (defined($qlimit) && $qlimit * $avg < $qmax) {
+	my $qmax = redQsize($rate);
+	if (defined($qlimit) && $qlimit * AVGPKT < $qmax) {
 	    print STDERR "Configuration error in: $level\n";
 	    printf STDERR
 "The queue limit (%d) is too small, must be greater than %d when using random-detect\n",
-		$level, $qmax / $avg;
+		$level, $qmax / AVGPKT;
 	    exit 1;
 	}
 
-	# The assumptions about average packet size and allowable latency
-	# result in limit on available bandwidth
-	#
-	# 2 * Avg pkt = (BW * Latency) / 8 bit/byte
-	# 16K bits = BW * .1 sec
-	if ($qmax < $avg) {
+	if ($qmax < 3 * AVGPKT) {
+	    my $minbw = (3 * AVGPKT * 8) / LATENCY;
+
 	    print STDERR "Configuration error in: $level\n";
 	    die 
-"Random-detect queue type requires effective bandwidth of 160 Kbit/sec or greater\n";
+"Random-detect queue type requires effective bandwidth of %d Kbit/sec or greater\n",
+		$minbw;
 	}
     }
 }
@@ -189,19 +190,24 @@ sub fifoQdisc {
 #
 # These are based on Sally Floyd's recommendations:
 #  http://www.icir.org/floyd/REDparameters.txt
-#
+sub redQsize {
+    my $bw = shift;
+    
+    return ($bw * LATENCY) / (8 * 1000);
+} 
+
 sub redQdisc {
     my ( $self, $dev, $rate ) = @_;
-    my $avg = 1024;
-    my $qmax = (defined $rate) ? (( $rate * 100 ) / 8000) : (18 * $avg);
+    my $qmax = (defined $rate) ? redQsize( $rate ) : (18 * AVGPKT);
     my $qmin = $qmax / 3;
-    $qmin = $avg if $qmin < $avg;
+    $qmin = AVGPKT if $qmin < AVGPKT;
 
-    my $burst = ( 2 * $qmin + $qmax ) / (3 * $avg);
+    my $burst = ( 2 * $qmin + $qmax ) / (3 * AVGPKT);
     my $limit = $self->{_limit};
-    my $qlimit = (defined $limit) ? ($limit * $avg) : (4 * $qmax);
+    my $qlimit = (defined $limit) ? ($limit * AVGPKT) : (4 * $qmax);
 
-    printf "red limit %d min %d max %d avpkt %d", $qlimit, $qmin, $qmax, $avg;
+    printf "red limit %d min %d max %d avpkt %d",
+    	$qlimit, $qmin, $qmax, AVGPKT;
     printf " burst %d probability 0.1 bandwidth %s ecn\n", $burst, $rate;
 }
 
