@@ -26,14 +26,32 @@ require Vyatta::Qos::ShaperClass;
 # Create a new instance based on config information
 sub new {
     my ( $that, $config, $name ) = @_;
-
     my @classes = _getClasses( $config->setLevel() );
+
+    _checkClasses( @classes );
+
     my $self    = {};
     my $class   = ref($that) || $that;
     bless $self, $class;
     $self->{_classes} = \@classes;
 
     return $self;
+}
+
+# Check constraints on sub queues
+sub _checkClasses {
+    my $level   = shift;
+
+    foreach my $class (@_) {
+	my $level = $class->{level};
+	my $qtype = $class->{_qdisc};
+	my $qlimit = $class->{_limit};
+
+	if ($qtype eq 'random-detect' && defined($qlimit) && $qlimit >= 128) {
+	    print STDERR "Configuration error in: $level\n";
+	    die "queue limit must be between 1 and 127 for random-detect\n";
+	}
+    }
 }
 
 sub _getClasses {

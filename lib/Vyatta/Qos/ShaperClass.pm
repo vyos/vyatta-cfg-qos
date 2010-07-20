@@ -96,53 +96,6 @@ sub _getPercentRate {
     return $rate;
 }
 
-sub rateCheck {
-    my ( $self, $limit, $level ) = @_;
-
-    my $rate = _getPercentRate( $self->{_rate}, $limit );
-    if ( $rate > $limit ) {
-        print STDERR "Configuration error in: $level\n";
-        printf STDERR
-          "The bandwidth reserved for this class (%dKbps) must be less than\n",
-          $rate / 1000;
-        printf STDERR "the bandwidth for the overall policy (%dKbps)\n",
-          $limit / 1000;
-        exit 1;
-    }
-
-    my $ceil = _getPercentRate( $self->{_ceiling}, $limit );
-    if ( defined $ceil && $ceil < $rate ) {
-        print STDERR "Configuration error in: $level\n";
-        printf STDERR
-"The bandwidth ceiling for this class (%dKbps) must be greater or equal to\n",
-          $ceil / 1000;
-        printf STDERR "the reserved bandwidth for the class (%dKbps)\n",
-          $rate / 1000;
-        exit 1;
-    }
-
-    my $qlimit = $self->{_limit};
-    if ( $self->{_qdisc} eq 'random-detect' ) {
-        my $qmax = redQsize($rate);
-        if ( defined($qlimit) && $qlimit * AVGPKT < $qmax ) {
-            print STDERR "Configuration error in: $level\n";
-            printf STDERR
-"The queue limit (%d) is too small, must be greater than %d when using random-detect\n",
-              $level, $qmax / AVGPKT;
-            exit 1;
-        }
-
-        if ( $qmax < 3 * AVGPKT ) {
-            my $minbw = ( 3 * AVGPKT * 8 ) / LATENCY;
-
-            print STDERR "Configuration error in: $level\n";
-            die
-"Random-detect queue type requires effective bandwidth of %d Kbit/sec or greater\n",
-              $minbw;
-        }
-    }
-}
-
 sub prioQdisc {
     my ( $self, $dev, $rate ) = @_;
     my $prio_id = 0x4000 + $self->{id};
@@ -164,6 +117,16 @@ sub sfqQdisc {
     print "sfq";
     print " limit $self->{_limit}" if ( $self->{_limit} );
     print "\n";
+}
+
+sub sfqValidate {
+    my ( $self, $level ) = @_;
+    my $limit = $self->{_limit};
+
+    if ( defined $limit && $limit > 127 ) {
+        print STDERR "Configuration error in: $level\n";
+        die "queue limit must be between 1 and 127 for random-detect\n";
+    }
 }
 
 sub fifoQdisc {
@@ -210,12 +173,72 @@ sub redQdisc {
     printf " burst %d probability 0.1 bandwidth %s ecn\n", $burst, $rate;
 }
 
+sub redValidate {
+    my ( $self, $level, $rate ) = @_;
+    my $limit = $self->{_limit};
+    my $qmax  = redQsize($rate);
+
+    if ( defined($limit) && $limit * AVGPKT < $qmax ) {
+        print STDERR "Configuration error in: $level\n";
+        printf STDERR
+"The queue limit (%d) is too small, must be greater than %d when using random-detect\n",
+          $level, $qmax / AVGPKT;
+        exit 1;
+    }
+
+    if ( $qmax < 3 * AVGPKT ) {
+        my $minbw = ( 3 * AVGPKT * 8 ) / LATENCY;
+
+        print STDERR "Configuration error in: $level\n";
+        die
+"Random-detect queue type requires effective bandwidth of %d Kbit/sec or greater\n",
+          $minbw;
+    }
+}
+
 my %qdiscOptions = (
     'priority'      => \&prioQdisc,
     'fair-queue'    => \&sfqQdisc,
     'random-detect' => \&redQdisc,
     'drop-tail'     => \&fifoQdisc,
 );
+
+my %qdiscValidate = (
+    'fair-queue'    => \&sfqValidate,
+    'random-detect' => \&redValidate,
+);
+
+sub rateCheck {
+    my ( $self, $ifspeed, $level ) = @_;
+
+    my $rate = _getPercentRate( $self->{_rate}, $ifspeed );
+    if ( $rate > $ifspeed ) {
+        print STDERR "Configuration error in: $level\n";
+        printf STDERR
+          "The bandwidth reserved for this class (%dKbps) must be less than\n",
+          $rate / 1000;
+        printf STDERR "the bandwidth for the overall policy (%dKbps)\n",
+          $ifspeed / 1000;
+        exit 1;
+    }
+
+    my $ceil = _getPercentRate( $self->{_ceiling}, $ifspeed );
+    if ( defined $ceil && $ceil < $rate ) {
+        print STDERR "Configuration error in: $level\n";
+        printf STDERR
+"The bandwidth ceiling for this class (%dKbps) must be greater or equal to\n",
+          $ceil / 1000;
+        printf STDERR "the reserved bandwidth for the class (%dKbps)\n",
+          $rate / 1000;
+        exit 1;
+    }
+
+    my $qtype = $self->{_qdisc};
+    my $q     = $qdiscValidate{$qtype};
+    return unless $q;
+
+    $q->( $self, $level, $rate );
+}
 
 sub get_rate {
     my ( $self, $speed ) = @_;
