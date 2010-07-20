@@ -173,13 +173,13 @@ sub redQdisc {
 sub redValidate {
     my ( $self, $level, $rate ) = @_;
     my $limit = $self->{_limit};
-    my $qmax  = redQsize($rate);
+    my $qmax  = int((redQsize($rate) + AVGPKT - 1) / AVGPKT);
 
-    if ( defined($limit) && $limit * AVGPKT < $qmax ) {
+    if ( defined($limit) && $limit < $qmax ) {
         print STDERR "Configuration error in: $level\n";
         printf STDERR
-"The queue limit (%d) is too small, must be greater than %d when using random-detect\n",
-          $level, $qmax / AVGPKT;
+"The queue limit (%d) is too small, must be %d or more when using random-detect\n",
+	    $limit, $qmax;
         exit 1;
     }
 
