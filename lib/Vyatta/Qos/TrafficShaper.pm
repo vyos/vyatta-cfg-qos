@@ -68,18 +68,18 @@ sub _getClasses {
 
 # Check constraints on class bandwidth values
 sub _checkClasses {
-    my $level = shift;
-    my $rate = shift;
+    my $level   = shift;
+    my $rate    = shift;
     my $default = shift;
-    
+
     # if auto, can't check for constraints until later
-    $rate = ( $rate eq "auto") ? undef : getRate($rate);
+    $rate = ( $rate eq "auto" ) ? undef : getRate($rate);
     die "Bandwidth not defined for default traffic\n"
-	unless $default->{_rate};
+      unless $default->{_rate};
     $default->rateCheck( $rate, "$level default" ) if $rate;
 
     foreach my $class (@_) {
-	die "$class->{level} bandwidth not defined\n" unless $class->{_rate};
+        die "$class->{level} bandwidth not defined\n" unless $class->{_rate};
         $class->rateCheck( $rate, "$level class $class->{id}" ) if $rate;
     }
 }
@@ -151,10 +151,10 @@ sub commands {
         $class->gen_class( $dev, 'htb', $parent, $rate );
         $class->gen_leaf( $dev, $parent, $rate );
 
-	my $prio = 1;
+        my $prio = 1;
         foreach my $match ( $class->matchRules() ) {
-            $match->filter( $dev, $parent, $class->{id}, 
-			    $prio++, $class->{dsmark} );
+            $match->filter( $dev, $parent, $class->{id}, $prio++,
+                $class->{dsmark} );
         }
     }
 }

@@ -79,8 +79,7 @@ sub getAutoRate {
               "Interface $dev speed cannot be determined (assuming 10mbit)\n";
             $rate = 10000000;
         }
-    }
-    else {
+    } else {
         $rate = getRate($rate);
     }
 
@@ -106,8 +105,7 @@ sub getRate {
         }
 
         die "$rate is not a valid bandwidth (unknown scale suffix)\n";
-    }
-    else {
+    } else {
 
         # No suffix implies Kbps just as IOS
         return $num * 1000;
@@ -118,16 +116,16 @@ sub getPercent {
     my $percent = shift;
     my ( $num, $suffix ) = get_num($percent);
 
-    if (defined $suffix && $suffix ne '%' ) {
-	die "$percent incorrect suffix (expect %)\n";
-    } elsif (! defined $num) {
-	die "$percent is not a valid percent (not a number)\n";
+    if ( defined $suffix && $suffix ne '%' ) {
+        die "$percent incorrect suffix (expect %)\n";
+    } elsif ( !defined $num ) {
+        die "$percent is not a valid percent (not a number)\n";
     } elsif ( $num < 0 ) {
-	die "$percent is not a acceptable percent (negative value)\n";
+        die "$percent is not a acceptable percent (negative value)\n";
     } elsif ( $num > 100 ) {
-	die "$percent is not a acceptable percent (greater than 100%)\n";
+        die "$percent is not a acceptable percent (greater than 100%)\n";
     } else {
-	return $num;
+        return $num;
     }
 }
 
@@ -153,20 +151,13 @@ sub getTime {
     ( $num >= 0 )
       or die "$time is not a valid time interval (negative value)\n";
 
-    if ( defined $suffix ) {
-        my $scale = $timeunits{ lc $suffix };
+    return $num * 1000 unless $suffix; # No suffix implies ms
 
-        if ( defined $scale ) {
-            return $num * $scale;
-        }
+    my $scale = $timeunits{ lc $suffix };
+    die "$time is not a valid time interval (unknown suffix)\n"
+	unless $scale;
 
-        die "$time is not a valid time interval (unknown suffix)\n";
-    }
-    else {
-
-        # No suffix implies ms
-        return $num * 1000;
-    }
+    return $num * $scale;
 }
 
 my %scales = (
@@ -191,14 +182,13 @@ sub getBurstSize {
     ( $num >= 0 )
       or die "$size is not a valid burst size (negative value)\n";
 
-    if ( defined $suffix ) {
-        my $scale = $scales{ lc $suffix };
-        defined $scale
-          or die "$size is not a valid burst size (unknown scale suffix)\n";
-        $num *= $scale;
-    }
+    return $num unless $suffix;
 
-    return $num;
+    my $scale = $scales{ lc $suffix };
+    defined $scale
+	or die "$size is not a valid burst size (unknown scale suffix)\n";
+
+    return $num * $scale;
 }
 
 sub getProtocol {
@@ -214,9 +204,9 @@ sub getProtocol {
 
     my ( $name, $aliases, $proto ) = getprotobyname($str);
     die "\"$str\" unknown protocol\n"
-	unless $proto;
+      unless $proto;
     die "$name is not usable as an IP protocol match\n"
-	if ($proto == 0);
+      if ( $proto == 0 );
 
     return $proto;
 }

@@ -24,35 +24,35 @@ use Vyatta::Qos::Match;
 use Vyatta::Qos::Util qw/getDsfield getRate/;
 
 use constant {
-    AVGPKT	=> 1024,  # Average packet size for RED calculations
-    LATENCY	=>  250,  # Worstcase latency for RED (ms)
+    AVGPKT  => 1024,    # Average packet size for RED calculations
+    LATENCY => 250,     # Worstcase latency for RED (ms)
 };
 
 sub new {
     my ( $that, $config, $id ) = @_;
-    my $class   = ref($that) || $that;
-    my $self    = { };
+    my $class = ref($that) || $that;
+    my $self = {};
 
     $self->{id} = $id;
 
     bless $self, $class;
-    
+
     if ($config) {
-	my $level   = $config->setLevel();
+        my $level = $config->setLevel();
 
-	$self->{level}     = $level;
-	$self->{_rate}     = $config->returnValue("bandwidth");
-	$self->{_priority} = $config->returnValue("priority");
-	$self->{_ceiling}  = $config->returnValue("ceiling");
-	$self->{_burst}    = $config->returnValue("burst");
-	$self->{_limit}    = $config->returnValue("queue-limit");
-	$self->{_qdisc}    = $config->returnValue("queue-type");
-	$self->{_avgpkt}   = $config->returnValue("packet-length");
-	$self->{_latency}  = $config->returnValue("latency");
+        $self->{level}     = $level;
+        $self->{_rate}     = $config->returnValue("bandwidth");
+        $self->{_priority} = $config->returnValue("priority");
+        $self->{_ceiling}  = $config->returnValue("ceiling");
+        $self->{_burst}    = $config->returnValue("burst");
+        $self->{_limit}    = $config->returnValue("queue-limit");
+        $self->{_qdisc}    = $config->returnValue("queue-type");
+        $self->{_avgpkt}   = $config->returnValue("packet-length");
+        $self->{_latency}  = $config->returnValue("latency");
 
-	$self->{dsmark} = getDsfield( $config->returnValue("set-dscp") );
-	my @matches = _getMatch("$level match");
-	$self->{_match} = \@matches;
+        $self->{dsmark} = getDsfield( $config->returnValue("set-dscp") );
+        my @matches = _getMatch("$level match");
+        $self->{_match} = \@matches;
     }
 
     return $self;
@@ -78,7 +78,7 @@ sub matchRules {
 
 sub _getPercentRate {
     my ( $rate, $speed ) = @_;
-    return unless $rate;	# no rate defined;
+    return unless $rate;    # no rate defined;
 
     # Rate might be a percentage of speed
     if ( $rate =~ /%$/ ) {
@@ -122,24 +122,24 @@ sub rateCheck {
     }
 
     my $qlimit = $self->{_limit};
-    if ($self->{_qdisc} eq 'random-detect') {
-	my $qmax = redQsize($rate);
-	if (defined($qlimit) && $qlimit * AVGPKT < $qmax) {
-	    print STDERR "Configuration error in: $level\n";
-	    printf STDERR
+    if ( $self->{_qdisc} eq 'random-detect' ) {
+        my $qmax = redQsize($rate);
+        if ( defined($qlimit) && $qlimit * AVGPKT < $qmax ) {
+            print STDERR "Configuration error in: $level\n";
+            printf STDERR
 "The queue limit (%d) is too small, must be greater than %d when using random-detect\n",
-		$level, $qmax / AVGPKT;
-	    exit 1;
-	}
+              $level, $qmax / AVGPKT;
+            exit 1;
+        }
 
-	if ($qmax < 3 * AVGPKT) {
-	    my $minbw = (3 * AVGPKT * 8) / LATENCY;
+        if ( $qmax < 3 * AVGPKT ) {
+            my $minbw = ( 3 * AVGPKT * 8 ) / LATENCY;
 
-	    print STDERR "Configuration error in: $level\n";
-	    die 
+            print STDERR "Configuration error in: $level\n";
+            die
 "Random-detect queue type requires effective bandwidth of %d Kbit/sec or greater\n",
-		$minbw;
-	}
+              $minbw;
+        }
     }
 }
 
@@ -180,7 +180,7 @@ sub fifoQdisc {
 #   latency      = 100ms
 #
 #                       Bandwidth (bits/sec) * Latency (ms)
-# Maximum Threshold = -------------------------------------- 
+# Maximum Threshold = --------------------------------------
 #   (bytes)                   8 bits/byte *  1000 ms/sec
 #
 # Minimum Threshold = Maximum Threshold / 3
@@ -192,22 +192,21 @@ sub fifoQdisc {
 #  http://www.icir.org/floyd/REDparameters.txt
 sub redQsize {
     my $bw = shift;
-    
-    return ($bw * LATENCY) / (8 * 1000);
-} 
+
+    return ( $bw * LATENCY ) / ( 8 * 1000 );
+}
 
 sub redQdisc {
     my ( $self, $dev, $rate ) = @_;
-    my $qmax = (defined $rate) ? redQsize( $rate ) : (18 * AVGPKT);
+    my $qmax = ( defined $rate ) ? redQsize($rate) : ( 18 * AVGPKT );
     my $qmin = $qmax / 3;
     $qmin = AVGPKT if $qmin < AVGPKT;
 
-    my $burst = ( 2 * $qmin + $qmax ) / (3 * AVGPKT);
-    my $limit = $self->{_limit};
-    my $qlimit = (defined $limit) ? ($limit * AVGPKT) : (4 * $qmax);
+    my $burst  = ( 2 * $qmin + $qmax ) / ( 3 * AVGPKT );
+    my $limit  = $self->{_limit};
+    my $qlimit = ( defined $limit ) ? ( $limit * AVGPKT ) : ( 4 * $qmax );
 
-    printf "red limit %d min %d max %d avpkt %d",
-    	$qlimit, $qmin, $qmax, AVGPKT;
+    printf "red limit %d min %d max %d avpkt %d", $qlimit, $qmin, $qmax, AVGPKT;
     printf " burst %d probability 0.1 bandwidth %s ecn\n", $burst, $rate;
 }
 
@@ -219,7 +218,7 @@ my %qdiscOptions = (
 );
 
 sub get_rate {
-    my ($self, $speed) = @_;
+    my ( $self, $speed ) = @_;
 
     return _getPercentRate( $self->{_rate}, $speed );
 }
@@ -242,11 +241,11 @@ sub gen_class {
 sub gen_leaf {
     my ( $self, $dev, $parent, $rate ) = @_;
     my $qtype = $self->{_qdisc};
-    return unless $qtype;	# default is okay
+    return unless $qtype;    # default is okay
 
     my $q = $qdiscOptions{$qtype};
     die "Unknown queue-type $qtype\n"
-	unless $q;
+      unless $q;
 
     printf "qdisc add dev %s parent %x:%x ", $dev, $parent, $self->{id};
     $q->( $self, $dev, $rate );

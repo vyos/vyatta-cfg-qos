@@ -53,8 +53,9 @@ sub _define {
     my %matchTypes = ();
     foreach my $class ( $config->listNodes("class") ) {
         foreach my $match ( $config->listNodes("class $class match") ) {
-            foreach my $type ( $config->listNodes("class $class match $match") ) {
-		next if ($type eq 'description');
+            foreach my $type ( $config->listNodes("class $class match $match") )
+            {
+                next if ( $type eq 'description' );
                 $matchTypes{$type} = "$class match $match";
             }
         }
@@ -68,8 +69,8 @@ sub _define {
         die "$level can not match on both ip and other types\n";
     }
 
-    if ($config->exists('default')) {
-	$config->setLevel("$level default");
+    if ( $config->exists('default') ) {
+        $config->setLevel("$level default");
         push @classes, new Vyatta::Qos::LimiterClass( $config, 0 );
     }
 
@@ -86,31 +87,34 @@ sub commands {
     my $parent;
 
     die "traffic-policy limiter only applies for incoming traffic\n"
-	unless ($direction eq 'in');
+      unless ( $direction eq 'in' );
 
-    $parent  = 0xffff;
+    $parent = 0xffff;
     printf "qdisc add dev %s handle %x: ingress\n", $dev, $parent;
 
     # find largest class id (to use for default)
     my $maxid = 0;
     foreach my $class (@$classes) {
-	my $id = $class->{id};
-	$maxid = $id if ($id > $maxid);
+        my $id = $class->{id};
+        $maxid = $id if ( $id > $maxid );
     }
 
     foreach my $class (@$classes) {
         foreach my $match ( $class->matchRules() ) {
-	    my $id = $class->{id};
-	    $id = $maxid + 1 if ($id == 0);
+            my $id = $class->{id};
+            $id = $maxid + 1 if ( $id == 0 );
 
-	    my $police = " police rate " . $class->{rate}
-	    	. " action drop burst " . $class->{burst};
+            my $police =
+                " police rate "
+              . $class->{rate}
+              . " action drop burst "
+              . $class->{burst};
 
-	    $match->filter( $dev, $parent, $id, $class->{priority}, 
-			    undef, $police );
+            $match->filter( $dev, $parent, $id, $class->{priority}, undef,
+                $police );
         }
     }
-    
+
 }
 
 1;
