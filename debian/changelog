@@ -1,3 +1,10 @@
+vyatta-cfg-qos (0.15.4) unstable; urgency=low
+
+  * Fix random-detect queue to small message
+  * Fix message when random-detect bandwidth is too low
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Tue, 20 Jul 2010 15:20:29 -0700
+
 vyatta-cfg-qos (0.15.3) unstable; urgency=low
 
   * Expose RED values as constant
