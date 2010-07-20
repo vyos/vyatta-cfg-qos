@@ -187,9 +187,10 @@ sub redValidate {
         my $minbw = ( 3 * AVGPKT * 8 ) / LATENCY;
 
         print STDERR "Configuration error in: $level\n";
-        die
+	printf STDERR
 "Random-detect queue type requires effective bandwidth of %d Kbit/sec or greater\n",
           $minbw;
+	exit 1;
     }
 }
 
