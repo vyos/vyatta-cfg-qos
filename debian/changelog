@@ -1,3 +1,12 @@
+vyatta-cfg-qos (0.15.3) unstable; urgency=low
+
+  * Expose RED values as constant
+  * Use perltidy to cleanup indentation
+  * Allow larger queue size for sub-queues in Shaper and RoundRobin
+  * Validate shaper class ceiling
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Tue, 20 Jul 2010 15:03:39 -0700
+
 vyatta-cfg-qos (0.15.2) unstable; urgency=low
 
   * Eliminate verb from genereated interface template
