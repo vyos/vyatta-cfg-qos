@@ -105,8 +105,8 @@ sub filter {
             my $ip = $self->{$ipver};
             next unless $ip && $$ip{dsfield};
 
-            printf "filter add dev %s parent %x: protocol %s prio $prio",
-              $dev, $parent, $ipver;
+            printf "filter add dev %s parent %x: protocol %s prio %d",
+	      $dev, $parent, $ipver, $prio;
             printf " handle %s tcindex classid %x:%x\n",
               $$ip{dsfield}, $parent, $classid;
 
