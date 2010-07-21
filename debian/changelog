@@ -1,3 +1,11 @@
+vyatta-cfg-qos (0.15.6) unstable; urgency=low
+
+  * Remove 'limiter default priority'
+  * Fix formatting of default filter rule
+  * Fix traffic-limiter class management
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Wed, 21 Jul 2010 14:58:43 -0700
+
 vyatta-cfg-qos (0.15.5) unstable; urgency=low
 
   * Fix setting of actions on boot
