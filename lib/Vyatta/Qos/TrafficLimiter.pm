@@ -110,7 +110,7 @@ sub commands {
 	    # Null filter for default rule
 	    printf "filter add dev %s parent %x: prio %d", $dev, $parent, 255;
 	    print  " protocol all basic";
-	    print " %s flowid %x:%x\n", $police, $parent, $id;
+	    printf " %s flowid %x:%x\n", $police, $parent, $id;
 	} else {
 	    foreach my $match ( $class->matchRules() ) {
 		$match->filter( $dev, $parent, $id, $class->{priority}, undef,
