@@ -6,13 +6,14 @@ syntax:expression: $VAR(@) != $VAR(../@) ;\
 	 "interface $VAR(../@): mirroring to same interface not allowed"
 val_help: Interface for packet mirroring
 
-syntax:expression: exec "/opt/vyatta/sbin/vyatta-interfaces.pl --dev $VAR(@) --check=all"
-
 commit:expression: $VAR(../redirect) == ""; \
 		   "interface $VAR(../@) : can not redirect and mirror on $IFNAME"
 
 commit:expression: $VAR(../traffic-policy/in) == ""; \
 		   "interface $VAR(../@) : can not use ingress policy and mirror on $IFNAME"
+
+commit:expression: exec "/opt/vyatta/sbin/vyatta-interfaces.pl --dev $VAR(@) --check=all"
+
 
 update: /opt/vyatta/sbin/vyatta-qos.pl --update-action $IFNAME
 delete: /opt/vyatta/sbin/vyatta-qos.pl --delete-action $IFNAME
