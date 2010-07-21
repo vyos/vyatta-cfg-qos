@@ -1,3 +1,15 @@
+vyatta-cfg-qos (0.15.5) unstable; urgency=low
+
+  * Fix setting of actions on boot
+  * Don't need sudo to run ethtool
+  * Remove sudo from tc commands
+  * Remove dependency on sudo
+  * Move redirect/mirror interface name tests to commit step
+  * Don't mix string with format in printf
+  * Fix default match rule
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Tue, 20 Jul 2010 18:34:28 -0700
+
 vyatta-cfg-qos (0.15.4) unstable; urgency=low
 
   * Fix random-detect queue to small message
