@@ -49,32 +49,13 @@ sub _define {
 
     $self->{_level} = $level;
 
-    # make sure no clash of different types of tc filters
-    my %matchTypes = ();
-    foreach my $class ( $config->listNodes("class") ) {
-        foreach my $match ( $config->listNodes("class $class match") ) {
-            foreach my $type ( $config->listNodes("class $class match $match") )
-            {
-                next if ( $type eq 'description' );
-                $matchTypes{$type} = "$class match $match";
-            }
-        }
-    }
-
-    if ( scalar keys %matchTypes > 1 && $matchTypes{ip} ) {
-        print "Match type conflict:\n";
-        while ( my ( $type, $usage ) = each(%matchTypes) ) {
-            print "   class $usage $type\n";
-        }
-        die "$level can not match on both ip and other types\n";
-    }
-
     if ( $config->exists('default') ) {
         $config->setLevel("$level default");
         push @classes, new Vyatta::Qos::LimiterClass( $config, 0 );
     }
 
-    foreach my $id ( $config->listNodes('class') ) {
+    $config->setLevel($level);
+    foreach my $id ( $config->listNodes("class") ) {
         $config->setLevel("$level class $id");
         push @classes, new Vyatta::Qos::LimiterClass( $config, $id );
     }
@@ -95,8 +76,8 @@ sub commands {
     # find largest class id (to use for default)
     my $maxid = 0;
     foreach my $class (@$classes) {
-        my $id = $class->{id};
-        $maxid = $id if ( $id > $maxid );
+	my $id = $class->{id};
+	$maxid = $id if ( $id > $maxid );
     }
 
     foreach my $class (@$classes) {
@@ -112,9 +93,9 @@ sub commands {
 	    print  " protocol all basic";
 	    printf " %s flowid %x:%x\n", $police, $parent, $id;
 	} else {
+	    my $prio = $class->{priority};
 	    foreach my $match ( $class->matchRules() ) {
-		$match->filter( $dev, $parent, $id, $class->{priority}, undef,
-				$police );
+		$match->filter( $dev, $parent, $id, $prio, undef, $police );
 	    }
 	}
     }
