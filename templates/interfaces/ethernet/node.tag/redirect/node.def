@@ -10,7 +10,7 @@ commit:expression: $VAR(../mirror) == "";\
 		   "interface $VAR(../@) : can not do both redirect and mirror"
 
 commit:expression: $VAR(../traffic-policy/in) == ""; \
-		   "interface $VAR(../@) : can not use ingress policy and redirect on $IFNAME"
+		   "interface $VAR(../@) : can not use ingress policy and redirect"
 
 commit:expression: exec "/opt/vyatta/sbin/vyatta-interfaces.pl --dev $VAR(@) --check=all"
 
