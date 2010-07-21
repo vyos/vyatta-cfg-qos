@@ -120,7 +120,7 @@ sub delete_interface {
 
     die "bad direction $direction\n" unless $arg;
     
-    my $cmd = "sudo tc qdisc del dev $interface ". $arg . " 2>/dev/null";
+    my $cmd = "/sbin/tc qdisc del dev $interface ". $arg . " 2>/dev/null";
 
     # ignore errors (may have no qdisc)
     system($cmd);
@@ -167,7 +167,7 @@ sub update_interface {
     my $out;
     unless ($debug) {
         open $out, '|-'
-          or exec qw:sudo /sbin/tc -batch -:
+          or exec qw:/sbin/tc -batch -:
           or die "Tc setup failed: $!\n";
 
 	select $out;
@@ -281,13 +281,13 @@ sub apply_action{
 	    if ($ingress);
 
 	# Clear existing ingress
-	system("sudo tc qdisc del dev $dev parent ffff: 2>/dev/null");
+	system("/sbin/tc qdisc del dev $dev parent ffff: 2>/dev/null");
 	
-	system("sudo tc qdisc add dev $dev handle ffff: ingress") == 0
+	system("/sbin/tc qdisc add dev $dev handle ffff: ingress") == 0
 	    or die "tc qdisc ingress failed";
 
 	my $cmd = 
-	    "sudo tc filter add dev $dev parent ffff:"
+	    "/sbin/tc filter add dev $dev parent ffff:"
 	    . " protocol all prio 10 u32" 
 	    . " match u32 0 0 flowid 1:1"
 	    . " action mirred egress $action dev $target";
@@ -299,13 +299,13 @@ sub apply_action{
     }
 
     # Drop what ever was there before...
-    system("sudo tc qdisc del dev $dev parent ffff: 2>/dev/null")
+    system("/sbin/tc qdisc del dev $dev parent ffff: 2>/dev/null")
 	unless($ingress);
 }
 
 sub delete_action {
     foreach my $dev (@_) {
-	system("sudo tc qdisc del dev $dev parent ffff: 2>/dev/null");
+	system("/sbin/tc qdisc del dev $dev parent ffff: 2>/dev/null");
     }
 }
 
