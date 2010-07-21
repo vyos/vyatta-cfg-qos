@@ -100,21 +100,24 @@ sub commands {
     }
 
     foreach my $class (@$classes) {
-        foreach my $match ( $class->matchRules() ) {
-            my $id = $class->{id};
-            $id = $maxid + 1 if ( $id == 0 );
+	my $id = $class->{id};
+	my $police = " police rate " . $class->{rate}
+		   . " action drop burst " . $class->{burst};
 
-            my $police =
-                " police rate "
-              . $class->{rate}
-              . " action drop burst "
-              . $class->{burst};
+	if ($id == 0) {
+	    $id = $maxid + 1;
 
-            $match->filter( $dev, $parent, $id, $class->{priority}, undef,
-                $police );
-        }
+	    # Null filter for default rule
+	    printf "filter add dev %s parent %x: prio %d", $dev, $parent, 255;
+	    print  " protocol all basic";
+	    print " %s flowid %x:%x\n", $police, $parent, $id;
+	} else {
+	    foreach my $match ( $class->matchRules() ) {
+		$match->filter( $dev, $parent, $id, $class->{priority}, undef,
+				$police );
+	    }
+	}
     }
-
 }
 
 1;
