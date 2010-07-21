@@ -303,6 +303,12 @@ sub apply_action{
 	unless($ingress);
 }
 
+sub delete_action {
+    foreach my $dev (@_) {
+	system("sudo tc qdisc del dev $dev parent ffff: 2>/dev/null");
+    }
+}
+
 sub usage {
     print <<EOF;
 usage: vyatta-qos.pl --list-policy direction
@@ -318,7 +324,8 @@ EOF
     exit 1;
 }
 
-my (@startList, @updateInterface, @deleteInterface, $updateAction);
+my (@startList, @updateInterface, @deleteInterface);
+my ($updateAction, $deleteAction);
 my ($listPolicy, @createPolicy, @applyPolicy, @deletePolicy);
 
 GetOptions(
@@ -332,7 +339,7 @@ GetOptions(
     "apply-policy=s"        => \@applyPolicy,
 
     "update-action=s"	    => \$updateAction,
-
+    "delete-action=s"	    => \$deleteAction,
 ) or usage();
 
 delete_interface(@deleteInterface) if ( @deleteInterface == 1);
@@ -345,3 +352,4 @@ delete_policy(@deletePolicy)       if ( @deletePolicy );
 apply_policy(@applyPolicy)         if ( @applyPolicy );
 
 update_action($updateAction)	   if ( $updateAction );
+delete_action($deleteAction)	   if ( $deleteAction );

@@ -14,4 +14,5 @@ commit:expression: $VAR(../mirror) == "";\
 commit:expression: $VAR(../traffic-policy/in) == ""; \
 		   "interface $VAR(../@) : can not use ingress policy and redirect on $IFNAME"
 
-end: /opt/vyatta/sbin/vyatta-qos.pl --update-action $IFNAME
+update: /opt/vyatta/sbin/vyatta-qos.pl --update-action $IFNAME
+delete: /opt/vyatta/sbin/vyatta-qos.pl --delete-action $IFNAME
