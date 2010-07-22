@@ -332,7 +332,7 @@ sub check_target {
     my $name= shift;
     my @inuse = interfaces_refer ( $name );
 
-    die "Can not delete interface $name, still being used by:",
+    die "Can not delete interface $name, still being used by: ",
        join(', ', @inuse), "\n" if @inuse;
 
 }
