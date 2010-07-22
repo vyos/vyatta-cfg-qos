@@ -36,7 +36,7 @@ my %policies = (
 	'priority-queue'   => 'Priority',
 	'random-detect'    => 'RandomDetect',
     },
-    'in' => { 
+    'in' => {
 	'limiter' => 'TrafficLimiter',
     }
 );
@@ -119,7 +119,7 @@ sub delete_interface {
     my $arg = $delcmd{$direction};
 
     die "bad direction $direction\n" unless $arg;
-    
+
     my $cmd = "/sbin/tc qdisc del dev $interface ". $arg . " 2>/dev/null";
 
     # ignore errors (may have no qdisc)
@@ -174,7 +174,7 @@ sub update_interface {
     }
 
     $shaper->commands( $device, $direction );
-    
+
     return if ($debug);
 
     select STDOUT;
@@ -200,14 +200,14 @@ sub interfaces_using {
         next unless $intf;
 	my $level = $intf->path() . ' traffic-policy';
 	$config->setLevel($level);
-	
+
         foreach my $direction ($config->listNodes()) {
 	    my $cur = $config->returnValue($direction);
 	    next unless $cur;
 
 	    # these are arguments to update_interface()
 	    push @inuse, [ $name, $direction, $policy ]
-		if ($cur eq $policy); 
+		if ($cur eq $policy);
 	}
     }
     return @inuse;
@@ -220,7 +220,7 @@ sub delete_policy {
 	my @inuse = map { @$_[0] } interfaces_using($name);
 
 	die "Can not delete traffic-policy $name, still applied"
-	    . " to interface ", join(' ', @inuse), "\n"
+	    . " to interface ", join(', ', @inuse), "\n"
 	    if @inuse;
     }
 }
@@ -257,7 +257,7 @@ sub update_action {
 	apply_action($dev);
     }
 }
-	
+
 sub apply_action{
     my $dev = shift;
     my $interface = new Vyatta::Interface($dev);
@@ -274,7 +274,7 @@ sub apply_action{
     foreach my $action (qw(mirror redirect)) {
 	my $target = $config->returnValue($action);
 	next unless $target;
-	    
+
 	# TODO support combination of limiting and redirect/mirror
 	die "interface $dev: combination of $action"
 	    . " and traffic-policy $ingress not supported\n"
@@ -282,25 +282,59 @@ sub apply_action{
 
 	# Clear existing ingress
 	system("/sbin/tc qdisc del dev $dev parent ffff: 2>/dev/null");
-	
+
 	system("/sbin/tc qdisc add dev $dev handle ffff: ingress") == 0
 	    or die "tc qdisc ingress failed";
 
-	my $cmd = 
+	my $cmd =
 	    "/sbin/tc filter add dev $dev parent ffff:"
-	    . " protocol all prio 10 u32" 
+	    . " protocol all prio 10 u32"
 	    . " match u32 0 0 flowid 1:1"
 	    . " action mirred egress $action dev $target";
 
 	system($cmd) == 0
 	    or die "tc action $action command failed";
-	    
+
 	return;
     }
 
     # Drop what ever was there before...
     system("/sbin/tc qdisc del dev $dev parent ffff: 2>/dev/null")
 	unless($ingress);
+}
+
+# find any interfaces whose actions refer to this interface
+sub interfaces_refer {
+    my $dev = shift;
+    my $config = new Vyatta::Config;
+    my @inuse  = ();
+
+    foreach my $name ( getInterfaces() ) {
+        my $intf = new Vyatta::Interface($name);
+        next unless $intf;
+	$config->setLevel($intf->path());
+
+	foreach my $policy ( qw(redirect mirror) ) {
+	    my $target = $config->returnValue($policy);
+	    next unless $target;
+
+	    if ($dev eq $target) {
+		push @inuse, $name;
+		last;
+	    }
+	}
+    }
+
+    return @inuse;
+}
+
+sub check_target {
+    my $name= shift;
+    my @inuse = interfaces_refer ( $name );
+
+    die "Can not delete interface $name, still being used by:",
+       join(', ', @inuse), "\n" if @inuse;
+
 }
 
 sub delete_action {
@@ -318,14 +352,16 @@ usage: vyatta-qos.pl --list-policy direction
 
        vyatta-qos.pl --update-interface interface direction policy-name
        vyatta-qos.pl --delete-interface interface direction
-
        vyatta-qos.pl --start-interface interface
+
+       vyatta-qos.pl --update-action interface
+       vyatta-qos.pl --delete-action interface
 EOF
     exit 1;
 }
 
 my (@startList, @updateInterface, @deleteInterface);
-my ($updateAction, $deleteAction);
+my ($updateAction, $deleteAction, $checkTarget);
 my ($listPolicy, @createPolicy, @applyPolicy, @deletePolicy);
 
 GetOptions(
@@ -340,6 +376,7 @@ GetOptions(
 
     "update-action=s"	    => \$updateAction,
     "delete-action=s"	    => \$deleteAction,
+    "check-target=s"	    => \$checkTarget,
 ) or usage();
 
 delete_interface(@deleteInterface) if ( @deleteInterface == 1);
@@ -353,3 +390,4 @@ apply_policy(@applyPolicy)         if ( @applyPolicy );
 
 update_action($updateAction)	   if ( $updateAction );
 delete_action($deleteAction)	   if ( $deleteAction );
+check_target($checkTarget)	   if ( $checkTarget );
