@@ -1,3 +1,13 @@
+vyatta-cfg-qos (0.15.7) unstable; urgency=low
+
+  * Only allow redirect and mirror on ethernet devices
+  * Fix error message for redirect/mirror and ingress conflict
+  * Move input interface back to Qos package
+  * Check target of redirect before removing ifb
+  * add whitespace
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Wed, 21 Jul 2010 17:46:41 -0700
+
 vyatta-cfg-qos (0.15.6) unstable; urgency=low
 
   * Remove 'limiter default priority'
