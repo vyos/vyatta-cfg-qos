@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.15.7+larkspur1) unstable; urgency=low
+
+  * UNRELEASED
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Thu, 22 Jul 2010 17:17:14 -0700
+
 vyatta-cfg-qos (0.15.7) unstable; urgency=low
 
   * Only allow redirect and mirror on ethernet devices
