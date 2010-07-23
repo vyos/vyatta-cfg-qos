@@ -379,7 +379,7 @@ GetOptions(
     "check-target=s"	    => \$checkTarget,
 ) or usage();
 
-delete_interface(@deleteInterface) if ( @deleteInterface == 1);
+delete_interface(@deleteInterface) if ( $#deleteInterface == 1 );
 update_interface(@updateInterface) if ( $#updateInterface == 2 );
 start_interface(@startList)        if ( @startList );
 
