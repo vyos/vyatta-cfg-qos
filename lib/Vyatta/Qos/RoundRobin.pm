@@ -61,9 +61,10 @@ sub _getClasses {
 
     $config->setLevel("$level default");
     my $default = new Vyatta::Qos::ShaperClass($config);
-
-    push @classes, $default;
-    $default->{id} = 1;
+    if ($default) {
+	push @classes, $default;
+	$default->{id} = 1;
+    }
 
     foreach my $id ( $config->listNodes("class") ) {
         $config->setLevel("$level class $id");
@@ -82,13 +83,19 @@ sub commands {
     print " quantum $self->{_quantum}" if ( $self->{_quantum} );
     print "\n";
 
-    foreach my $class (@$classes) {
+    foreach my $class (sort { $a->{id} <=> $b->{id} } @$classes) {
         $class->gen_class( $dev, 'drr', $parent );
         $class->gen_leaf( $dev, $parent );
-	my $prio = 1;
+
+	if ($class->{id} == 1) {
+	    printf "filter add dev %s parent %x: prio %d",
+		 $dev, $parent, 4096;
+	    printf " protocol all basic flowid %x:1\n", $parent;
+	    next;
+	}
 
         foreach my $match ( $class->matchRules() ) {
-            $match->filter( $dev, $parent, $class->{id}, $prio++);
+            $match->filter( $dev, $parent, $class->{id}, $class->{id} - 1 );
         }
     }
 }
