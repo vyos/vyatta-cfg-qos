@@ -4,5 +4,4 @@ default: 20
 syntax:expression: $VAR(@) >= 0 && $VAR(@) <= 20 ; \
 		   "priority must be between 0 and 20"
 help: Priority value
-comp_help: Priority for traffic limiting evaluation
- <0-20> (default 20)
+val_help: u32:0-20; Priority for match rule evaluation
