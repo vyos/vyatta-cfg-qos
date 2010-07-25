@@ -1,3 +1,10 @@
+vyatta-cfg-qos (0.15.7+larkspur4) unstable; urgency=low
+
+  * Fix help string on limiter priority
+  * Make default class work for round robin
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Sun, 25 Jul 2010 11:29:14 -0700
+
 vyatta-cfg-qos (0.15.7+larkspur3) unstable; urgency=low
 
   * Revert "Rename limiter class priority field to precedence"
