@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.15.7+larkspur5) unstable; urgency=low
+
+  * Fix problem with port interpretation if protocol specified
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Tue, 27 Jul 2010 11:00:32 -0700
+
 vyatta-cfg-qos (0.15.7+larkspur4) unstable; urgency=low
 
   * Fix help string on limiter priority
