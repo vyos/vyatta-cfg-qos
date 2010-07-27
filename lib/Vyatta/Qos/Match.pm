@@ -58,12 +58,14 @@ sub new {
             $fields{dsfield} = getDsfield( $config->returnValue("$af dscp") );
             my $ipprot = $config->returnValue("$af protocol");
             $fields{protocol} = getProtocol($ipprot);
+
             $fields{src}      = $config->returnValue("$af source address");
             $fields{dst}      = $config->returnValue("$af destination address");
-            $fields{sport} =
-              getPort( $config->returnValue("$af source port"), $ipprot );
-            $fields{dport} =
-              getPort( $config->returnValue("$af destination port"), $ipprot );
+
+	    my $port = $config->returnValue("$af source port");
+            $fields{sport} = getPort( $port, $ipprot ) if $port;
+	    $port = $config->returnValue("$af destination port");
+            $fields{dport} = getPort( $port, $ipprot ) if $port;
         }
 
         $self->{$af} = \%fields;
