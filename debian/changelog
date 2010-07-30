@@ -1,3 +1,10 @@
+vyatta-cfg-qos (0.15.7+larkspur7) unstable; urgency=low
+
+  * Fix matching (default)
+  * Make round-robin quantum per class
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Fri, 30 Jul 2010 16:35:59 -0700
+
 vyatta-cfg-qos (0.15.7+larkspur6) unstable; urgency=low
 
   * allow larger queue size for round-robin
