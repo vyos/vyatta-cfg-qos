@@ -133,14 +133,12 @@ sub filter {
             my $type = $$p{protocol};
             $type = 'all' unless $type;
 
+	    print " protocol $type u32";
             if ( defined( $$p{src} ) || defined( $$p{dest} ) ) {
-                print " protocol $type u32";
                 print " match ether src $$p{src}" if $$p{src};
                 print " match ether dst $$p{dst}" if $$p{dst};
             } else {
-
-                # u32 requires some options to work but basic works
-                print " protocol $type basic";
+                print " match u32 0 0";
             }
         } else {
             print " protocol all u32";
