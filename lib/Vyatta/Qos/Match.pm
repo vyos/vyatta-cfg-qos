@@ -45,6 +45,12 @@ sub new {
 
     bless $self, $class;
 
+    # special case for match all
+    unless ($config) {
+	$self->{'ether'} = { protocol => 'all' };
+	return $self;
+    }
+
     foreach my $af (qw(ip ipv6 ether)) {
         next unless $config->exists($af);
 

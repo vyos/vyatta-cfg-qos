@@ -22,6 +22,7 @@ use warnings;
 
 require Vyatta::Config;
 require Vyatta::Qos::ShaperClass;
+require Vyatta::Qos::Match;
 
 # Create a new instance based on config information
 sub new {
@@ -47,7 +48,8 @@ sub _checkClasses {
 	my $qtype = $class->{_qdisc};
 	my $qlimit = $class->{_limit};
 
-	if ($qtype eq 'random-detect' && defined($qlimit) && $qlimit >= 128) {
+	if (defined($qtype) && $qtype eq 'random-detect' 
+	    && defined($qlimit) && $qlimit >= 128) {
 	    print STDERR "Configuration error in: $level\n";
 	    die "queue limit must be between 1 and 127 for random-detect\n";
 	}
@@ -56,20 +58,21 @@ sub _checkClasses {
 
 sub _getClasses {
     my $level = shift;
-    my @classes;
     my $config = new Vyatta::Config;
+    my @classes;
 
-    $config->setLevel("$level default");
-    my $default = new Vyatta::Qos::ShaperClass($config);
-    if ($default) {
-	push @classes, $default;
-	$default->{id} = 1;
-    }
-
+    $config->setLevel($level);
     foreach my $id ( $config->listNodes("class") ) {
         $config->setLevel("$level class $id");
         push @classes, new Vyatta::Qos::ShaperClass( $config, $id );
     }
+
+    $config->setLevel("$level default");
+    my $default = new Vyatta::Qos::ShaperClass($config, 4096);
+
+    # Workaround for lack of default class in drr qdisc
+    $default->{_match} = [ new Vyatta::Qos::Match() ];
+    push @classes, $default;
 
     return @classes;
 }
@@ -87,15 +90,8 @@ sub commands {
         $class->gen_class( $dev, 'drr', $parent );
         $class->gen_leaf( $dev, $parent );
 
-	if ($class->{id} == 1) {
-	    printf "filter add dev %s parent %x: prio %d",
-		 $dev, $parent, 4096;
-	    printf " protocol all basic flowid %x:1\n", $parent;
-	    next;
-	}
-
         foreach my $match ( $class->matchRules() ) {
-            $match->filter( $dev, $parent, $class->{id}, $class->{id} - 1 );
+            $match->filter( $dev, $parent, $class->{id}, $class->{id} );
         }
     }
 }
