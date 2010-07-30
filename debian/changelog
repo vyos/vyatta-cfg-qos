@@ -1,3 +1,11 @@
+vyatta-cfg-qos (0.15.7+larkspur6) unstable; urgency=low
+
+  * allow larger queue size for round-robin
+  * Allow class 1 for round-robin
+  * Fix round-robin filter and class generation
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Thu, 29 Jul 2010 17:25:13 -0700
+
 vyatta-cfg-qos (0.15.7+larkspur5) unstable; urgency=low
 
   * Fix problem with port interpretation if protocol specified
