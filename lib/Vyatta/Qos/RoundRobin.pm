@@ -82,9 +82,7 @@ sub commands {
     my $classes = $self->{_classes};
     my $parent  = 1;
 
-    printf "qdisc add dev %s root  handle %x: drr", $dev, $parent;
-    print " quantum $self->{_quantum}" if ( $self->{_quantum} );
-    print "\n";
+    printf "qdisc add dev %s root  handle %x: drr\n", $dev, $parent;
 
     foreach my $class (sort { $a->{id} <=> $b->{id} } @$classes) {
         $class->gen_class( $dev, 'drr', $parent );

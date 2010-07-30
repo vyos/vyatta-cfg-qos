@@ -1,0 +1,4 @@
+type: u32
+help: Packet scheduling quantum
+syntax:expression: $VAR(@) > 0 ; "Quantum must be greater than zero"
+val_help: u32:1-4294967295; Packet scheduling quantum (bytes)

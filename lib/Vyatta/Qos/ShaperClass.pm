@@ -49,6 +49,7 @@ sub new {
         $self->{_qdisc}    = $config->returnValue("queue-type");
         $self->{_avgpkt}   = $config->returnValue("packet-length");
         $self->{_latency}  = $config->returnValue("latency");
+	$self->{_quantum}  = $config->returnValue("quantum");
 
         $self->{dsmark} = getDsfield( $config->returnValue("set-dscp") );
         my @matches = _getMatch("$level match");
@@ -256,6 +257,7 @@ sub gen_class {
     print " ceil $ceil"              if ($ceil);
     print " burst $self->{_burst}"   if ( $self->{_burst} );
     print " prio $self->{_priority}" if ( $self->{_priority} );
+    print " quantum $self->{_quantum}" if ( $self->{_quantum} );
     print "\n";
 }
 
