@@ -1,10 +1,5 @@
 #! /bin/bash
 
-# setup the config environment
-export VYATTA_ACTIVE_CONFIGURATION_DIR=/opt/vyatta/config/active
-export VYATTA_EDIT_LEVEL="/"
-export VYATTA_TEMPLATE_LEVEL="/"
-
 /opt/vyatta/sbin/vyatta-cfg-cmd-wrapper begin
 
 /opt/vyatta/sbin/vyatta-qos.pl --start-interface $1
