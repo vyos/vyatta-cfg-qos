@@ -1,3 +1,17 @@
+vyatta-cfg-qos (0.15.9) unstable; urgency=low
+
+  [ Stephen Hemminger ]
+  * Fix delete of interface qos policy
+  * Revert "Rename limiter class priority field to precedence"
+  * Fix help string on limiter priority
+  * Make default class work for round robin
+  * Fix problem with port interpretation if protocol specified
+
+  [ An-Cheng Huang ]
+  * remove CLI backend env variables usage
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Wed, 11 Aug 2010 11:51:48 -0700
+
 vyatta-cfg-qos (0.15.8) unstable; urgency=low
 
   * UNRELEASED
