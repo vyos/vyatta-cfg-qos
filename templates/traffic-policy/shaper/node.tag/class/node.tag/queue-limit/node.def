@@ -1,5 +1,4 @@
 type: u32
 help: Maximum queue size (packets)
-syntax:expression: $VAR(@) > 1 && $VAR(@) < 128;\
-    "Queue limit must greater than 1 and less than 128"
-val_help: u32:1-4294967295; Queue size in bytes
+syntax:expression: $VAR(@) > 0 ; "queue limit must be greater than zero"
+val_help: u32:1-4294967295; Queue size in packets
