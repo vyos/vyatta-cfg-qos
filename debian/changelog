@@ -1,3 +1,10 @@
+vyatta-cfg-qos (0.15.7+larkspur9) unstable; urgency=low
+
+  * Fix help message
+  * Fix shaper class queue calculations for random-detect
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Tue, 17 Aug 2010 16:58:09 -0700
+
 vyatta-cfg-qos (0.15.7+larkspur8) unstable; urgency=low
 
   * Fix typo in Qos match for ethernet
