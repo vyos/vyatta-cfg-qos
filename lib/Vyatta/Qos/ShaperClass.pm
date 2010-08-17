@@ -123,7 +123,7 @@ sub sfqValidate {
 
     if ( defined $limit && $limit > 127 ) {
         print STDERR "Configuration error in: $level\n";
-        die "queue limit must be between 1 and 127 for random-detect\n";
+        die "queue limit must be between 1 and 127 for queue-type fair-queue\n";
     }
 }
 
@@ -173,8 +173,9 @@ sub redQdisc {
 
 sub redValidate {
     my ( $self, $level, $rate ) = @_;
-    my $limit = $self->{_limit};
-    my $qmax  = int((redQsize($rate) + AVGPKT - 1) / AVGPKT);
+    my $limit = $self->{_limit};	# packets
+    my $thresh = redQsize($rate);	# bytes
+    my $qmax  = POSIX::ceil($thresh / AVGPKT); # packets
 
     if ( defined($limit) && $limit < $qmax ) {
         print STDERR "Configuration error in: $level\n";
@@ -184,7 +185,7 @@ sub redValidate {
         exit 1;
     }
 
-    if ( $qmax < 3 * AVGPKT ) {
+    if ( $qmax < 3 ) {
         my $minbw = ( 3 * AVGPKT * 8 ) / LATENCY;
 
         print STDERR "Configuration error in: $level\n";
