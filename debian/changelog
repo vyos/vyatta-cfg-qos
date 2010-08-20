@@ -1,3 +1,19 @@
+vyatta-cfg-qos (0.15.10) unstable; urgency=low
+
+  [ Stephen Hemminger ]
+  * allow larger queue size for round-robin
+  * Allow class 1 for round-robin
+  * Fix round-robin filter and class generation
+  * Fix matching (default)
+  * Make round-robin quantum per class
+  * Fix typo in Qos match for ethernet
+  * Fix help message
+  * Fix shaper class queue calculations for random-detect
+
+  [ An-Cheng Huang ]
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Fri, 20 Aug 2010 08:44:58 -0700
+
 vyatta-cfg-qos (0.15.9) unstable; urgency=low
 
   [ Stephen Hemminger ]
