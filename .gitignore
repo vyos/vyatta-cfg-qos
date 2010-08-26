@@ -10,8 +10,10 @@ config.status
 config.sub
 configure
 debian/files
+debian/tmp
 debian/*.postinst
 debian/vyatta-cfg-qos
+debian/vyatta-cfg-qos-serial
 debian/*.debhelper.log
 debian/*.substvars
 INSTALL

@@ -1,0 +1,15 @@
+etc/ppp/ip-up.d
+opt/vyatta/etc
+opt/vyatta/sbin
+opt/vyatta/share/perl5
+opt/vyatta/share/vyatta-cfg/templates/traffic-policy
+opt/vyatta/share/vyatta-cfg/templates/interfaces/bonding
+opt/vyatta/share/vyatta-cfg/templates/interfaces/bridge
+opt/vyatta/share/vyatta-cfg/templates/interfaces/ethernet
+opt/vyatta/share/vyatta-cfg/templates/interfaces/input
+opt/vyatta/share/vyatta-cfg/templates/interfaces/loopback
+opt/vyatta/share/vyatta-cfg/templates/interfaces/openvpn
+opt/vyatta/share/vyatta-cfg/templates/interfaces/pseudo-ethernet
+opt/vyatta/share/vyatta-cfg/templates/interfaces/tunnel
+opt/vyatta/share/vyatta-cfg/templates/interfaces/wireless
+opt/vyatta/share/vyatta-cfg/templates/interfaces/wirelessmodem

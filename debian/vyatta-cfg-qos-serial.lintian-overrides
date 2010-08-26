@@ -1,0 +1,2 @@
+vyatta-cfg-qos-serial: file-in-unusual-dir
+vyatta-cfg-qos-serial: dir-or-file-in-opt
