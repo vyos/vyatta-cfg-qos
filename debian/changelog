@@ -1,3 +1,10 @@
+vyatta-cfg-qos (0.15.11) unstable; urgency=low
+
+  * add range check for IP source port
+  * Split Qos templates for serial into a separate package
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Thu, 26 Aug 2010 17:12:38 -0700
+
 vyatta-cfg-qos (0.15.10) unstable; urgency=low
 
   [ Stephen Hemminger ]
