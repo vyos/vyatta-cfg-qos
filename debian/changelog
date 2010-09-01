@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.15.12) unstable; urgency=low
+
+  * add control Replaces for vyatta-cfg-qos-serial
+
+ -- An-Cheng Huang <ancheng@vyatta.com>  Wed, 01 Sep 2010 11:32:31 -0700
+
 vyatta-cfg-qos (0.15.11) unstable; urgency=low
 
   * add range check for IP source port
