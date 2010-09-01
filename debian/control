@@ -23,6 +23,7 @@ Description: Vyatta Qos configuration templates/scripts
 
 Package: vyatta-cfg-qos-serial
 Architecture: all
-Depends:  ${perl:Depends}, ${shlibs:Depends} vyatta-cfg-qos
+Depends:  ${perl:Depends}, ${shlibs:Depends}, vyatta-cfg-qos
+Replaces: vyatta-cfg-qos
 Description: vyatta-cfg-qos serial templates
  Vyatta Qos configuration templates for serial devices
