@@ -71,6 +71,9 @@ sub gen_template {
         my $in  = "$inpath/$name";
         my $out = "$outpath/$name";
 
+	# Skip incoming Qos policy on vif
+	next if ($name eq 'in') && ($outpath =~ '/vif/node.tag/');
+
 	# recurse into subdirectory
         if ( -d $in ) {
             my $subif = $ifname;
