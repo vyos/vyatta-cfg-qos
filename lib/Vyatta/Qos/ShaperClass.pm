@@ -46,14 +46,31 @@ sub new {
         $self->{_ceiling}  = $config->returnValue("ceiling");
         $self->{_burst}    = $config->returnValue("burst");
         $self->{_limit}    = $config->returnValue("queue-limit");
-        $self->{_qdisc}    = $config->returnValue("queue-type");
         $self->{_avgpkt}   = $config->returnValue("packet-length");
         $self->{_latency}  = $config->returnValue("latency");
 	$self->{_quantum}  = $config->returnValue("quantum");
 
         $self->{dsmark} = getDsfield( $config->returnValue("set-dscp") );
+
         my @matches = _getMatch("$level match");
         $self->{_match} = \@matches;
+
+	my @subclasses = $config->listNodes("class");
+	my $qtype      = $config->returnValue("queue-type");
+	
+	if (@subclasses) {
+	    die "can not set queue-type with sub-classes\n"
+		if defined($qtype);
+
+	    my @classes;
+	    foreach my $id (@subclasses) {
+		$config->setLevel("$level class $id");
+		push @classes, $self->new($config, $id);
+	    }
+	    $self->{_class} = \@classes;
+	} else {
+	    $self->{_qdisc} = defined($qtype) ? $qtype : 'fair-queue';
+	}
     }
 
     return $self;
@@ -71,15 +88,9 @@ sub _getMatch {
     return @matches;
 }
 
-sub matchRules {
-    my ($self) = @_;
-    my $matches = $self->{_match};
-    return @$matches;
-}
-
 sub _getPercentRate {
     my ( $rate, $speed ) = @_;
-    return unless defined $rate;
+    return unless defined($rate);
 
     # Rate might be a percentage of speed
     if ( $rate =~ /%$/ ) {
@@ -171,6 +182,7 @@ sub redQdisc {
     printf " burst %d probability 0.1 bandwidth %s ecn\n", $burst, $rate;
 }
 
+# Check if the parameters for RED will work
 sub redValidate {
     my ( $self, $level, $rate ) = @_;
     my $limit = $self->{_limit};	# packets
@@ -208,6 +220,8 @@ my %qdiscValidate = (
     'random-detect' => \&redValidate,
 );
 
+# Check if the rate configured for the class is higher than the link
+# speed, or if the rate exceeds the ceiling.
 sub rateCheck {
     my ( $self, $ifspeed, $level ) = @_;
 
@@ -233,11 +247,22 @@ sub rateCheck {
         exit 1;
     }
 
-    my $qtype = $self->{_qdisc};
-    my $q     = $qdiscValidate{$qtype};
-    return unless $q;
+    my $subclass = $self->{_class};
+    if ($subclass) {
+	my $rate = $self->{_rate};
 
-    $q->( $self, $level, $rate );
+	foreach my $class (@$subclass) {
+	    $class->rateCheck($rate, "$level class $class->{id}");
+	}
+    } else {
+	my $qtype = $self->{_qdisc};
+	return unless $qtype;
+
+	my $q = $qdiscValidate{$qtype};
+	return unless $q;
+
+	$q->( $self, $level, $rate );
+    }
 }
 
 sub get_rate {
@@ -246,6 +271,7 @@ sub get_rate {
     return _getPercentRate( $self->{_rate}, $speed );
 }
 
+# Generate tc commands for class
 sub gen_class {
     my ( $self, $dev, $qdisc, $parent, $speed ) = @_;
     my $rate = _getPercentRate( $self->{_rate},    $speed );
@@ -262,17 +288,52 @@ sub gen_class {
     print "\n";
 }
 
+# Compute the maximum rate for the class
+sub max_rate {
+    my ($self, $speed) = @_;
+    my $ceil = $self->{_ceiling};
+    
+    if ($ceil) {
+	return _getPercentRate( $ceil, $speed );
+    } else {
+	return _getPercentRate( $self->{_rate}, $speed );
+    }
+}
+
+# If this class has sub classes, generate those commands
+# otherwise generate the qdisc parameters for the leaf
 sub gen_leaf {
-    my ( $self, $dev, $parent, $rate ) = @_;
-    my $qtype = $self->{_qdisc};
-    return unless $qtype;    # default is okay
+    my ( $self, $dev, $qdisc, $parent, $speed ) = @_;
+    my $rate = max_rate($speed);
 
-    my $q = $qdiscOptions{$qtype};
-    die "Unknown queue-type $qtype\n"
-      unless $q;
+    my $subclass = $self->{_class};
+    if ($subclass) {
+	foreach my $class (@$subclass) {
+	    $class->commands($dev, $qdisc, $self->{id}, $rate);
+	}
+    } else {
+	my $qtype = $self->{_qdisc};
+	my $q = $qdiscOptions{$qtype};
+	die "Unknown queue-type $qtype\n"
+	    unless $q;
 
-    printf "qdisc add dev %s parent %x:%x ", $dev, $parent, $self->{id};
-    $q->( $self, $dev, $rate );
+	printf "qdisc add dev %s parent %x:%x ", $dev, $parent, $self->{id};
+	$q->( $self, $dev, $rate );
+    }
+}
+
+sub commands {
+    my ($self, $dev, $qdisc, $parent, $rate) = @_;
+
+    $self->gen_class( $dev, $qdisc, $parent, $rate );
+    $self->gen_leaf( $dev, $qdisc, $parent, $rate );
+
+    my $prio = 1;
+    my $matches = $self->{_match};
+    foreach my $match ( @$matches ) {
+	$match->filter( $dev, $parent, $class->{id},
+			$prio++, $class->{dsmark} );
+    }
 }
 
 sub dsmarkClass {
