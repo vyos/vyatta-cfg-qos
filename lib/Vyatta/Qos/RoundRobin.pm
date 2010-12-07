@@ -85,7 +85,12 @@ sub commands {
     printf "qdisc add dev %s root  handle %x: drr\n", $dev, $parent;
 
     foreach my $class (sort { $a->{id} <=> $b->{id} } @$classes) {
-	$class->commands( $dev, 'drr', $parent);
+        $class->gen_class( $dev, 'drr', $parent );
+        $class->gen_leaf( $dev, $parent );
+
+        foreach my $match ( $class->matchRules() ) {
+            $match->filter( $dev, $parent, $class->{id}, $class->{id} );
+        }
     }
 }
 
