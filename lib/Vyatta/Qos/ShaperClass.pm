@@ -26,6 +26,8 @@ use Vyatta::Qos::Util qw/getDsfield getRate/;
 use constant {
     AVGPKT  => 1024,    # Average packet size for RED calculations
     LATENCY => 250,     # Worstcase latency for RED (ms)
+
+    MINQUANTUM  => 1000, # Lowest allowable HTB quantum
 };
 
 sub new {
@@ -247,18 +249,27 @@ sub get_rate {
 }
 
 sub gen_class {
-    my ( $self, $dev, $qdisc, $parent, $speed ) = @_;
+    my ( $self, $dev, $qdisc, $parent, $speed, $r2q ) = @_;
     my $rate = _getPercentRate( $self->{_rate},    $speed );
     my $ceil = _getPercentRate( $self->{_ceiling}, $speed );
+    my $quantum = $self->{_quantum};
+
+    # Hack to avoid kernel HTB message if quantum is small.
+    # Only occurs if link speed is high and offered bandwidth is small.
+    if ( defined($r2q)  && !defined($quantum) && ($rate / 8) / $r2q < MINQUANTUM ) {
+	$quantum = MINQUANTUM;
+    }
 
     printf "class add dev %s parent %x:1 classid %x:%x %s",
       $dev, $parent, $parent, $self->{id}, $qdisc;
 
     print " rate $rate"              if ($rate);
     print " ceil $ceil"              if ($ceil);
+    print " quantum $quantum"	     if ($quantum);
     print " burst $self->{_burst}"   if ( $self->{_burst} );
     print " prio $self->{_priority}" if ( $self->{_priority} );
-    print " quantum $self->{_quantum}" if ( $self->{_quantum} );
+    
+
     print "\n";
 }
 

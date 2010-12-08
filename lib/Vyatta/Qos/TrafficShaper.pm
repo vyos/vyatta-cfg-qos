@@ -25,6 +25,14 @@ use warnings;
 require Vyatta::Config;
 require Vyatta::Qos::ShaperClass;
 use Vyatta::Qos::Util qw/getRate getAutoRate/;
+use POSIX;
+
+# Kernel limits on quantum (bytes)
+use constant {
+   MAXQUANTUM  => 200000,
+   MINQUANTUM  => 1000,
+};
+
 
 # Create a new instance based on config information
 sub new {
@@ -82,6 +90,47 @@ sub _checkClasses {
         die "$class->{level} bandwidth not defined\n" unless $class->{_rate};
         $class->rateCheck( $rate, "$level class $class->{id}" ) if $rate;
     }
+}
+
+sub _minRate {
+    my ($speed, $classes) = @_;
+    my $min = $speed / 8;
+
+    foreach my $class (@$classes) {
+	my $bps = $class->get_rate($speed) / 8;	# bytes per second
+
+	$min = $bps if $bps < $min;
+    }
+
+    return $min;
+}
+
+# Compute optimum quantum scaling factor
+#    quantum = Bps / r2q
+# and find r2q valute such that (1000 < quantum < 200000 )
+sub _r2q {
+    my ($speed, $classes) = @_;
+    my $maxbps = $speed / 8;
+    my $r2q = 10;
+
+    # need a bigger r2q if going fast than 16 mbits/sec
+    if ($maxbps / $r2q >= MAXQUANTUM) {
+	$r2q = ceil($maxbps / MAXQUANTUM);
+    } else {
+	# if there is a slow class then may need smaller value
+	my $minbps = _minRate($speed, $classes);
+	
+	# try and find "just right value"
+	while ($r2q > 1 && ($minbps / $r2q) < MINQUANTUM) {
+	    my $next = $r2q - 1;
+
+	    # don't go too small
+	    last if ($maxbps / $next >= MAXQUANTUM);
+	    $r2q = $next;
+	}
+    }
+
+    return $r2q;
 }
 
 sub commands {
@@ -142,13 +191,15 @@ sub commands {
         $root   = "parent 1:1";
     }
 
-    printf "qdisc add dev %s %s handle %x: htb default %x\n",
-      $dev, $root, $parent, $default->{id};
+    my $r2q = _r2q($rate, $classes);
+
+    printf "qdisc add dev %s %s handle %x: htb r2q %d default %x\n",
+      $dev, $root, $parent, $r2q, $default->{id};
     printf "class add dev %s parent %x: classid %x:1 htb rate %s\n",
       $dev, $parent, $parent, $rate;
 
     foreach my $class (@$classes) {
-        $class->gen_class( $dev, 'htb', $parent, $rate );
+        $class->gen_class( $dev, 'htb', $parent, $rate, $r2q );
         $class->gen_leaf( $dev, $parent, $rate );
 
         my $prio = 1;
