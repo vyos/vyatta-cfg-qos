@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.15.15) unstable; urgency=low
+
+  * Wait for ppp devices when updating interface traffic-policy
+
+ -- Stephen Hemminger <stephen.hemminger@vyatta.com>  Fri, 17 Dec 2010 15:02:51 -0800
+
 vyatta-cfg-qos (0.15.14) unstable; urgency=low
 
   * Don't allow incoming Qos on VIF
