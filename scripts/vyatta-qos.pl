@@ -145,6 +145,22 @@ sub start_interface {
     }
 }
 
+## interface_exists('wan0.1')
+# check if interface exists
+# Note: retry to handle chicken-egg problem with ppp devices
+#       ppp devices can take a while to get named correctly
+#       ppp script won't see policy until it is committed
+sub interface_exists {
+    my $ifname = shift;
+    my $sysfs  = "/sys/class/net/$ifname";
+
+    for (my $i = 0; $i < 10; ++$i) {
+	return 1 if ( -d $sysfs );
+	sleep 1;
+    }
+    return;
+}
+
 ## update_interface('eth0', 'my-shaper')
 # update policy to interface
 sub update_interface {
@@ -155,7 +171,7 @@ sub update_interface {
     my $shaper = make_policy( $policy, $name, $direction );
     exit 1 unless $shaper;
 
-    if ( ! -d "/sys/class/net/$device" ) {
+    unless (interface_exists($device)) {
 	warn "$device not present yet, traffic-policy will be applied later\n";
 	return;
     }
@@ -166,9 +182,8 @@ sub update_interface {
     # When doing debugging just echo the commands
     my $out;
     unless ($debug) {
-        open $out, '|-'
-          or exec qw:/sbin/tc -batch -:
-          or die "Tc setup failed: $!\n";
+        open ( $out, '|-', '/sbin/tc -batch -' )
+	    or die "Tc setup failed: $!\n";
 
 	select $out;
     }
