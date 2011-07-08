@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.15.20) unstable; urgency=low
+
+  * new branch
+
+ -- Deepti Kulkarni <deepti@vyatta.com>  Thu, 07 Jul 2011 20:55:40 -0700
+
 vyatta-cfg-qos (0.15.19) unstable; urgency=low
 
   * Remove leftover check for port range
