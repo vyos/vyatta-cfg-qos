@@ -137,11 +137,14 @@ sub start_interface {
 	next unless $path;
 
         my $config = new Vyatta::Config;
-        $config->setLevel( $path );
-	my $policy = $config->returnValue('traffic-policy');
+	$config->setLevel($path . ' traffic-policy');
 
-	update_interface( $ifname, $policy ) if ($policy);
-	update_action( $ifname );
+        foreach my $direction ($config->listNodes()) {
+	    my $policy = $config->returnValue($direction);
+	    next unless $policy;
+
+	    update_interface( $ifname, $direction, $policy );
+	}
     }
 }
 
