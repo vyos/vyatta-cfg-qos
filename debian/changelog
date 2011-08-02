@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.15.21) unstable; urgency=low
+
+  * Fix Qos start interface
+
+ -- Stephen Hemminger <shemminger@vyatta.com>  Tue, 02 Aug 2011 14:23:02 -0700
+
 vyatta-cfg-qos (0.15.20) unstable; urgency=low
 
   * new branch
