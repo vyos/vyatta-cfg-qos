@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.15.22) unstable; urgency=low
+
+  * Fix help text refering to TCP port
+
+ -- Stephen Hemminger <shemminger@vyatta.com>  Mon, 08 Aug 2011 16:42:19 -0700
+
 vyatta-cfg-qos (0.15.21) unstable; urgency=low
 
   * Fix Qos start interface
