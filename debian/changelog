@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.15.23) unstable; urgency=low
+
+  * zero is not a legal bandwidth value
+
+ -- Stephen Hemminger <shemminger@vyatta.com>  Mon, 10 Oct 2011 15:36:06 -0700
+
 vyatta-cfg-qos (0.15.22) unstable; urgency=low
 
   * Fix help text refering to TCP port
