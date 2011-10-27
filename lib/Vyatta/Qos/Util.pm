@@ -98,7 +98,7 @@ sub getRate {
 	if ($num == 0);
 
     die "$rate is not a valid bandwidth (negative value)\n"
-	if ($rate < 0);
+	if ($num < 0);
 
     if ( defined $suffix ) {
         my $scale = $rates{ lc $suffix };
