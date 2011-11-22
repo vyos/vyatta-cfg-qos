@@ -1,7 +1,9 @@
 #! /bin/bash
-
-/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper begin
+API=/bin/cli-shell-api
+session_env=$($API getSessionEnv $PPID)
+eval $session_env
+$API setupSession
 
 /opt/vyatta/sbin/vyatta-qos.pl --start-interface $1
 
-/opt/vyatta/sbin/vyatta-cfg-cmd-wrapper end
+$API teardownSession
