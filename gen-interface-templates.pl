@@ -38,8 +38,10 @@ my %interface_hash = (
              '$VAR(../../../../@).$VAR(../../../@)v$VAR(../@)',
     'wireless/node.tag'                             => '$VAR(@)',
     'bonding/node.tag'                              => '$VAR(@)',
-    'bonding/node.tag/vif/node.tag'                 => '$VAR(../@).$VAR(@)',
     'bonding/node.tag/vrrp/vrrp-group/node.tag/interface' => '$VAR(../../../@)v$VAR(../@)',
+    'bonding/node.tag/vif/node.tag'                 => '$VAR(../@).$VAR(@)',
+    'bonding/node.tag/vif/node.tag/vrrp/vrrp-group/node.tag/interface' =>
+             '$VAR(../../../../@).$VAR(../../../@)v$VAR(../@)',
     'pseudo-ethernet/node.tag'                      => '$VAR(@)',
 #   'pseudo-ethernet/node.tag/vif/node.tag'         => '$VAR(../@).$VAR(@)',
 
