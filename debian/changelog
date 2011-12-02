@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.15.26) unstable; urgency=low
+
+  * Add vrrp interface parameters for bonding vifs
+
+ -- John Southworth <john.southworth@vyatta.com>  Fri, 02 Dec 2011 11:15:46 -0800
+
 vyatta-cfg-qos (0.15.25) unstable; urgency=low
 
   * Generate traffic-policy nodes for vrrp interfaces
