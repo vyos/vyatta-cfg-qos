@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.15.25) unstable; urgency=low
+
+  * Generate traffic-policy nodes for vrrp interfaces
+
+ -- John Southworth <john.southworth@vyatta.com>  Thu, 01 Dec 2011 16:55:38 -0800
+
 vyatta-cfg-qos (0.15.24) unstable; urgency=low
 
   * Fix non-numeric comparison
