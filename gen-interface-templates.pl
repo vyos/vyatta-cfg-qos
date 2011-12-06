@@ -66,7 +66,7 @@ my %interface_hash = (
 );
 
 sub gen_template {
-    my ( $inpath, $outpath, $ifname ) = @_;
+    my ( $inpath, $outpath, $ifname, $iftree ) = @_;
 
     print $outpath, "\n" if ($debug);
     opendir my $d, $inpath
@@ -86,14 +86,15 @@ sub gen_template {
               or mkdir($out)
               or die "Can't create $out: $!";
 
-            gen_template( $in, $out, $subif );
+            gen_template( $in, $out, $subif, $iftree);
             next;
         }
 
         print "in: $in out: $out\n" if ($debug);
         open my $inf,  '<', $in  or die "Can't open $in: $!";
         open my $outf, '>', $out or die "Can't open $out: $!";
-
+        
+        print $outf "priority: 820 \# after vrrp\n" if ($iftree =~ /vrrp/);
         while ( my $line = <$inf> ) {
             $line =~ s#\$IFNAME#$ifname#;
             print $outf $line;
@@ -126,5 +127,5 @@ foreach my $if_tree ( keys %interface_hash ) {
       or mkdir_p($outpath)
       or die "Can't create $outpath:$!";
 
-    gen_template( $inpath, $outpath, $interface_hash{$if_tree} );
+    gen_template( $inpath, $outpath, $interface_hash{$if_tree}, $if_tree );
 }
