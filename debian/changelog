@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.15.28) unstable; urgency=low
+
+  * fix priority generation bug in traffic-policy for vrrp interfaces
+
+ -- John Southworth <john.southworth@vyatta.com>  Thu, 08 Dec 2011 14:03:43 -0800
+
 vyatta-cfg-qos (0.15.27) unstable; urgency=low
 
   * add priorities to vrrp traffic-policy so that it is executed after
