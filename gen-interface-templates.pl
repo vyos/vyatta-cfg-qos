@@ -94,7 +94,9 @@ sub gen_template {
         open my $inf,  '<', $in  or die "Can't open $in: $!";
         open my $outf, '>', $out or die "Can't open $out: $!";
         
-        print $outf "priority: 820 \# after vrrp\n" if ($iftree =~ /vrrp/);
+        print $outf "priority: 820 \# after vrrp\n" 
+          if ($iftree =~ /vrrp/ && ($in =~ /\/in\// || $in =~ /\/out\//)); 
+
         while ( my $line = <$inf> ) {
             $line =~ s#\$IFNAME#$ifname#;
             print $outf $line;
