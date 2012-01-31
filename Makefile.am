@@ -8,6 +8,7 @@ sbin_SCRIPTS += scripts/vyatta-qos-util.pl
 
 share_perl5_DATA = lib/Vyatta/Qos/Util.pm
 share_perl5_DATA += lib/Vyatta/Qos/FairQueue.pm
+share_perl5_DATA += lib/Vyatta/Qos/FairBlue.pm
 share_perl5_DATA += lib/Vyatta/Qos/TrafficShaper.pm
 share_perl5_DATA += lib/Vyatta/Qos/ShaperClass.pm
 share_perl5_DATA += lib/Vyatta/Qos/Match.pm
