@@ -111,10 +111,67 @@ sub prioQdisc {
     }
 }
 
+sub sfbQdisc {
+    # Like RED, SFB can be quite complex. 
+    # However, unlike RED, the values for SFB can be approximated 
+    # with a better degree of success.
+    
+    # This is an attempt to get as close to optimal SFB options 
+    # it currently doesn't tune for increment and decrement so for large bandwidths
+    # this may not be optimal. 
+    # It is currently setup for 1000 byte packets and a 50 ms RTT.
+
+    my ( $self, $dev, $rate ) = @_;
+    my $sfb_id = 0x4000 + $self->{id};
+    my $avgpkt = 1000 * 8; # avgpkt in bits
+    my $limit = $self->{_limit};
+    my $latency = 0.1; # 50ms
+
+    my $target = ($rate * $latency)/$avgpkt; #target queue size in packets
+    $target = sprintf "%d", ($limit * 0.78) if ($target >= $limit);
+    $target = 1 if ($target < 1);
+
+    my $packet_rate = $rate/$avgpkt;
+    my $maxrate = $target/($latency); # use this value to keep penalty rate sane
+#    if ($maxrate < $packet_rate){
+#       print STDERR "Warning: queue-limit isn't long enough for desired bandwidth\n";
+#    }
+    $target = sprintf "%d", $target;
+
+    my $max = sprintf "%d", $target * 1.25;
+    $max = $limit if ($max >= $limit);
+
+    my $penalty_rate = sprintf "%d", ($maxrate)*0.1; # 10% of rate in pps
+    $penalty_rate = 1 if ($penalty_rate < 1);
+
+    my $penalty_burst = sprintf "%d", ($penalty_rate * $latency);
+    $penalty_burst = sprintf "%d", ($penalty_burst * 0.1)if ($penalty_burst >= $limit);
+    $penalty_burst = 1 if ($penalty_burst < 1);
+
+    printf "handle %x: sfb", $sfb_id; 
+    print  " target $target";
+    print  " max $max";
+    print  " limit $limit";
+    print  " penalty_rate $penalty_rate";
+    print  " penalty_burst $penalty_burst";
+    print  " increment 0.001";
+    print  " decrement 0.0002";
+    print  "\n";
+    printf STDERR "pktrate %d, maxrate %d, qtarget %d, qmax %d, prate %d, pburst %d",
+                    $packet_rate, $maxrate, $target, $max, $penalty_rate, $penalty_burst;
+
+    # Use SFQ where possible
+    if ($limit < 128){
+      printf "qdisc add dev %s parent %x: sfq perturb 10 limit %d\n", $dev, $sfb_id, $limit;
+    } else {
+      printf "qdisc add dev %s parent %x: pfifo limit %d\n", $dev, $sfb_id, $limit;
+    }
+}
+
 sub sfqQdisc {
     my ( $self, $dev, $rate ) = @_;
 
-    print "sfq";
+    print "sfq perturb 10";
     print " limit $self->{_limit}" if ( $self->{_limit} );
     print "\n";
 }
@@ -201,6 +258,7 @@ sub redValidate {
 my %qdiscOptions = (
     'priority'      => \&prioQdisc,
     'fair-queue'    => \&sfqQdisc,
+    'fair-blue'     => \&sfbQdisc,
     'random-detect' => \&redQdisc,
     'drop-tail'     => \&fifoQdisc,
 );

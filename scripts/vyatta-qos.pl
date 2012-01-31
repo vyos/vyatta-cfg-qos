@@ -29,6 +29,7 @@ my %policies = (
     'out' => {
 	'shaper'           => 'TrafficShaper',
 	'fair-queue'       => 'FairQueue',
+	'fair-blue'        => 'FairBlue',
 	'rate-control'     => 'RateLimiter',
 	'drop-tail'        => 'DropTail',
 	'network-emulator' => 'NetworkEmulator',
