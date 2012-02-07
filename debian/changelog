@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.15.29) unstable; urgency=low
+
+  * Allow redirect on all interfaces
+
+ -- Stephen Hemminger <shemminger@vyatta.com>  Tue, 07 Feb 2012 14:24:25 -0800
+
 vyatta-cfg-qos (0.15.28) unstable; urgency=low
 
   * fix priority generation bug in traffic-policy for vrrp interfaces
