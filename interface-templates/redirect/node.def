@@ -2,7 +2,7 @@ type: txt
 help: Incoming packet redirection destination
 allowed: /opt/vyatta/sbin/vyatta-interfaces.pl --show=input
 
-syntax:expression: $VAR(@) != $IFNAME ;\
+syntax:expression: $VAR(@) != "$IFNAME" ;\
 	 "interface $IFNAME: redirect to same interface not allowed"
 val_help: Interface for packet redirection
 
