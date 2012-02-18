@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.15.31) unstable; urgency=low
+
+  * Fix incorrect commit check in redirect node.def
+
+ -- John Southworth <john.southworth@vyatta.com>  Fri, 17 Feb 2012 17:23:26 -0800
+
 vyatta-cfg-qos (0.15.30) unstable; urgency=low
 
   * Bugfix 7784: Need quotes in syntax:expression when using more than
