@@ -1,3 +1,10 @@
+vyatta-cfg-qos (0.15.32) unstable; urgency=low
+
+  * Fix incorrect commit check in redirect node.def
+  * 0.15.31
+
+ -- John Southworth <john.southworth@vyatta.com>  Fri, 17 Feb 2012 17:23:41 -0800
+
 vyatta-cfg-qos (0.15.31) unstable; urgency=low
 
   * Fix incorrect commit check in redirect node.def
