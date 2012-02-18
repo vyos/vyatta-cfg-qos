@@ -1,3 +1,20 @@
+vyatta-cfg-qos (0.15.31) unstable; urgency=low
+
+  * Fix pppoe qos policy application
+  * Generate traffic-policy nodes for vrrp interfaces
+  * Add vrrp interface parameters for bonding vifs
+  * add priorities to vrrp traffic-policy so that it is executed after
+    keepalived has started
+  * fix priority generation bug in traffic-policy for vrrp interfaces
+  * Add initial support for SFB qdisc, still needs tuning
+  * Add FairBlue to Makefile
+  * Add vif redirection
+  * Remove manual vif redirect template since it has been added to all
+    interfaces
+  * Fix incorrect commit check in redirect node.def
+
+ -- John Southworth <john.southworth@vyatta.com>  Fri, 17 Feb 2012 16:45:26 -0800
+
 vyatta-cfg-qos (0.15.30) unstable; urgency=low
 
   * Bugfix 7784: Need quotes in syntax:expression when using more than
