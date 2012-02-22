@@ -56,10 +56,10 @@ GetOptions(
     "time=s"            => \$timeval,
 ) or usage();
 
-getPercent($percent)		if $percent;
-getPercentOrRate($percentrate)	if $percentrate;
-getRate($rate)			if $rate;
-getBurstSize($burst)		if $burst;
-getProtocol($protocol)		if $protocol;
-getDsfield($dscp)		if $dscp;
-getTime($timeval)		if $timeval;
+getPercent($percent)		if defined($percent);
+getPercentOrRate($percentrate)	if defined($percentrate);
+getRate($rate)			if defined($rate);
+getBurstSize($burst)		if defined($burst);
+getProtocol($protocol)		if defined($protocol);
+getDsfield($dscp)		if defined($dscp);
+getTime($timeval)		if defined($timeval);
