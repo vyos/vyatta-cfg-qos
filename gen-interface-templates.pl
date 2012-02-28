@@ -99,6 +99,7 @@ sub gen_template {
 
         while ( my $line = <$inf> ) {
             $line =~ s#\$IFNAME#$ifname#;
+            next if (($line =~ /^update:/ || $line =~ /^delete:/) && $iftree =~ /openvpn/);
             print $outf $line;
         }
         close $inf;
