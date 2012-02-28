@@ -148,6 +148,34 @@ sub start_interface {
     }
 }
 
+sub start_openvpn_interface {
+  my ($ifname, $direction, $policy) = @_;
+  update_interface( $ifname, $direction, $policy );
+}
+sub apply_openvpn_action {
+  my ($dev, $action, $target) = @_;
+  my $interface = new Vyatta::Interface($dev);
+  die "Unknown interface type: $dev" unless $interface;
+
+	# Clear existing ingress
+	system("/sbin/tc qdisc del dev $dev parent ffff: 2>/dev/null");
+
+	system("/sbin/tc qdisc add dev $dev handle ffff: ingress") == 0
+	    or die "tc qdisc ingress failed";
+
+	my $cmd =
+	    "/sbin/tc filter add dev $dev parent ffff:"
+	    . " protocol all prio 10 u32"
+	    . " match u32 0 0 flowid 1:1"
+	    . " action mirred egress $action dev $target";
+
+	system($cmd) == 0
+	    or die "tc action $action command failed";
+
+  system("/sbin/tc qdisc del dev $dev parent ffff: 2>/dev/null")
+  	if ($action eq '__undef');
+}
+
 ## interface_exists('wan0.1')
 # check if interface exists
 # Note: retry to handle chicken-egg problem with ppp devices
@@ -381,9 +409,12 @@ EOF
 my (@startList, @updateInterface, @deleteInterface);
 my ($updateAction, $deleteAction, $checkTarget);
 my ($listPolicy, @createPolicy, @applyPolicy, @deletePolicy);
+my (@startOpenVPNList, @openvpnAction);
 
 GetOptions(
     "start-interface=s"     => \@startList,
+    "start-openvpn-interface=s{3}"=> \@startOpenVPNList,
+    "update-openvpn-action=s{3}"=> \@openvpnAction,
     "update-interface=s{3}" => \@updateInterface,
     "delete-interface=s{2}" => \@deleteInterface,
 
@@ -400,6 +431,8 @@ GetOptions(
 delete_interface(@deleteInterface) if ( $#deleteInterface == 1 );
 update_interface(@updateInterface) if ( $#updateInterface == 2 );
 start_interface(@startList)        if ( @startList );
+start_openvpn_interface(@startOpenVPNList)        if ( @startOpenVPNList );
+apply_openvpn_action(@openvpnAction)	   if ( @openvpnAction );
 
 list_policy($listPolicy)           if ( $listPolicy );
 create_policy(@createPolicy)       if ( $#createPolicy == 1 );
