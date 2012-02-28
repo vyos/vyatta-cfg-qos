@@ -1,3 +1,12 @@
+vyatta-cfg-qos (0.15.34) unstable; urgency=low
+
+  * Fix pppoe qos policy application
+  * Bugfix 7649:
+  * Don't actually do anything in the redirect node.def for openvpn, let
+    the openvpn script handle this.
+
+ -- John Southworth <john.southworth@vyatta.com>  Tue, 28 Feb 2012 15:15:05 -0800
+
 vyatta-cfg-qos (0.15.33) unstable; urgency=low
 
   * Fix validation of value 0
