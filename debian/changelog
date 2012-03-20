@@ -1,3 +1,16 @@
+vyatta-cfg-qos (0.15.36) unstable; urgency=low
+
+  [ Deepti Kulkarni ]
+  * new branch
+  * 0.15.34+oxnard1
+
+  [ Gaurav Sinha ]
+  * fixing 7322
+
+  [ Gaurav ]
+
+ -- Gaurav <gaurav.sinha@vyatta.com>  Tue, 20 Mar 2012 09:51:00 -0700
+
 vyatta-cfg-qos (0.15.35) unstable; urgency=low
 
   * new branch
