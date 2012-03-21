@@ -1,3 +1,10 @@
+vyatta-cfg-qos (0.15.34+oxnard5) unstable; urgency=low
+
+  * Force rebuild for some reason old vrrp interface templates still
+    exist
+
+ -- John Southworth <john.southworth@vyatta.com>  Wed, 21 Mar 2012 16:39:33 -0700
+
 vyatta-cfg-qos (0.15.34+oxnard4) unstable; urgency=low
 
   * Hide vrrp interface node since the syntax will change in the future
