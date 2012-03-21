@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.15.34+oxnard4) unstable; urgency=low
+
+  * Hide vrrp interface node since the syntax will change in the future
+
+ -- John Southworth <john.southworth@vyatta.com>  Wed, 21 Mar 2012 06:48:10 -0700
+
 vyatta-cfg-qos (0.15.34+oxnard3) unstable; urgency=low
 
   * force release
