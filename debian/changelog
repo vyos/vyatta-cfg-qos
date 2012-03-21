@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.15.34+oxnard6) unstable; urgency=low
+
+  * remove manually created vrrp nodes
+
+ -- John Southworth <john.southworth@vyatta.com>  Wed, 21 Mar 2012 16:53:20 -0700
+
 vyatta-cfg-qos (0.15.34+oxnard5) unstable; urgency=low
 
   * Force rebuild for some reason old vrrp interface templates still
