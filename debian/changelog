@@ -1,3 +1,10 @@
+vyatta-cfg-qos (0.15.34+oxnard8) unstable; urgency=low
+
+  * Revert "Revert "Hide vrrp interface node since the syntax will
+    change in the future""
+
+ -- John Southworth <john.southworth@vyatta.com>  Wed, 25 Apr 2012 15:08:32 -0700
+
 vyatta-cfg-qos (0.15.34+oxnard7) unstable; urgency=low
 
   * Revert "Hide vrrp interface node since the syntax will change in the
