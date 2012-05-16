@@ -31,17 +31,11 @@ my %interface_hash = (
     'loopback/node.tag'                             => '$VAR(@)',
     'ethernet/node.tag'                             => '$VAR(@)',
     'ethernet/node.tag/pppoe/node.tag'              => 'pppoe$VAR(@)',
-    'ethernet/node.tag/vrrp/vrrp-group/node.tag/interface' => '$VAR(../../../@)v$VAR(../@)',
     'ethernet/node.tag/vif/node.tag'                => '$VAR(../@).$VAR(@)',
     'ethernet/node.tag/vif/node.tag/pppoe/node.tag' => 'pppoe$VAR(@)',
-    'ethernet/node.tag/vif/node.tag/vrrp/vrrp-group/node.tag/interface' =>
-             '$VAR(../../../../@).$VAR(../../../@)v$VAR(../@)',
     'wireless/node.tag'                             => '$VAR(@)',
     'bonding/node.tag'                              => '$VAR(@)',
-    'bonding/node.tag/vrrp/vrrp-group/node.tag/interface' => '$VAR(../../../@)v$VAR(../@)',
     'bonding/node.tag/vif/node.tag'                 => '$VAR(../@).$VAR(@)',
-    'bonding/node.tag/vif/node.tag/vrrp/vrrp-group/node.tag/interface' =>
-             '$VAR(../../../../@).$VAR(../../../@)v$VAR(../@)',
     'pseudo-ethernet/node.tag'                      => '$VAR(@)',
 #   'pseudo-ethernet/node.tag/vif/node.tag'         => '$VAR(../@).$VAR(@)',
 
@@ -94,9 +88,6 @@ sub gen_template {
         open my $inf,  '<', $in  or die "Can't open $in: $!";
         open my $outf, '>', $out or die "Can't open $out: $!";
         
-        print $outf "priority: 820 \# after vrrp\n" 
-          if ($iftree =~ /vrrp/ && ($in =~ /\/in\// || $in =~ /\/out\//)); 
-
         while ( my $line = <$inf> ) {
             $line =~ s#\$IFNAME#$ifname#;
             next if (($line =~ /^update:/ || $line =~ /^delete:/) && $iftree =~ /openvpn/);
