@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.15.38) unstable; urgency=low
+
+  * Add support for priority-queue policy
+
+ -- Stephen Hemminger <shemminger@vyatta.com>  Fri, 13 Jul 2012 16:20:56 -0700
+
 vyatta-cfg-qos (0.15.37) unstable; urgency=low
 
   * Delete manually generated vrrp nodes
