@@ -1,0 +1,16 @@
+type: txt
+help: Match IP protocol name or number
+syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --protocol $VAR(@)" 
+allowed: awk '
+	/^#/ { next }
+	     { if($1 != "ip") printf "%s ", $1 }' </etc/protocols
+val_help: u32:0-255; IP protocol value
+val_help: icmp; Internet Control Message Protocol
+val_help: igmp; Internet Group Management Protocol
+val_help: ggp; Gateway-Gateway protocol
+val_help: tcp; Transmission Control Protocol
+val_help: egp; Exterior Gateway Protocol
+val_help: udp; User Datagram Protocol
+val_help: gre; General Routing Encapsulation
+val_help: ospf; Open Shortest Path First IGP
+val_help: sctp; Stream Control Transmission Protocol

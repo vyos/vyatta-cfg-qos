@@ -1,0 +1,5 @@
+type: u32
+help: Virtual Local Area Network (VLAN) ID for this match
+syntax:expression: $VAR(@) >= 0 && $VAR(@) <= 4095; \
+                  "VLAN ID must be between 0 and 4095"
+val_help: u32:0-4095; Virtual Local Area Network (VLAN) tag 

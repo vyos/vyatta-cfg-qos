@@ -1,0 +1,5 @@
+type: u32
+help: Priority for usage of excess bandwidth
+syntax:expression: $VAR(@) >= 0 && $VAR(@) <= 7 ;\
+                   "priority must be between 0 than 7"
+val_help: u32:0-7; Priority order for bandwidth pool

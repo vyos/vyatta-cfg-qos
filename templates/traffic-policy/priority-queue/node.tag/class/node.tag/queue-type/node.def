@@ -1,0 +1,11 @@
+type: txt
+default: "fair-queue"
+syntax:expression: $VAR(@) in "fair-queue", "priority", "drop-tail", "random-detect";\
+                   "Unknown queue-type"
+help: Queue type for this class
+
+val_help: fair-queue; Stochastic Fair Queue (SFQ)
+val_help: drop-tail; First-In-First-Out (FIFO)
+val_help: priority; Priority queueing based on DSCP
+val_help: random-detect; Random Early Detection (RED)
+

@@ -1,0 +1,18 @@
+type: txt
+help: Match on Differentiated Services Codepoint (DSCP)
+syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --dscp $VAR(@)"
+allowed: awk '
+	/^#/ { next }
+	     { printf "%s ", $2 }' </etc/iproute2/rt_dsfield
+val_help: u32:0-63;Differentiated Services Codepoint (DSCP) value 
+val_help: default; match DSCP (000000)
+val_help: reliability; match; DSCP (000001)
+val_help: throughput; match; DSCP (000010)
+val_help: lowdelay; match; DSCP (000100)
+val_help: priority; match; DSCP (001000)
+val_help: immediate; match; DSCP (010000)
+val_help: flash; match DSCP (011000)
+val_help: flash-override; match DSCP (100000)
+val_help: critical; match DSCP (101000)
+val_help: internet; match; DSCP (110000)
+val_help: network; match; DSCP (111000)

@@ -1,0 +1,8 @@
+tag:
+type: txt
+help: Priority queuing based policy
+syntax:expression: pattern $VAR(@) "^[[:alnum:]][-_[:alnum:]]*$"
+                   ; "only alpha-numeric policy name allowed"
+create: /opt/vyatta/sbin/vyatta-qos.pl --create-policy $VAR(.) $VAR(@)
+delete: /opt/vyatta/sbin/vyatta-qos.pl --delete-policy $VAR(@)
+end: /opt/vyatta/sbin/vyatta-qos.pl --apply-policy $VAR(@)

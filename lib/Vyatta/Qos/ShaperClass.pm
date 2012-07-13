@@ -234,6 +234,10 @@ sub rateCheck {
           $rate / 1000;
         exit 1;
     }
+}
+
+sub valid_leaf {
+    my ($self, $level, $rate) = @_;
 
     my $qtype = $self->{_qdisc};
     my $q     = $qdiscValidate{$qtype};
@@ -268,7 +272,6 @@ sub gen_class {
     print " quantum $quantum"	     if ($quantum);
     print " burst $self->{_burst}"   if ( $self->{_burst} );
     print " prio $self->{_priority}" if ( $self->{_priority} );
-    
 
     print "\n";
 }

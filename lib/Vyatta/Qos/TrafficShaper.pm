@@ -144,7 +144,9 @@ sub commands {
     $default->rateCheck( $rate, "$self->{_level} default" );
 
     foreach my $class (@$classes) {
-        $class->rateCheck( $rate, "$self->{_level} class $class->{id}" );
+	my $level = "$self->{_level} class $class->{id}";
+	$class->rateCheck( $rate, $level );
+	$class->valid_leaf( $level );
 
         # find largest class id
         if ( defined $class->{id} && $class->{id} > $maxid ) {
