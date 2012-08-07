@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.15.39) unstable; urgency=low
+
+  * Add a module for functions shared between conf and op mode scripts.
+
+ -- Daniil Baturin <daniil.baturin@vyatta.com>  Tue, 07 Aug 2012 22:43:09 +0700
+
 vyatta-cfg-qos (0.15.38) unstable; urgency=low
 
   * Add support for priority-queue policy
