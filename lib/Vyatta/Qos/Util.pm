@@ -1,4 +1,4 @@
-# Wrappers for iproute2 utilities
+# QoS utility functions
 #
 # **** License ****
 # This program is free software; you can redistribute it and/or modify

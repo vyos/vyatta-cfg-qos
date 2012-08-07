@@ -1,4 +1,4 @@
-# Wrappers for iproute2 utilities
+# Common op/conf mode QoS functions
 #
 # **** License ****
 # This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,6 @@ use vars qw(%policies);
 
 our @EXPORT =
    qw(find_policy interfaces_using get_policy_names list_policy %policies);
-#our @EXPORT_OK = qw(getIfIndex);
 use base qw(Exporter);
 
 our %policies = ( 
