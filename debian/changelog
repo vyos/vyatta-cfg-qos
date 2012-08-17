@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.15.41) unstable; urgency=low
+
+  * Fix a few priority-queue problems
+
+ -- John Southworth <john.southworth@vyatta.com>  Fri, 17 Aug 2012 15:55:58 -0700
+
 vyatta-cfg-qos (0.15.40) unstable; urgency=low
 
   [ Daniil Baturin ]
