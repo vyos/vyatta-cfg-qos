@@ -1,5 +1,5 @@
 type: txt
-default: "fair-queue"
+default: "drop-tail"
 syntax:expression: $VAR(@) in "fair-queue", "priority", "drop-tail", "random-detect";\
                    "Unknown queue-type"
 help: Queue type for default traffic

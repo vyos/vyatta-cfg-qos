@@ -85,29 +85,27 @@ sub commands {
         # find largest class id
 	$maxid = $class->{id}
         if ( defined $class->{id} && $class->{id} > $maxid );
-
-	# find largest priority
-	my $prio = $class->{_priority};
-
-	$bands = $prio + 1
-	    if ( defined $prio && $prio >= $bands);
     }
 
     # fill in id of default
     $default->{id} = ++$maxid;
+    $bands = $default->{id};
     unshift @$classes, $default;
 
     my $parent = 1;
     my $root   = "root";
 
+    my $def_prio = $bands - 1;
     # Since we use filters to set priority 
-    printf "qdisc add dev %s %s handle %x: prio bands %d\n",
-	$dev, $root, $parent, $bands;
+    printf "qdisc add dev %s %s handle %x: prio bands %d priomap %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d\n",
+	$dev, $root, $parent, $bands, 
+        $def_prio, $def_prio, $def_prio, $def_prio, $def_prio, $def_prio, $def_prio,
+        $def_prio, $def_prio, $def_prio, $def_prio, $def_prio, $def_prio, $def_prio, 
+        $def_prio, $def_prio, $def_prio;
 
     # prio is not really classful!
     foreach my $class (@$classes) {
-        $class->gen_leaf( $dev, $parent );
-
+	$class->gen_leaf( $dev, $parent );
 	my $prio = 1;
         foreach my $match ( $class->matchRules() ) {
             $match->filter( $dev, $parent, $class->{id}, $prio++ );
