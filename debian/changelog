@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.15.41+pacifica1) unstable; urgency=low
+
+  * new branch
+
+ -- John Southworth <john.southworth@vyatta.com>  Fri, 12 Oct 2012 18:46:49 -0700
+
 vyatta-cfg-qos (0.15.41) unstable; urgency=low
 
   * Fix a few priority-queue problems
