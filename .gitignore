@@ -15,6 +15,7 @@ debian/*.postinst
 debian/vyatta-cfg-qos
 debian/vyatta-cfg-qos-serial
 debian/vyatta-cfg-qos-wireless
+debian/vyatta-cfg-qos-extra
 debian/*.debhelper.log
 debian/*.substvars
 INSTALL
