@@ -27,3 +27,10 @@ Depends:  ${perl:Depends}, ${shlibs:Depends}, vyatta-cfg-qos, vyatta-serial
 Replaces: vyatta-cfg-qos
 Description: vyatta-cfg-qos serial templates
  Vyatta Qos configuration templates for serial devices
+
+Package: vyatta-cfg-qos-wireless
+Architecture: all
+Depends:  ${perl:Depends}, ${shlibs:Depends}, vyatta-cfg-qos, vyatta-wireless
+Replaces: vyatta-cfg-qos
+Description: vyatta-cfg-qos wireless templates
+ Vyatta Qos configuration templates for wireless devices

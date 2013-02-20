@@ -61,7 +61,7 @@ install: build
 
 	$(MAKE) DESTDIR=$(PKGDIR) install
 
-	for p in vyatta-cfg-qos vyatta-cfg-qos-serial; do \
+	for p in vyatta-cfg-qos vyatta-cfg-qos-serial vyatta-cfg-qos-wireless; do \
 	  install -D --mode=0644 debian/$$p.lintian-overrides \
 		debian/$$p/usr/share/lintian/overrides/$$p; \
 	done
