@@ -61,19 +61,27 @@ sub new {
             $fields{src}      = $config->returnValue("ether source");
             $fields{dst}      = $config->returnValue("ether destination");
         } else {
-            $fields{dsfield} = getDsfield( $config->returnValue("$af dscp") );
-            my $ipprot = $config->returnValue("$af protocol");
-            $fields{protocol} = getProtocol($ipprot);
+            my $dsfield = $config->returnValue("$af dscp");
+            my $ipprot  = $config->returnValue("$af protocol");
+            my $src     = $config->returnValue("$af source address");
+            my $dst     = $config->returnValue("$af destination address");
+            my $sport   = $config->returnValue("$af source port");
+            my $dport   = $config->returnValue("$af destination port");
 
-            $fields{src}      = $config->returnValue("$af source address");
-            $fields{dst}      = $config->returnValue("$af destination address");
-
-	    my $port = $config->returnValue("$af source port");
-            $fields{sport} = getPort( $port, $ipprot ) if $port;
-	    $port = $config->returnValue("$af destination port");
-            $fields{dport} = getPort( $port, $ipprot ) if $port;
+            $fields{dsfield}  = getDsfield($dsfield) if $dsfield;
+            $fields{protocol} = getProtocol($ipprot) if $ipprot;
+            $fields{src}      = $src if $src;
+            $fields{dst}      = $dst if $dst;
+            $fields{sport}    = getPort( $sport, $ipprot ) if $sport;
+            $fields{dport}    = getPort( $dport, $ipprot ) if $dport;
         }
 
+        # if the hash is empty then we didn't generate a match rule 
+        # this usually means user left an uncompleted match in the config
+        my @keys = keys(%fields);
+        if ($#keys < 0) {
+            return undef;
+        }
         $self->{$af} = \%fields;
 
         die "Can not match on both $af and $lastaf protocol in same match\n"

@@ -68,7 +68,10 @@ sub _getMatch {
 
     foreach my $match ( $config->listNodes($level) ) {
         $config->setLevel("$level $match");
-        push @matches, new Vyatta::Qos::Match($config);
+        my $match = new Vyatta::Qos::Match($config);
+        if (defined($match)) {
+            push @matches, $match;
+        }
     }
     return @matches;
 }

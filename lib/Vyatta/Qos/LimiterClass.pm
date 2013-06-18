@@ -60,7 +60,10 @@ sub _define {
 
     foreach my $match ( $config->listNodes("match") ) {
         $config->setLevel("$level match $match");
-        push @matches, new Vyatta::Qos::Match($config);
+        my $match = new Vyatta::Qos::Match($config);
+        if (defined($match) {
+            push @matches,  $match;
+        }
     }
     $self->{_match} = \@matches;
 }
