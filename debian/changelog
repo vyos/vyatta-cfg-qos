@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.15.42+daisy2) unstable; urgency=low
+
+  * Bugfix 8469: ensure that matches have data under them
+
+ -- John Southworth <john.southworth@vyatta.com>  Tue, 18 Jun 2013 11:00:15 -0700
+
 vyatta-cfg-qos (0.15.42+daisy1) unstable; urgency=low
 
   * create daisy branch
