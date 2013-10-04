@@ -104,9 +104,9 @@ sub commands {
         $def_prio, $def_prio, $def_prio;
 
     # prio is not really classful!
+    my $prio = 1;
     foreach my $class (@$classes) {
 	$class->gen_leaf( $dev, $parent );
-	my $prio = 1;
         foreach my $match ( $class->matchRules() ) {
             $match->filter( $dev, $parent, $class->{id}, $prio++ );
         }

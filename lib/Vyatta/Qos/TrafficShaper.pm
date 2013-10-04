@@ -200,11 +200,11 @@ sub commands {
     printf "class add dev %s parent %x: classid %x:1 htb rate %s\n",
       $dev, $parent, $parent, $rate;
 
+    my $prio = 1;
     foreach my $class (@$classes) {
         $class->gen_class( $dev, 'htb', $parent, $rate, $r2q );
         $class->gen_leaf( $dev, $parent, $rate );
 
-        my $prio = 1;
         foreach my $match ( $class->matchRules() ) {
             $match->filter( $dev, $parent, $class->{id}, $prio++,
                 $class->{dsmark} );
