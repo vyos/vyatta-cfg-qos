@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.15.42+hydrogen2) unstable; urgency=low
+
+  * Bug #113: missing parenthesis broke everything.
+
+ -- Daniil Baturin <daniil@baturin.org>  Fri, 17 Jan 2014 07:21:00 +0100
+
 vyatta-cfg-qos (0.15.42+hydrogen1) unstable; urgency=low
 
   * New branch
