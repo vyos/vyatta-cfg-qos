@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.15.42+vyos1+helium1) unstable; urgency=low
+
+  * New branch
+
+ -- Daniil Baturin <daniil@baturin.org>  Thu, 23 Jan 2014 22:30:50 +0100
+
 vyatta-cfg-qos (0.15.42+hydrogen2) unstable; urgency=low
 
   * Bug #113: missing parenthesis broke everything.
