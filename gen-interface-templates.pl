@@ -46,6 +46,7 @@ my %interface_hash = (
     'input/node.tag'				    => '$VAR(@)',
 
     'l2tpv3/node.tag'                               => '$VAR(@)',
+    'dummy/node.tag'                                => '$VAR(@)',
 
     'wirelessmodem/node.tag'                        => '$VAR(@)',
     'wireless/node.tag'  	                    => '$VAR(@)',
