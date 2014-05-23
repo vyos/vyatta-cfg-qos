@@ -6,4 +6,7 @@ syntax:expression: $VAR(@) == "auto" || \
 
 val_help: auto; Rate matches interface speed (default)
 val_help: <number>; Rate in k (1000) bytes per second 
-val_help: <number><suffix>;  Rate with scaling suffix (mbit, mbps, ...)
+val_help: <number>bit; bit(1), kbit(10^3), mbit(10^6), gbit, tbit
+val_help: <number>ibit; kibit(1024), mibit(1024^2), gibit(1024^3), tbit(1024^4)
+val_help: <number>ibps; kibps(1024*8), mibps(1024^2*8), gibps, tibps *Byte/sec*
+val_help: <number>bps; bps(8),kbps(8*10^3),mbps(8*10^6), gbps, tbps *Byte/sec*

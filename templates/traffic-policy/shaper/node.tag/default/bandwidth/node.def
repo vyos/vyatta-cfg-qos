@@ -2,6 +2,9 @@ type: txt
 help: Bandwidth used for default traffic [REQUIRED]
 syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --percent-or-rate \$VAR(@)"
 
-val_help: <number>; Bandwidth in Kbps
+val_help: <number>; Bandwidth in Kbps(10^3 bits per second)
 val_help: <number>%%; Percentage of overall rate (default 100%%)
-val_help: <number><suffix>;  Value with scaling suffix (kbit, kbps, ...)
+val_help: <number>bit; bit(1), kbit(10^3), mbit(10^6), gbit, tbit
+val_help: <number>ibit; kibit(1024), mibit(1024^2), gibit(1024^3), tbit(1024^4)
+val_help: <number>ibps; kibps(1024*8), mibps(1024^2*8), gibps, tibps *Byte/sec*
+val_help: <number>bps; bps(8),kbps(8*10^3),mbps(8*10^6), gbps, tbps *Byte/sec*
