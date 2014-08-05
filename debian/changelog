@@ -1,3 +1,16 @@
+vyatta-cfg-qos (0.15.42+vyos1+helium4) unstable; urgency=low
+
+  [ Hiroyuki Sato ]
+  * Update shaping rate help
+
+  [ Kim Hagen ]
+  * Add QinQ to interfaces in template generator.
+  * Set separate virtual interface for QinQ.
+
+  [ Daniil Baturin ]
+
+ -- Daniil Baturin <daniil@baturin.org>  Tue, 05 Aug 2014 16:28:38 +0000
+
 vyatta-cfg-qos (0.15.42+vyos1+helium3) unstable; urgency=low
 
   * Bug #170: add L2TPv3 interface type to QoS template generator.
