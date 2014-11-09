@@ -29,6 +29,7 @@ my %policies = (
     'out' => {
 	'shaper-hfsc'	   => 'HFSCShaper',
 	'shaper'           => 'TrafficShaper',
+	'fq-codel'         => 'FairQueueCodel',
 	'fair-queue'       => 'FairQueue',
 	'rate-control'     => 'RateLimiter',
 	'drop-tail'        => 'DropTail',

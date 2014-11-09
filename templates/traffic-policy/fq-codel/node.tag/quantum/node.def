@@ -1,0 +1,2 @@
+type: u32
+help: Number of bytes used as 'deficit' (default 1514)

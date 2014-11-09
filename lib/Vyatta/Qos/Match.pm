@@ -26,7 +26,7 @@ sub getPort {
 
     if ( $str =~ /^([0-9]+)|(0x[0-9a-fA-F]+)$/ ) {
         die "$str is not a valid port number\n"
-          if ( $str <= 0 || $str > 65535 );
+            if ( $str <= 0 || $str > 65535 );
         return $str;
     }
 
@@ -47,8 +47,8 @@ sub new {
 
     # special case for match all
     unless ($config) {
-	$self->{'ether'} = { protocol => 'all' };
-	return $self;
+        $self->{'ether'} = { protocol => 'all' };
+        return $self;
     }
 
     foreach my $af (qw(ip ipv6 ether)) {
@@ -88,7 +88,7 @@ sub new {
             }
         }
 
-        # if the hash is empty then we didn't generate a match rule 
+        # if the hash is empty then we didn't generate a match rule
         # this usually means user left an uncompleted match in the config
         my @keys = keys(%fields);
         if ($#keys < 0) {
@@ -120,6 +120,82 @@ sub new {
     return $self;
 }
 
+sub small_ip_filter {
+    my ( $dev, $parent, $prio, $classid ) = @_;
+    my $protoip = "ip";
+    my $synack  = 2;    # hash table id, arbitrary number
+    $parent  = sprintf("%x", $parent);
+    $classid = sprintf("%x", $classid);
+    print "filter add dev $dev parent $parent: prior $prio protocol $protoip u32\n";
+    # make a linked hash table
+    print "filter add dev $dev parent $parent: prior $prio protocol $protoip handle $synack: u32 divisor 1\n";
+    # tcp syn bit
+    print "filter add dev $dev parent $parent: prior $prio protocol $protoip u32 ht $synack:";
+    print "    match u8 0x02 0x02 at 13";
+    print "    flowid $parent:$classid\n";
+    # tcp ack bit
+    print "filter add dev $dev parent $parent: prior $prio protocol $protoip u32 ht $synack:";
+    print "    match u8 0x10 0x10 at 13";
+    print "    flowid $parent:$classid\n";
+    # ipv4/icmp
+    print "filter add dev $dev parent $parent: prior $prio protocol $protoip u32";
+    print "    match ip protocol 1 0xff";
+    print "    flowid $parent:$classid\n";
+    # ipv4/tcp, total len<256, tos=0x10 == minimum delay
+    print "filter add dev $dev parent $parent: prior $prio protocol $protoip u32";
+    print "    match ip protocol 6 0xff";
+    print "    match u16 0x0000 0xff00 at 2";
+    print "    match ip tos 0x10 0xff";
+    print "    flowid $parent:$classid\n";
+    # ipv4/tcp, total len<128, not fragmented
+    print "filter add dev $dev parent $parent: prior $prio protocol $protoip u32";
+    print "    match ip protocol 6 0xff";
+    print "    match u16 0x0000 0xff80 at 2";
+    print "    match ip nofrag";
+    print "    offset at 0 mask 0x0f00 shift 6 eat";
+    print "    link $synack:\n";
+}
+
+sub small_ip6_filter {
+    my ( $dev, $parent, $prio, $classid ) = @_;
+    my $protoip6 = "ipv6";
+    my $synack6  = 3;    # hash table id, arbitrary number
+    $parent  = sprintf("%x", $parent);
+    $classid = sprintf("%x", $classid);
+    # setup base filter
+    print "filter add dev $dev parent $parent: prior $prio protocol $protoip6 u32\n";
+    # make a linked hash table
+    print "filter add dev $dev parent $parent: prior $prio protocol $protoip6 handle $synack6: u32 divisor 1\n";
+    # tcp syn bit
+    print "filter add dev $dev parent $parent: prior $prio protocol $protoip6 u32 ht $synack6: ";
+    print "    match u8 0x02 0x02 at 13";
+    print "    flowid $parent:$classid\n";
+    # tcp ack bit
+    print "filter add dev $dev parent $parent: prior $prio protocol $protoip6 u32 ht $synack6:";
+    print "    match u8 0x10 0x10 at 13";
+    print "    flowid $parent:$classid\n";
+    # ipv6/icmpv6
+    print "filter add dev $dev parent $parent: prior $prio protocol $protoip6 u32";
+    print "    match ip6 protocol 58 0xff";
+    print "    flowid $parent:$classid\n";
+    # ipv6/tcp, payload len<128, priority=0x10 == minimum delay
+    print "filter add dev $dev parent $parent: prior $prio protocol $protoip6 u32";
+    print "    match ip6 protocol 6 0xff";
+    print "    match u16 0x0000 0xff80 at 4";
+    print "    match ip6 priority 0x10 0xff";
+    print "    flowid $parent:$classid\n";
+    # ipv6/tcp, payload len<64, not fragmented since the next header is a tcp header
+    # this does not handle packets with other ipv6 extension headers that might be
+    # present between the ipv6 header and the tcp header
+    print "filter add dev $dev parent $parent: prior $prio protocol $protoip6 u32";
+    print "    match ip6 protocol 6 0xff";
+    print "    match u16 0x0000 0xffc0 at 4";
+    print "    offset plus 40 eat";
+    print "    link $synack6:\n";
+}
+
+
+
 sub filter {
     my ( $self, $dev, $parent, $classid, $prio, $dsmark, $police ) = @_;
 
@@ -134,9 +210,9 @@ sub filter {
             next unless $ip && $$ip{dsfield};
 
             printf "filter add dev %s parent %x: protocol %s prio %d",
-	      $dev, $parent, $ipver, $prio;
+                $dev, $parent, $ipver, $prio;
             printf " handle %s tcindex classid %x:%x\n",
-              $$ip{dsfield}, $parent, $classid;
+                $$ip{dsfield}, $parent, $classid;
 
             $prio += 1;
         }
@@ -148,12 +224,18 @@ sub filter {
         my $p = $self->{$proto};
         next unless $p;
 
+        if (defined($$p{small})) {
+            small_ip_filter($dev, $parent, $prio, $classid)  if ($proto eq 'ip');
+            small_ip6_filter($dev, $parent, $prio, $classid) if ($proto eq 'ipv6');
+            next;
+        }
+
         printf "filter add dev %s parent %x: prio %d", $dev, $parent, $prio;
         if ( $proto eq 'ether' ) {
             my $type = $$p{protocol};
             $type = 'all' unless $type;
 
-	        print " protocol $type u32";
+	    print " protocol $type u32";
             if ( defined( $$p{src} ) || defined( $$p{dst} ) ) {
                 print " match ether src $$p{src}" if $$p{src};
                 print " match ether dst $$p{dst}" if $$p{dst};
@@ -211,8 +293,8 @@ sub filter {
             }
         }
 
-        print " match mark $fwmark 0xff" if $fwmark;
-        print " $police"                 if $police;
+        print  " match mark $fwmark 0xff" if $fwmark;
+        print  " $police"                 if $police;
         printf " flowid %x:%x\n", $parent, $classid;
         return;
     }
@@ -221,18 +303,17 @@ sub filter {
     my $vif   = $self->{_vif};
     if ( defined($vif) || defined($indev) ) {
         printf "filter add dev %s parent %x: prio %d", $dev, $parent, $prio;
-        print " protocol all basic";
-        print " match meta\(rt_iif eq $indev\)"        if $indev;
-        print " match meta\(vlan mask 0xfff eq $vif\)" if $vif;
-        print " match meta\(fwmark eq $fwmark\)"       if $fwmark;
-
-        print " $police" if $police;
+        print  " protocol all basic";
+        print  " match meta\(rt_iif eq $indev\)"        if $indev;
+        print  " match meta\(vlan mask 0xfff eq $vif\)" if $vif;
+        print  " match meta\(fwmark eq $fwmark\)"       if $fwmark;
+        print  " $police" if $police;
         printf " flowid %x:%x\n", $parent, $classid;
     }
     elsif ($fwmark) {
         printf "filter add dev %s parent %x: prio %d", $dev, $parent, $prio;
         printf " protocol all handle %d fw", $fwmark;
-        print " $police" if $police;
+        print  " $police" if $police;
         printf " flowid %x:%x\n", $parent, $classid;
     }
 }

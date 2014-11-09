@@ -51,7 +51,7 @@ sub new {
         $self->{_qdisc}    = $config->returnValue("queue-type");
         $self->{_avgpkt}   = $config->returnValue("packet-length");
         $self->{_latency}  = $config->returnValue("latency");
-	$self->{_quantum}  = $config->returnValue("quantum");
+        $self->{_quantum}  = $config->returnValue("quantum");
 
         $self->{dsmark} = getDsfield( $config->returnValue("set-dscp") );
         my @matches = _getMatch("$level match");
@@ -94,7 +94,7 @@ sub _getPercentRate {
         }
 
         return ( $percent * $speed ) / 100.;
-    } 
+    }
 
     return getRate($rate);
 }
@@ -120,6 +120,14 @@ sub sfqQdisc {
     print "sfq";
     print " limit $self->{_limit}" if ( $self->{_limit} );
     print "\n";
+}
+
+sub codelQdisc {
+    my ( $self, $dev, $rate ) = @_;
+
+    print "fq_codel";
+    print " limit $self->{_limit}" if ( $self->{_limit} );
+    print " noecn\n";
 }
 
 sub sfqValidate {
@@ -178,15 +186,15 @@ sub redQdisc {
 
 sub redValidate {
     my ( $self, $level, $rate ) = @_;
-    my $limit = $self->{_limit};	# packets
-    my $thresh = redQsize($rate);	# bytes
+    my $limit = $self->{_limit};    # packets
+    my $thresh = redQsize($rate);   # bytes
     my $qmax  = POSIX::ceil($thresh / AVGPKT); # packets
 
     if ( defined($limit) && $limit < $qmax ) {
         print STDERR "Configuration error in: $level\n";
         printf STDERR
 "The queue limit (%d) is too small, must be %d or more when using random-detect\n",
-	    $limit, $qmax;
+        $limit, $qmax;
         exit 1;
     }
 
@@ -194,16 +202,17 @@ sub redValidate {
         my $minbw = ( 3 * AVGPKT * 8 ) / LATENCY;
 
         print STDERR "Configuration error in: $level\n";
-	printf STDERR
+    printf STDERR
 "Random-detect queue type requires effective bandwidth of %d Kbit/sec or greater\n",
           $minbw;
-	exit 1;
+    exit 1;
     }
 }
 
 my %qdiscOptions = (
     'priority'      => \&prioQdisc,
     'fair-queue'    => \&sfqQdisc,
+    'fq-codel'      => \&codelQdisc,
     'random-detect' => \&redQdisc,
     'drop-tail'     => \&fifoQdisc,
 );
@@ -264,7 +273,7 @@ sub gen_class {
     # Hack to avoid kernel HTB message if quantum is small.
     # Only occurs if link speed is high and offered bandwidth is small.
     if ( defined($r2q)  && !defined($quantum) && ($rate / 8) / $r2q < MINQUANTUM ) {
-	$quantum = MINQUANTUM;
+    $quantum = MINQUANTUM;
     }
 
     printf "class add dev %s parent %x:1 classid %x:%x %s",
@@ -272,7 +281,7 @@ sub gen_class {
 
     print " rate $rate"              if ($rate);
     print " ceil $ceil"              if ($ceil);
-    print " quantum $quantum"	     if ($quantum);
+    print " quantum $quantum"        if ($quantum);
     print " burst $self->{_burst}"   if ( $self->{_burst} );
     print " prio $self->{_priority}" if ( $self->{_priority} );
 
