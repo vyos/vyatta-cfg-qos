@@ -43,7 +43,7 @@ sub new {
     $self->{_flows}    = $config->returnValue('flows');
     $self->{_target}   = $config->returnValue('target');
     $self->{_interval} = $config->returnValue('interval');
-    $self->{_quantum}  = $config->returnValue('quantum');
+    $self->{_cquantum} = $config->returnValue('codel-quantum');
     return bless $self, $class;
 }
 
@@ -55,7 +55,7 @@ sub commands {
     print " flows    $self->{_flows}"    if ( $self->{_flows} );
     print " target   $self->{_target}"   if ( $self->{_target} );
     print " interval $self->{_interval}" if ( $self->{_interval} );
-    print " quantum  $self->{_quantum}"  if ( $self->{_quantum} );
+    print " quantum  $self->{_cquantum}" if ( $self->{_cquantum} );
     print " noecn\n";
 }
 

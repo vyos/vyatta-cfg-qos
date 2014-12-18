@@ -1,0 +1,2 @@
+type: u32
+help: fq-codel - Number of bytes used as 'deficit' (default 1514)

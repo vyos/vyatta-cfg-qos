@@ -52,6 +52,13 @@ sub new {
         $self->{_avgpkt}   = $config->returnValue("packet-length");
         $self->{_latency}  = $config->returnValue("latency");
         $self->{_quantum}  = $config->returnValue("quantum");
+        $self->{_flows}    = $config->returnValue('flows');
+        $self->{_target}   = $config->returnValue('target');
+        $self->{_interval} = $config->returnValue('interval');
+        $self->{_cquantum} = $config->returnValue('codel-quantum');
+
+        if ( $self->{_target} )    { $self->{_target} *= 1000; }
+        if ( $self->{_interval} )  { $self->{_interval} *= 1000; }
 
         $self->{dsmark} = getDsfield( $config->returnValue("set-dscp") );
         my @matches = _getMatch("$level match");
@@ -126,7 +133,11 @@ sub codelQdisc {
     my ( $self, $dev, $rate ) = @_;
 
     print "fq_codel";
-    print " limit $self->{_limit}" if ( $self->{_limit} );
+    print " limit $self->{_limit}"       if ( $self->{_limit} );
+    print " flows    $self->{_flows}"    if ( $self->{_flows} );
+    print " target   $self->{_target}"   if ( $self->{_target} );
+    print " interval $self->{_interval}" if ( $self->{_interval} );
+    print " quantum  $self->{_cquantum}" if ( $self->{_cquantum} );
     print " noecn\n";
 }
 
