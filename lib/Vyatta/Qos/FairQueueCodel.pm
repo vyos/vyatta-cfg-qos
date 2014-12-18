@@ -44,6 +44,10 @@ sub new {
     $self->{_target}   = $config->returnValue('target');
     $self->{_interval} = $config->returnValue('interval');
     $self->{_cquantum} = $config->returnValue('codel-quantum');
+
+    if ( $self->{_target} )    { $self->{_target} *= 1000; }
+    if ( $self->{_interval} )  { $self->{_interval} *= 1000; }
+
     return bless $self, $class;
 }
 

@@ -133,7 +133,7 @@ sub codelQdisc {
     my ( $self, $dev, $rate ) = @_;
 
     print "fq_codel";
-    print " limit $self->{_limit}"       if ( $self->{_limit} );
+    print " limit    $self->{_limit}"    if ( $self->{_limit} );
     print " flows    $self->{_flows}"    if ( $self->{_flows} );
     print " target   $self->{_target}"   if ( $self->{_target} );
     print " interval $self->{_interval}" if ( $self->{_interval} );
