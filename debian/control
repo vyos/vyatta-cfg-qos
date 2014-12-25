@@ -1,7 +1,7 @@
 Source: vyatta-cfg-qos
 Section: contrib/net
 Priority: extra
-Maintainer: Vyatta Package Maintainers <maintainers@vyatta.com>
+Maintainer: VyOS Package Maintainers <maintainers@vyos.net>
 Build-Depends: debhelper (>= 5), autotools-dev
 Standards-Version: 3.7.2
 
@@ -18,12 +18,12 @@ Depends: sed (>= 4.1.5),
  ethtool
 Suggests: util-linux (>= 2.13-5),
  net-tools,
-Description: Vyatta Qos configuration templates/scripts
- Vyatta Qos configuration templates and scripts.
+Description: VyOS Qos configuration templates/scripts
+ VyOS Qos configuration templates and scripts.
 
 Package: vyatta-cfg-qos-serial
 Architecture: all
 Depends:  ${perl:Depends}, ${shlibs:Depends}, vyatta-cfg-qos, vyatta-serial
 Replaces: vyatta-cfg-qos
-Description: vyatta-cfg-qos serial templates
- Vyatta Qos configuration templates for serial devices
+Description: VyOS serial templates
+ VyOS Qos configuration templates for serial devices
