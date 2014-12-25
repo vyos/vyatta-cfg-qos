@@ -25,5 +25,5 @@ Package: vyatta-cfg-qos-serial
 Architecture: all
 Depends:  ${perl:Depends}, ${shlibs:Depends}, vyatta-cfg-qos, vyatta-serial
 Replaces: vyatta-cfg-qos
-Description: VyOS serial templates
+Description: VyOS Qos serial templates
  VyOS Qos configuration templates for serial devices
