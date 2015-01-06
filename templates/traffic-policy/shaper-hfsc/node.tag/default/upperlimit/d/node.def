@@ -1,0 +1,6 @@
+type: txt
+syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --time $VAR(@)"
+help: Service curve delay 
+
+val_help: <number>; Time in milliseconds
+val_help: <number><suffix>; Time with suffix (secs, ms, us)
