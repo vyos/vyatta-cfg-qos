@@ -30,6 +30,7 @@ use base qw(Exporter);
 
 our %policies = ( 
     'out' => {
+	'shaper-hfsc'	   => 'HFSCShaper',
         'shaper'           => 'TrafficShaper',
         'fair-queue'       => 'FairQueue',
         'rate-control'     => 'RateLimiter',

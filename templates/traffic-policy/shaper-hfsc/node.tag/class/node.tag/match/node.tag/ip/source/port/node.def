@@ -1,0 +1,6 @@
+type: txt
+help: TCP (or UDP) source port for this match
+
+val_help: u32:1-65535; Numeric IP port
+val_help: txt; Assigned TCP (or UDP) port name
+

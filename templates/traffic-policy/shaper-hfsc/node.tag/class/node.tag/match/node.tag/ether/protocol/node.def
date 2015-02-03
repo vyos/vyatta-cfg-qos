@@ -1,0 +1,15 @@
+type: txt
+help: Ethernet protocol for this match
+allowed: echo \
+    all 802.1Q 802_2 802_3 aarp aoe arp atalk \
+    dec ip ipv6 ipx lat localtalk rarp snap x25
+
+val_help: u32:0-65535; Ethernet protocol number
+val_help: txt; Ethernet protocol name
+val_help: all; Any protocol
+val_help: ip; Internet IP (IPv4)
+val_help: _ipv6; Internet IP (IPv6)
+val_help: arp; Address Resolution Protocol
+val_help: atalk; Appletalk
+val_help: ipx; Novell Internet Packet Exchange
+val_help: 802.1Q; 802.1Q VLAN tag

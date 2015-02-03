@@ -20,6 +20,8 @@ share_perl5_DATA += lib/Vyatta/Qos/RandomDetect.pm
 share_perl5_DATA += lib/Vyatta/Qos/TrafficLimiter.pm
 share_perl5_DATA += lib/Vyatta/Qos/Priority.pm
 share_perl5_DATA += lib/Vyatta/Qos/Shared.pm
+share_perl5_DATA += lib/Vyatta/Qos/HFSCClass.pm
+share_perl5_DATA += lib/Vyatta/Qos/HFSCShaper.pm
 
 etcdir           = /etc
 etc_SCRIPTS      =

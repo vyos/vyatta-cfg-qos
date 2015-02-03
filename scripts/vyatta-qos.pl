@@ -27,6 +27,7 @@ my $debug = $ENV{'QOS_DEBUG'};
 
 my %policies = (
     'out' => {
+	'shaper-hfsc'	   => 'HFSCShaper',
 	'shaper'           => 'TrafficShaper',
 	'fair-queue'       => 'FairQueue',
 	'rate-control'     => 'RateLimiter',
