@@ -67,13 +67,25 @@ sub new {
             my $dst     = $config->returnValue("$af destination address");
             my $sport   = $config->returnValue("$af source port");
             my $dport   = $config->returnValue("$af destination port");
-
+            my $maxlen  = $config->returnValue("$af max-length");
+            my $tcpsyn  = $config->exists("$af tcp syn");
+            my $tcpack  = $config->exists("$af tcp ack");
+        
             $fields{dsfield}  = getDsfield($dsfield) if $dsfield;
             $fields{protocol} = getProtocol($ipprot) if $ipprot;
             $fields{src}      = $src if $src;
             $fields{dst}      = $dst if $dst;
             $fields{sport}    = getPort( $sport, $ipprot ) if $sport;
             $fields{dport}    = getPort( $dport, $ipprot ) if $dport;
+            $fields{maxlen}   = $maxlen if $maxlen;
+            $fields{tcpsyn}   = $tcpsyn;
+            $fields{tcpack}   = $tcpack;
+            
+            # Reject any protocol apart from tcp if tcp syn or tcp ack are set
+            if($tcpsyn or $tcpack) {
+                die "Protocol cannot be different from tcp" if defined $fields{protocol} and $fields{protocol} ne getProtocol('tcp');
+                $fields{protocol} = getProtocol('tcp');
+            }
         }
 
         # if the hash is empty then we didn't generate a match rule 
@@ -141,7 +153,7 @@ sub filter {
             my $type = $$p{protocol};
             $type = 'all' unless $type;
 
-	    print " protocol $type u32";
+	        print " protocol $type u32";
             if ( defined( $$p{src} ) || defined( $$p{dst} ) ) {
                 print " match ether src $$p{src}" if $$p{src};
                 print " match ether dst $$p{dst}" if $$p{dst};
@@ -166,6 +178,37 @@ sub filter {
             print " match $sel sport $$p{sport} 0xffff" if $$p{sport};
             print " match $sel dst $$p{dst}"            if $$p{dst};
             print " match $sel dport $$p{dport} 0xffff" if $$p{dport};
+            # Max Length :
+            # Will match against total length of an IPv4 packet and payload length of an IPv6 packet.
+            # IPv4 : match u16 0x0000 ~MAXLEN at 2
+            # IPv6 : match u16 0x0000 ~MAXLEN at 4
+            if ($$p{maxlen}) {
+                if ( $proto eq 'ip' ) {
+                    printf " match u16 0x0000 %#.4x at 2", (hex('0xFFFF') & ~($$p{maxlen}));
+                } elsif ( $proto eq 'ipv6' ) {
+                    printf " match u16 0x0000 %#.4x at 4", (hex('0xFFFF') & ~($$p{maxlen}));
+                }
+            }
+            # TCP Flags :
+            # Will match against specific TCP flags
+            # We will assume the IPv4 header length is 20 bytes
+            # We will assume the IPv6 packet is not using extension headers (hence a ip header length of 40 bytes)
+            # TCP Flags are set on byte 13 of the TCP header.
+            # IPv4 : match u8 X X at 33
+            # IPv6 : match u8 X X at 53
+            # with X = 0x02 for SYN and X = 0x10 for ACK
+            if ($$p{tcpsyn} or $$p{tcpack}) {
+                # Let's build the binary mask
+                my $mask = 0;
+                $mask |= 0x02 if $$p{tcpsyn};
+                $mask |= 0x10 if $$p{tcpack};
+
+                if ( $proto eq 'ip' ) {
+                    printf " match u8 %#.2x %#.2x at 33", $mask, $mask;
+                } elsif ( $proto eq 'ipv6' ) {
+                    printf " match u8 %#.2x %#.2x at 53", $mask, $mask;
+                }
+            }
         }
 
         print " match mark $fwmark 0xff" if $fwmark;

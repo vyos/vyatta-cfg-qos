@@ -1,0 +1,5 @@
+type: u32
+help: Maximum payload length
+syntax:expression: $VAR(@) >= 0 && $VAR(@) <= 65535; \
+                  "Maximum payload length must be >= 0 and < 65535"
+val_help: u32:0-65535; Maximum packet/payload length 
