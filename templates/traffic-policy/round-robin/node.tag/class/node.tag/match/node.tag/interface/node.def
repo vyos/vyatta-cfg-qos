@@ -1,7 +1,0 @@
-type: txt
-help: Interface name for this match
-syntax:expression: exec "[ -f /sys/class/net/$VAR(@)/ifindex ]" ; "Interface must already exist"
-allowed: local -a array
-	 array=( /sys/class/net/* )
-         echo -n ${array[@]##*/}
-

@@ -1,0 +1,5 @@
+type: u32
+help: Maximum packet length (ipv4)
+syntax:expression: $VAR(@) >= 0 && $VAR(@) <= 65535; \
+                  "Maximum IPv4 total packet length is 65535"
+val_help: u32:0-65535; Maximum packet/payload length 

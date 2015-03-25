@@ -34,6 +34,7 @@ cpiop = find  . ! -regex '\(.*~\|.*\.bak\|.*\.swp\|.*\#.*\#\)' -print0 | \
 all-local:
 	rm -rf $(gentmpdir)
 	./gen-interface-templates.pl $(gentmpdir)
+	./gen-qos-match-templates.pl $(gentmpdir)
 
 clean-local:
 	rm -rf $(gentmpdir)
