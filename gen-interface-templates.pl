@@ -133,7 +133,7 @@ sub mkdir_p {
 }
 
 foreach my $if_tree ( keys %interface_hash ) {
-    my $inpath  = "interface-templates";
+    my $inpath  = "templates-skeleton/interface-templates";
     my $outpath = "$outdir/interfaces/$if_tree";
     ( -d $outpath )
       or mkdir_p($outpath)
