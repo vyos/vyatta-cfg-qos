@@ -22,6 +22,7 @@ share_perl5_DATA += lib/Vyatta/Qos/Priority.pm
 share_perl5_DATA += lib/Vyatta/Qos/Shared.pm
 share_perl5_DATA += lib/Vyatta/Qos/HFSCClass.pm
 share_perl5_DATA += lib/Vyatta/Qos/HFSCShaper.pm
+share_perl5_DATA += lib/Vyatta/Qos/FairQueueCodel.pm
 
 etcdir           = /etc
 etc_SCRIPTS      =

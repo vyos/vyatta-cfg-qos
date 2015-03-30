@@ -1,0 +1,2 @@
+type: u32
+help: fq-codel - Interval (milliseconds) used to measure the delay (default 100)

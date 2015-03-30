@@ -28,21 +28,22 @@ our @EXPORT =
    qw(find_policy interfaces_using get_policy_names list_policy %policies);
 use base qw(Exporter);
 
-our %policies = ( 
+our %policies = (
     'out' => {
 	'shaper-hfsc'	   => 'HFSCShaper',
         'shaper'           => 'TrafficShaper',
         'fair-queue'       => 'FairQueue',
+        'fq-codel'         => 'FairQueueCodel',
         'rate-control'     => 'RateLimiter',
         'drop-tail'        => 'DropTail',
         'network-emulator' => 'NetworkEmulator',
         'round-robin'      => 'RoundRobin',
         'priority-queue'   => 'Priority',
         'random-detect'    => 'RandomDetect',
-    },  
+    },
     'in' => {
         'limiter' => 'TrafficLimiter',
-    }   
+    }
 );
 
 # find policy for name - also check for duplicates
@@ -106,12 +107,12 @@ sub get_policy_names {
 
     $config->setLevel('traffic-policy');
 
-    foreach my $direction ( @args ) { 
+    foreach my $direction ( @args ) {
         my @qos = grep { $policies{$direction}{$_} } $config->$listNodes();
         foreach my $type (@qos) {
             my @n = $config->$listNodes($type);
-            push @names, @n; 
-        }   
+            push @names, @n;
+        }
     }
     return @names;
 }

@@ -1,0 +1,2 @@
+type: u32
+help: fq-codel - Number of flows (default 1024)
