@@ -1,3 +1,20 @@
+vyatta-cfg-qos (0.15.42+vyos2+lithium4) unstable; urgency=low
+
+  [ Benjamin Beret ]
+  * Refactor QoS class match templates
+  * Add TCP SYN/ACK and IP max length matching (#513)
+  * Remove small packets matching from fq-codel import
+  * Add FairQueueCodel.pm to the package (#446)
+  
+  [ Carl Byington ]
+  * add fair queue codel queueing (#446)
+  * add fq-codel parameters (#446)
+  * fq-codel target and interval in milliseconds (#446)
+  
+  [ Alex Harpin ]
+
+ -- Alex Harpin <development@landsofshadow.co.uk>  Thu, 02 Apr 2015 21:32:53 +0100
+ 
 vyatta-cfg-qos (0.15.42+vyos2+lithium3) unstable; urgency=low
 
   [ Benjamin Beret ]
