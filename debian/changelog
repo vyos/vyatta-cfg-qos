@@ -1,3 +1,9 @@
+vyatta-cfg-qos (0.15.42+vyos2+lithium5) unstable; urgency=low
+
+  * vyatta-cfg-qos: update dh_gencontrol with new development build flag
+
+ -- Alex Harpin <development@landsofshadow.co.uk>  Tue, 16 Jun 2015 19:22:12 +0100
+ 
 vyatta-cfg-qos (0.15.42+vyos2+lithium4) unstable; urgency=low
 
   [ Benjamin Beret ]
