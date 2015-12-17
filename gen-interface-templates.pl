@@ -55,16 +55,6 @@ my %interface_hash = (
     'wirelessmodem/node.tag'                        => '$VAR(@)',
     'wireless/node.tag'  	                    => '$VAR(@)',
     'wireless/node.tag/vif/node.tag'                => '$VAR(../@).$VAR(@)',
-    'multilink/node.tag/vif/node.tag'               => '$VAR(../@)',
-
-    'adsl/node.tag/pvc/node.tag/bridged-ethernet' => '$VAR(../../@)',
-    'adsl/node.tag/pvc/node.tag/classical-ipoa'   => '$VAR(../../@)',
-    'adsl/node.tag/pvc/node.tag/pppoa/node.tag'   => '$VAR(../../@)',
-    'adsl/node.tag/pvc/node.tag/pppoe/node.tag'   => '$VAR(../../@)',
-
-    'serial/node.tag/cisco-hdlc/vif/node.tag'  => '$VAR(../../@).$VAR(@)',
-    'serial/node.tag/frame-relay/vif/node.tag' => '$VAR(../../@).$VAR(@)',
-    'serial/node.tag/ppp/vif/node.tag'         => '$VAR(../../@).$VAR(@)',
 );
 
 # Hash table to check if the priority needs to set @ root

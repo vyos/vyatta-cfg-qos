@@ -20,10 +20,3 @@ Suggests: util-linux (>= 2.13-5),
  net-tools,
 Description: VyOS Qos configuration templates/scripts
  VyOS Qos configuration templates and scripts.
-
-Package: vyatta-cfg-qos-serial
-Architecture: all
-Depends:  ${perl:Depends}, ${shlibs:Depends}, vyatta-cfg-qos, vyatta-serial
-Replaces: vyatta-cfg-qos
-Description: VyOS Qos serial templates
- VyOS Qos configuration templates for serial devices
