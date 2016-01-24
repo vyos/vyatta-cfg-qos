@@ -1,3 +1,14 @@
+vyatta-cfg-qos (0.15.42+vyos2+current1) unstable; urgency=medium
+
+  [ Thomas Jepp ]
+  * Fix build depends.
+  * Stop building vyatta-cfg-qos-serial.
+  * Remove a vyatta-cfg-qos-serial entry in debian/rules that was missed.
+
+  [ Kim Hagen ]
+
+ -- Kim Hagen <kim.sidney@gmail.com>  Sun, 24 Jan 2016 15:02:23 -0500
+
 vyatta-cfg-qos (0.15.42+vyos2+lithium5) unstable; urgency=low
 
   * vyatta-cfg-qos: update dh_gencontrol with new development build flag
