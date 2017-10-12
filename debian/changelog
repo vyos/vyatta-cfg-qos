@@ -1,3 +1,10 @@
+vyatta-cfg-qos (0.15.42+vyos1+helium5) unstable; urgency=low
+
+  * T202: include generated templates for l2tpv3 and dummy links to the
+    package
+
+ -- Daniil Baturin <daniil@baturin.org>  Thu, 12 Oct 2017 07:36:35 +0200
+
 vyatta-cfg-qos (0.15.42+vyos1+helium4) unstable; urgency=low
 
   [ Hiroyuki Sato ]
