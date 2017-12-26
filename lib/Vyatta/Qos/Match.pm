@@ -184,9 +184,9 @@ sub filter {
             # IPv6 : match u16 0x0000 ~MAXLEN at 4
             if ($$p{maxlen}) {
                 if ( $proto eq 'ip' ) {
-                    printf " match u16 0x0000 %#.4x at 2", (hex('0xFFFF') & ~($$p{maxlen}));
+                    printf " match u16 0x0000 %#.4x at 2", 0xffff & ~int($$p{maxlen});
                 } elsif ( $proto eq 'ipv6' ) {
-                    printf " match u16 0x0000 %#.4x at 4", (hex('0xFFFF') & ~($$p{maxlen}));
+                    printf " match u16 0x0000 %#.4x at 4", 0xffff & ~int($$p{maxlen});
                 }
             }
             # TCP Flags :
