@@ -55,6 +55,7 @@ my %interface_hash = (
     'wirelessmodem/node.tag'                        => '$VAR(@)',
     'wireless/node.tag'  	                    => '$VAR(@)',
     'wireless/node.tag/vif/node.tag'                => '$VAR(../@).$VAR(@)',
+    'wireguard/node.tag'                            => '$VAR(@)'
 );
 
 # Hash table to check if the priority needs to set @ root
