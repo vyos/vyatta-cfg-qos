@@ -30,9 +30,7 @@ my $debug = $ENV{'DEBUG'};
 my %interface_hash = (
     'loopback/node.tag'                                          => '$VAR(@)',
     'ethernet/node.tag'                                          => '$VAR(@)',
-    'ethernet/node.tag/pppoe/node.tag'                           => 'pppoe$VAR(@)',
     'ethernet/node.tag/vif/node.tag'                             => '$VAR(../@).$VAR(@)',
-    'ethernet/node.tag/vif/node.tag/pppoe/node.tag'              => 'pppoe$VAR(@)',
     'ethernet/node.tag/vif-s/node.tag'                           => '$VAR(../@).$VAR(@)',
     'ethernet/node.tag/vif-s/node.tag/vif-c/node.tag'            => '$VAR(../../@).$VAR(../@).$VAR(@)',
     'wireless/node.tag'                                          => '$VAR(@)',
@@ -40,6 +38,7 @@ my %interface_hash = (
     'bonding/node.tag/vif/node.tag'                              => '$VAR(../@).$VAR(@)',
     'bonding/node.tag/vif-s/node.tag'                            => '$VAR(../@).$VAR(@)',
     'bonding/node.tag/vif-s/node.tag/vif-c/node.tag'             => '$VAR(../../@).$VAR(../@).$VAR(@)',
+    'pppoe/node.tag'                                             => '$VAR(@)',
     'pseudo-ethernet/node.tag'                                   => '$VAR(@)',
 #   'pseudo-ethernet/node.tag/vif/node.tag'                      => '$VAR(../@).$VAR(@)',
 
