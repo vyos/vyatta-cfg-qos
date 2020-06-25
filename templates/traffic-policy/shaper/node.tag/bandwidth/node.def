@@ -5,7 +5,7 @@ syntax:expression: $VAR(@) == "auto" || \
 		   exec "/opt/vyatta/sbin/vyatta-qos-util.pl --rate $VAR(@)"
 
 val_help: auto; Rate matches interface speed (default)
-val_help: <number>; Rate in k (1000) bytes per second 
+val_help: <number>; Rate in kbit (kilobit per second) 
 val_help: <number>bit; bit(1), kbit(10^3), mbit(10^6), gbit, tbit
 val_help: <number>ibit; kibit(1024), mibit(1024^2), gibit(1024^3), tbit(1024^4)
 val_help: <number>ibps; kibps(1024*8), mibps(1024^2*8), gibps, tibps *Byte/sec*

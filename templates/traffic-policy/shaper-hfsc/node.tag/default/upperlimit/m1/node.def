@@ -2,7 +2,7 @@ type: txt
 help: Upperlimit m1 parameter for default traffic
 syntax:expression: exec "/opt/vyatta/sbin/vyatta-qos-util.pl --percent-or-rate $VAR(@)"
 
-val_help: <number>; Bandwidth in Kbps(10^3 bits per second)
+val_help: <number>; Rate in kbit (kilobit per second)
 val_help: <number>%%; Percentage of overall rate (default 100%%)
 val_help: <number>bit; bit(1), kbit(10^3), mbit(10^6), gbit, tbit
 val_help: <number>ibit; kibit(1024), mibit(1024^2), gibit(1024^3), tbit(1024^4)
