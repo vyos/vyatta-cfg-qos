@@ -111,7 +111,7 @@ sub list_policy {
 
 my %delcmd = (
     'out' => 'root',
-    'in'  => 'parent fffe:',
+    'in'  => 'parent ffff:',
 );
 
 ## delete_interface('eth0')
@@ -160,13 +160,13 @@ sub apply_openvpn_action {
   die "Unknown interface type: $dev" unless $interface;
 
 	# Clear existing ingress
-	system("/sbin/tc qdisc del dev $dev parent fffe: 2>/dev/null");
+	system("/sbin/tc qdisc del dev $dev parent ffff: 2>/dev/null");
 
-	system("/sbin/tc qdisc add dev $dev handle fffe: ingress") == 0
+	system("/sbin/tc qdisc add dev $dev handle ffff: ingress") == 0
 	    or die "tc qdisc ingress failed";
 
 	my $cmd =
-	    "/sbin/tc filter add dev $dev parent fffe:"
+	    "/sbin/tc filter add dev $dev parent ffff:"
 	    . " protocol all prio 10 u32"
 	    . " match u32 0 0 flowid 1:1"
 	    . " action mirred egress $action dev $target";
@@ -174,7 +174,7 @@ sub apply_openvpn_action {
 	system($cmd) == 0
 	    or die "tc action $action command failed";
 
-  system("/sbin/tc qdisc del dev $dev parent fffe: 2>/dev/null")
+  system("/sbin/tc qdisc del dev $dev parent ffff: 2>/dev/null")
   	if ($action eq '__undef');
 }
 
@@ -329,13 +329,13 @@ sub apply_action{
 	    if ($ingress);
 
 	# Clear existing ingress
-	system("/sbin/tc qdisc del dev $dev parent fffe: 2>/dev/null");
+	system("/sbin/tc qdisc del dev $dev parent ffff: 2>/dev/null");
 
-	system("/sbin/tc qdisc add dev $dev handle fffe: ingress") == 0
+	system("/sbin/tc qdisc add dev $dev handle ffff: ingress") == 0
 	    or die "tc qdisc ingress failed";
 
 	my $cmd =
-	    "/sbin/tc filter add dev $dev parent fffe:"
+	    "/sbin/tc filter add dev $dev parent ffff:"
 	    . " protocol all prio 10 u32"
 	    . " match u32 0 0 flowid 1:1"
 	    . " action mirred egress $action dev $target";
@@ -347,7 +347,7 @@ sub apply_action{
     }
 
     # Drop what ever was there before...
-    system("/sbin/tc qdisc del dev $dev parent fffe: 2>/dev/null")
+    system("/sbin/tc qdisc del dev $dev parent ffff: 2>/dev/null")
 	unless($ingress);
 }
 
@@ -387,7 +387,7 @@ sub check_target {
 
 sub delete_action {
     foreach my $dev (@_) {
-	system("/sbin/tc qdisc del dev $dev parent fffe: 2>/dev/null");
+	system("/sbin/tc qdisc del dev $dev parent ffff: 2>/dev/null");
     }
 }
 
