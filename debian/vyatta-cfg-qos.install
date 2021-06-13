@@ -17,4 +17,5 @@ opt/vyatta/share/vyatta-cfg/templates/interfaces/tunnel
 opt/vyatta/share/vyatta-cfg/templates/interfaces/vti
 opt/vyatta/share/vyatta-cfg/templates/interfaces/wireless
 opt/vyatta/share/vyatta-cfg/templates/interfaces/wwan
+opt/vyatta/share/vyatta-cfg/templates/interfaces/macsec
 opt/vyatta/share/vyatta-cfg/templates/interfaces/wireguard
