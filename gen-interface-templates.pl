@@ -46,13 +46,12 @@ my %interface_hash = (
     'vti/node.tag'                                  => '$VAR(@)',
     'bridge/node.tag'                               => '$VAR(@)',
     'openvpn/node.tag'                              => '$VAR(@)',
-    'input/node.tag'				    => '$VAR(@)',
+    'input/node.tag'				                => '$VAR(@)',
 
     'l2tpv3/node.tag'                               => '$VAR(@)',
     'dummy/node.tag'                                => '$VAR(@)',
-
-    'wirelessmodem/node.tag'                        => '$VAR(@)',
-    'wireless/node.tag'  	                    => '$VAR(@)',
+    'wwan/node.tag'                                 => '$VAR(@)',
+    'wireless/node.tag'  	                        => '$VAR(@)',
     'wireless/node.tag/vif/node.tag'                => '$VAR(../@).$VAR(@)',
     'wireguard/node.tag'                            => '$VAR(@)'
 );
