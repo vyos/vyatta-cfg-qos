@@ -50,6 +50,7 @@ my %interface_hash = (
 
     'l2tpv3/node.tag'                               => '$VAR(@)',
     'dummy/node.tag'                                => '$VAR(@)',
+    'macsec/node.tag'                               => '$VAR(@)',
     'wwan/node.tag'                                 => '$VAR(@)',
     'wireless/node.tag'  	                        => '$VAR(@)',
     'wireless/node.tag/vif/node.tag'                => '$VAR(../@).$VAR(@)',
