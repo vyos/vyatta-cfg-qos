@@ -214,12 +214,43 @@ sub getProtocol {
     return $proto;
 }
 
-# Parse /etc/iproute/rt_dsfield
-# return a hex string "0x10" or undefined
+my %dsfields = (
+    "default"        => 0x0,
+    "lowdelay"       => 0x10,
+    "throughput"     => 0x08,
+    "reliability"    => 0x04,
+    "mincost"        => 0x02,
+    "priority"       => 0x20,
+    "immediate"      => 0x40,
+    "flash"          => 0x60,
+    "flash-override" => 0x80,
+    "critical"       => 0x0A,
+    "internet"       => 0xC0,
+    "network"        => 0xE0,
+    "AF11"           => 0x28,
+    "AF12"           => 0x30,
+    "AF13"           => 0x38,
+    "AF21"           => 0x48,
+    "AF22"           => 0x50,
+    "AF23"           => 0x58,
+    "AF31"           => 0x68,
+    "AF32"           => 0x70,
+    "AF33"           => 0x78,
+    "AF41"           => 0x88,
+    "AF42"           => 0x90,
+    "AF43"           => 0x98,
+    "CS1"            => 0x20,
+    "CS2"            => 0x40,
+    "CS3"            => 0x60,
+    "CS4"            => 0x80,
+    "CS5"            => 0xA0,
+    "CS6"            => 0xC0,
+    "CS7"            => 0xE0,
+    "EF"             => 0xB8
+);
+
 sub getDsfield {
     my ($str)      = @_;
-    my $match      = undef;
-    my $dsFileName = '/etc/iproute2/rt_dsfield';
 
     defined $str or return;
 
@@ -233,17 +264,8 @@ sub getDsfield {
         return $str << 2;
     }
 
-    open my $ds, '<', $dsFileName || die "Can't open $dsFileName, $!\n";
-    while (<$ds>) {
-        next if /^#/;
-        chomp;
-        my ( $value, $name ) = split;
-        if ( $str eq $name ) {
-            $match = $value;
-            last;
-        }
-    }
-    close($ds) or die "read $dsFileName error\n";
+    # if it's a text description of the value, we need to look it up
+    my $match = $dsfields{$str};
 
     ( defined $match ) or die "\"$str\" unknown DSCP value\n";
     return $match;
