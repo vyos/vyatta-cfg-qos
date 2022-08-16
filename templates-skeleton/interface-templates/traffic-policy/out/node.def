@@ -1,4 +1,5 @@
 type: txt
+priority: 620
 help: Egress traffic policy for interface
 allowed: /opt/vyatta/sbin/vyatta-qos.pl --list-policy out
 update: /opt/vyatta/sbin/vyatta-qos.pl --update-interface $IFNAME out $VAR(@)
