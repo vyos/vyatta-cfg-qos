@@ -1,4 +1,5 @@
 type: txt
+priority: 620
 help: Incoming packet redirection destination
 allowed: /opt/vyatta/sbin/vyatta-interfaces.pl --show=input
 
