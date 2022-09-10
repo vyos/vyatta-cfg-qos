@@ -1,0 +1,10 @@
+type: txt
+help: Default action for packets not exceeding the limiter (default: ok)
+default: "ok"
+syntax:expression: $VAR(@) in "continue", "drop", "ok", "reclassify", "pipe"
+
+val_help: continue; Don't do anything, just continue with the next action in line
+val_help: drop; Drop the packet immediately
+val_help: ok; Accept the packet
+val_help: reclassify; Treat the packet as non-matching to the filter this action is attached to and continue with the next filter in line (if any)
+val_help: pipe; Pass the packet to the next action in line
