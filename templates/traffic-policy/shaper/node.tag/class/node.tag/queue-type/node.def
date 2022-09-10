@@ -1,5 +1,5 @@
 type: txt
-default: "fair-queue"
+default: "fq-codel"
 syntax:expression: $VAR(@) in "fq-codel", "fair-queue", "priority", "drop-tail", "random-detect";\
                    "Unknown queue-type"
 help: Queue type for this class
