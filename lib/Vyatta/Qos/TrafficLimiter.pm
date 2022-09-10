@@ -83,7 +83,8 @@ sub commands {
     foreach my $class (@$classes) {
 	my $id = $class->{id};
 	my $police = " action police rate " . $class->{rate}
-		   . " conform-exceed drop burst " . $class->{burst};
+		   . " conform-exceed " . $class->{exceedact} . "/"
+		   . $class->{notexceedact} . " burst " . $class->{burst};
 
 	if ($id == 0) {
 	    $id = $maxid + 1;

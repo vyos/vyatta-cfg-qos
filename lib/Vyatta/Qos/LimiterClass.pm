@@ -28,6 +28,8 @@ my %fields = (
     priority => undef,
     burst    => undef,
     rate     => undef,
+    exceedact => undef,
+    notexceedact => undef,
     _match   => undef,
 );
 
@@ -57,6 +59,9 @@ sub _define {
     defined $self->{burst} or die "burst must be defined for $level\n";
 
     $self->{priority} = $config->returnValue("priority");
+
+    $self->{exceedact} = $config->returnValue("exceed-action");
+    $self->{notexceedact} = $config->returnValue("notexceed-action");
 
     foreach my $match ( $config->listNodes("match") ) {
         $config->setLevel("$level match $match");
